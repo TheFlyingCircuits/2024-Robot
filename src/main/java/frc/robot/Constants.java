@@ -16,5 +16,13 @@ public final class Constants {
   public final class ShooterConstants {
     /**Rotations of the wheel per rotations of the motor; a number greater than 1 represents a reduction. */
     public final static double kFlywheelGearReduction = 1.;
+  
+    public final static double kPFlywheelsVoltsSecondsPerRotation = 0.;
+    public final static double kIFlywheelsVoltsPerRotation = 0.;
+    public final static double kDFlywheelsVoltsSecondsSquaredPerRotation = 0.;
+
+    public final static double kSFlywheelsVolts = 0.;
+    public final static double kVFlywheelsVoltsSecondsPerRotation = 0.;
+    public final static double kAFlywheelsVoltsSecondsSquaredPerRotation = 0.;
   }
 }

@@ -1,4 +1,4 @@
-package frc.robot.subsystems;
+package frc.robot.subsystems.shooter;
 
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.wpilibj.simulation.FlywheelSim;
@@ -22,8 +22,8 @@ public class ShooterIOSim implements ShooterIO {
         leftSim.update(0.02);
         rightSim.update(0.02);
 
-        inputs.leftFlywheelsRPM = leftSim.getAngularVelocityRPM();
-        inputs.rightFlywheelsRPM = rightSim.getAngularVelocityRPM();
+        inputs.leftFlywheelsRotationsPerSecond = leftSim.getAngularVelocityRPM()*60;
+        inputs.rightFlywheelsRotationsPerSecond = rightSim.getAngularVelocityRPM()*60;
     }
 
     @Override
