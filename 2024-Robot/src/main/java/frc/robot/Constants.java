@@ -13,7 +13,8 @@ package frc.robot;
  * constants are needed, to reduce verbosity.
  */
 public final class Constants {
-  public static class OperatorConstants {
-    public static final int kDriverControllerPort = 0;
+  public final class ShooterConstants {
+    /**Rotations of the wheel per rotations of the motor; a number greater than 1 represents a reduction. */
+    public final static double kFlywheelGearReduction = 1.;
   }
 }
