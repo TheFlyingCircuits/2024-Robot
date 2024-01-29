@@ -6,16 +6,22 @@ import frc.robot.Constants.*;
 
 
 public class ShooterIOSim implements ShooterIO {
-    private FlywheelSim leftSim = new FlywheelSim(
-        DCMotor.getKrakenX60(1),
-        ShooterConstants.kFlywheelGearReduction,
-        0.03
-    );
-    private FlywheelSim rightSim = new FlywheelSim(
-        DCMotor.getKrakenX60(1),
-        ShooterConstants.kFlywheelGearReduction,
-        0.03
-    );
+    private FlywheelSim leftSim;
+    private FlywheelSim rightSim;
+
+    public ShooterIOSim() {
+
+        leftSim = new FlywheelSim(
+            DCMotor.getKrakenX60(1),
+            ShooterConstants.kFlywheelGearReduction,
+            0.03);
+
+        rightSim = new FlywheelSim(
+            DCMotor.getKrakenX60(1),
+            ShooterConstants.kFlywheelGearReduction,
+            0.03);
+            
+    }
 
     @Override
     public void updateInputs(ShooterIOInputs inputs) {
