@@ -27,6 +27,7 @@ public interface GyroIO {
         public double robotRollDegrees = 0.0;
     }
     
+    public default void updateInputs(GyroIOInputs inputs) {};
 
     /**
      * Sets the saved yaw position of the robot, in degrees.

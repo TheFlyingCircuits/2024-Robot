@@ -5,6 +5,12 @@
 package frc.robot;
 
 import frc.robot.commands.Autos;
+import frc.robot.commands.drivetrain.JoystickDrive;
+import frc.robot.subsystems.drivetrain.Drivetrain;
+import frc.robot.subsystems.drivetrain.GyroIO;
+import frc.robot.subsystems.drivetrain.GyroIOPigeon;
+import frc.robot.subsystems.drivetrain.SwerveModuleIO;
+import frc.robot.subsystems.drivetrain.SwerveModuleIONeo;
 import frc.robot.subsystems.shooter.Shooter;
 import frc.robot.subsystems.shooter.ShooterIO;
 import frc.robot.subsystems.shooter.ShooterIOSim;
@@ -24,18 +30,41 @@ public class RobotContainer {
 
     public static final CommandXboxController controller = new CommandXboxController(0);
     public final Shooter shooter;
+    public final Drivetrain drivetrain;
     
     public RobotContainer() {
-        if (RobotBase.isSimulation()) {
-        shooter = new Shooter(new ShooterIOSim());
-        }
-        else {
-        shooter = new Shooter(new ShooterIO() {});
+
+        if (RobotBase.isReal()) {
+            drivetrain = new Drivetrain(
+                new GyroIOPigeon(),
+                new SwerveModuleIONeo(1, 2, 0, 0),
+                new SwerveModuleIONeo(3, 4, 0, 0),
+                new SwerveModuleIONeo(5, 6, 0, 0),
+                new SwerveModuleIONeo(7, 8, 0, 0)
+            );
+
+            shooter = new Shooter(new ShooterIO() {});
         }
 
+        // if (RobotBase.isSimulation()) {
+        //     shooter = new Shooter(new ShooterIOSim());
+        // }
+        else {
+
+            drivetrain = new Drivetrain(
+                new GyroIO() {},
+                new SwerveModuleIO() {},
+                new SwerveModuleIO() {},
+                new SwerveModuleIO() {},
+                new SwerveModuleIO() {}
+            );
+
+            shooter = new Shooter(new ShooterIO() {});
+        }
 
         configureBindings();
         
+        drivetrain.setDefaultCommand(new JoystickDrive(false, drivetrain));
     }
 
     /**
@@ -48,8 +77,7 @@ public class RobotContainer {
      * joysticks}.
      */
     private void configureBindings() {
-
-
+        controller.y().onTrue(new InstantCommand(() -> drivetrain.setYaw(0)));
     }
 
     /**

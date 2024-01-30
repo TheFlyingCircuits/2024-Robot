@@ -94,6 +94,10 @@ public final class Constants {
 
     }
 
+    public final class ControllerConstants {
+        public static final double controllerDeadzone = 0.175;
+    }
+
     public final class SwerveModuleConstants {
         /** Rotations of the drive wheel per rotations of the drive motor. */
         public static final double driveGearReduction = (14.0 / 50.0) * (27.0 / 17.0) * (15.0 / 45.0);
@@ -128,6 +132,20 @@ public final class Constants {
         public static final boolean driveInvert = true;
         public static final IdleMode driveNeutralMode = IdleMode.kBrake;
 
+    }
+
+    public final class GyroConstants {
+        public static final String pigeonCANbus = "canivore";
+
+        public static final int pigeonID = 0;
+
+
+
+        public static final double mountPoseYawDegrees = 0.0;
+
+        public static final double mountPosePitchDegrees = 0.0;
+
+        public static final double mountPoseRollDegrees = 0.0;
     }
 
     public final class ArmConstants {

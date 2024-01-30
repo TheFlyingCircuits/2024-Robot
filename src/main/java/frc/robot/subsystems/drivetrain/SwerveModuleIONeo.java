@@ -11,7 +11,7 @@ import com.revrobotics.REVLibError;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.CANSparkLowLevel.MotorType;
 
-import frc.robot.Constants.SwerveModuleConstants;;
+import frc.robot.Constants.SwerveModuleConstants;
 import frc.robot.subsystems.drivetrain.SwerveModuleIO.SwerveModuleIOInputs;
 
 public class SwerveModuleIONeo implements SwerveModuleIO{
