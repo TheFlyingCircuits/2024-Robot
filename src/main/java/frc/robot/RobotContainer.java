@@ -37,10 +37,10 @@ public class RobotContainer {
         if (RobotBase.isReal()) {
             drivetrain = new Drivetrain(
                 new GyroIOPigeon(),
-                new SwerveModuleIONeo(1, 2, 0, 0),
-                new SwerveModuleIONeo(3, 4, 0, 0),
-                new SwerveModuleIONeo(5, 6, 0, 0),
-                new SwerveModuleIONeo(7, 8, 0, 0)
+                new SwerveModuleIONeo(1, 2, -0.177978515625, 0),
+                new SwerveModuleIONeo(3, 4, 0.33935546875, 1),
+                new SwerveModuleIONeo(5, 6, -0.339599609375, 2),
+                new SwerveModuleIONeo(7, 8, -0.206787109375, 3)
             );
 
             shooter = new Shooter(new ShooterIO() {});

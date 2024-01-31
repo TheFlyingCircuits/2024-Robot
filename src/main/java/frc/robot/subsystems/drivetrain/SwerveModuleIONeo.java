@@ -26,7 +26,7 @@ public class SwerveModuleIONeo implements SwerveModuleIO{
     private RelativeEncoder angleEncoder;
     private RelativeEncoder driveEncoder;
 
-    public SwerveModuleIONeo(int driveMotorID, int angleMotorID, int angleOffsetDegrees, int cancoderID){
+    public SwerveModuleIONeo(int driveMotorID, int angleMotorID, double angleOffsetDegrees, int cancoderID){
         this.angleOffsetDegrees = angleOffsetDegrees;
         
         /* Angle Encoder Config */

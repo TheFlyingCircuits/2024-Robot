@@ -135,17 +135,15 @@ public final class Constants {
     }
 
     public final class GyroConstants {
-        public static final String pigeonCANbus = "canivore";
+        public static final String pigeonCANbus = "rio";
 
         public static final int pigeonID = 0;
 
 
-
-        public static final double mountPoseYawDegrees = 0.0;
-
-        public static final double mountPosePitchDegrees = 0.0;
-
-        public static final double mountPoseRollDegrees = 0.0;
+        //Follow the mount calibration process in Phoenix Tuner to determine these
+        public static final double mountPoseYawDegrees = 0.7333114147186279;
+        public static final double mountPosePitchDegrees = -0.11852765083312988;
+        public static final double mountPoseRollDegrees = -1.0425487756729126;
     }
 
     public final class ArmConstants {

@@ -4,7 +4,11 @@
 
 package frc.robot.commands.drivetrain;
 
+import org.littletonrobotics.junction.Logger;
+
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.RobotContainer;
 import frc.robot.Constants.ControllerConstants;
@@ -52,6 +56,10 @@ public class JoystickDrive extends Command {
     private double modifyAxis(double value) {
         value = deadzone(value, ControllerConstants.controllerDeadzone);
 
+        //clipping controller values so they aren't greater than 1
+        if(value > 1){
+            value = 1.0;
+        }
         //adjust this power value for diffferences in how the robot handles (recommended between 1.5 and 3)
         return Math.signum(value) * Math.pow(Math.abs(value), 2.3);
     }
@@ -60,17 +68,23 @@ public class JoystickDrive extends Command {
     @Override
     public void execute() {
 
-
-        double controllerX = modifyAxis(-RobotContainer.controller.getLeftX());
-        double controllerY = modifyAxis(-RobotContainer.controller.getLeftY());
+        //Instead of modifying the x and y axis from the controller individually,
+        //it was found it is better to combine them, modify, and reextract the X
+        //and Y using trig wahoo
+        double controllerX = -RobotContainer.controller.getLeftX();
+        double controllerY = -RobotContainer.controller.getLeftY();
+        double controllerXY = modifyAxis(Math.sqrt((controllerX*controllerX) + (controllerY*controllerY)));
+        double theta = Math.atan2(controllerY, controllerX);
+        double finalControllerX = controllerXY * Math.cos(theta);
+        double finalControllerY = controllerXY * Math.sin(theta);
         double controllerR = modifyAxis(-RobotContainer.controller.getRightX());
 
         // Raw controller values after modifyAxis will be between -1 and 1.
         // Coefficient = maximum speed in meters or radians per second.
 
         ChassisSpeeds outputChassisSpeeds = new ChassisSpeeds(
-        controllerY*DrivetrainConstants.maxDesiredTeleopVelocityMetersPerSecond,
-        controllerX*DrivetrainConstants.maxDesiredTeleopVelocityMetersPerSecond,
+        finalControllerY*DrivetrainConstants.maxDesiredTeleopVelocityMetersPerSecond,
+        finalControllerX*DrivetrainConstants.maxDesiredTeleopVelocityMetersPerSecond,
         controllerR*DrivetrainConstants.maxDesiredTeleopAngularVelocityRadiansPerSecond
         );
 
@@ -80,7 +94,11 @@ public class JoystickDrive extends Command {
             drivetrain.getRobotRotation2d());
         }
 
-        drivetrain.drive(outputChassisSpeeds, true);
+        //Logger.recordOutput("drivetrain", outputChassisSpeeds);
+
+        SmartDashboard.putNumber("chassisSpeedsX", outputChassisSpeeds.vxMetersPerSecond);
+        SmartDashboard.putNumber("chassisSpeedsY", outputChassisSpeeds.vyMetersPerSecond);
+        drivetrain.drive(outputChassisSpeeds, false);
 
     }
 
