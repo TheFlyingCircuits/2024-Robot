@@ -2,6 +2,8 @@ package frc.robot.subsystems.drivetrain;
 
 import com.ctre.phoenix6.configs.Pigeon2Configuration;
 import com.ctre.phoenix6.hardware.Pigeon2;
+
+import edu.wpi.first.math.geometry.Rotation2d;
 import frc.robot.Constants.GyroConstants;
 
 public class GyroIOPigeon implements GyroIO {
@@ -41,10 +43,10 @@ public class GyroIOPigeon implements GyroIO {
 
     @Override
     public void updateInputs(GyroIOInputs inputs) {
-        inputs.robotYawDegrees = pigeon.getYaw().getValueAsDouble();
-        inputs.robotPitchDegrees = pigeon.getPitch().getValueAsDouble();
-        inputs.robotRollDegrees = pigeon.getRoll().getValueAsDouble();
-        inputs.robotYawDegreesPerSecond = pigeon.getAngularVelocityZWorld().getValueAsDouble();
+        inputs.robotYawRotation2d = Rotation2d.fromDegrees(pigeon.getYaw().getValueAsDouble());
+        inputs.robotPitchRotation2d = Rotation2d.fromDegrees(pigeon.getPitch().getValueAsDouble());
+        inputs.robotRollRotation2d = Rotation2d.fromDegrees(pigeon.getRoll().getValueAsDouble());
+        inputs.robotYawRotation2dPerSecond = Rotation2d.fromDegrees(pigeon.getAngularVelocityZWorld().getValueAsDouble());
     }
 
 }

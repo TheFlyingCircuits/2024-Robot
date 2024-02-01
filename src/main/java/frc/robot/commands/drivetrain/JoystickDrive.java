@@ -57,9 +57,8 @@ public class JoystickDrive extends Command {
         value = deadzone(value, ControllerConstants.controllerDeadzone);
 
         //clipping controller values so they aren't greater than 1
-        if(value > 1){
-            value = 1.0;
-        }
+        value = value > 1 ? 1 : value;
+
         //adjust this power value for diffferences in how the robot handles (recommended between 1.5 and 3)
         return Math.signum(value) * Math.pow(Math.abs(value), 2.3);
     }
@@ -83,22 +82,18 @@ public class JoystickDrive extends Command {
         // Coefficient = maximum speed in meters or radians per second.
 
         ChassisSpeeds outputChassisSpeeds = new ChassisSpeeds(
-        finalControllerY*DrivetrainConstants.maxDesiredTeleopVelocityMetersPerSecond,
-        finalControllerX*DrivetrainConstants.maxDesiredTeleopVelocityMetersPerSecond,
-        controllerR*DrivetrainConstants.maxDesiredTeleopAngularVelocityRadiansPerSecond
-        );
+            finalControllerY*DrivetrainConstants.maxDesiredTeleopVelocityMetersPerSecond,
+            finalControllerX*DrivetrainConstants.maxDesiredTeleopVelocityMetersPerSecond,
+            controllerR*DrivetrainConstants.maxDesiredTeleopAngularVelocityRadiansPerSecond);
 
         if (fieldOriented) {
-        outputChassisSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(
+            outputChassisSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(
             outputChassisSpeeds,
             drivetrain.getRobotRotation2d());
         }
 
         //Logger.recordOutput("drivetrain", outputChassisSpeeds);
-
-        SmartDashboard.putNumber("chassisSpeedsX", outputChassisSpeeds.vxMetersPerSecond);
-        SmartDashboard.putNumber("chassisSpeedsY", outputChassisSpeeds.vyMetersPerSecond);
-        drivetrain.drive(outputChassisSpeeds, false);
+        drivetrain.drive(outputChassisSpeeds, true);
 
     }
 

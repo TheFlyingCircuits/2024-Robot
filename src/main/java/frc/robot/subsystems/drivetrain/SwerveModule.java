@@ -1,6 +1,10 @@
 package frc.robot.subsystems.drivetrain;
 
 import frc.robot.Constants.SwerveModuleConstants;
+
+import org.littletonrobotics.junction.AutoLogOutput;
+import org.littletonrobotics.junction.Logger;
+
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
@@ -63,12 +67,18 @@ public class SwerveModule {
             desiredState,
             Rotation2d.fromDegrees(inputs.angleAbsolutePositionDegrees)
         );
-        desiredState = constrainState(desiredState); // constrain one more time after optimization just to be safe, because I'm unsure if optimization can ever pull the angle out of [-180, 180]
 
+                
+        
+        // Logger.recordOutput("desiredState", desiredState);
         setDesiredStateNoOptimize(desiredState, closedLoop);
     }
 
     public void setDesiredStateNoOptimize(SwerveModuleState desiredState, boolean closedLoop) {
+        
+        desiredState = constrainState(desiredState); // constrain one more time after optimization just to be safe, because I'm unsure if optimization can ever pull the angle out of [-180, 180]
+
+
         if (closedLoop) {
         // Conversion factor is already set below to convert rpm of motor to m/s of wheel.
             double wheelMetersPerSecond = inputs.driveVelocityMetersPerSecond;
@@ -92,8 +102,6 @@ public class SwerveModule {
 
     public SwerveModuleState getState() {
 
-
-            
         return new SwerveModuleState(
             inputs.driveVelocityMetersPerSecond,
             Rotation2d.fromDegrees(

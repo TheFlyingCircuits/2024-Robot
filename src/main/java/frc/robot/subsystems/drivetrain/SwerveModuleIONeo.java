@@ -49,7 +49,7 @@ public class SwerveModuleIONeo implements SwerveModuleIO{
     public void updateInputs(SwerveModuleIOInputs inputs) {
         inputs.drivePositionMeters = driveEncoder.getPosition();
         inputs.driveVelocityMetersPerSecond = driveEncoder.getVelocity();
-        inputs.angleAbsolutePositionDegrees = absoluteEncoder.getAbsolutePosition().getValueAsDouble();
+        inputs.angleAbsolutePositionDegrees = absoluteEncoder.getAbsolutePosition().getValueAsDouble()*360;
     }
 
     @Override

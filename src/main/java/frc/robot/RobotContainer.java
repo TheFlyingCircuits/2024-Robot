@@ -64,7 +64,7 @@ public class RobotContainer {
 
         configureBindings();
         
-        drivetrain.setDefaultCommand(new JoystickDrive(false, drivetrain));
+        drivetrain.setDefaultCommand(new JoystickDrive(true, drivetrain));
     }
 
     /**

@@ -1,6 +1,8 @@
 
 package frc.robot.subsystems.drivetrain;
 
+import org.littletonrobotics.junction.Logger;
+
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
@@ -59,7 +61,7 @@ public class Drivetrain extends SubsystemBase {
    * @return rotation2d - this angle will be counterclockwise positive.
    */
     public Rotation2d getRobotRotation2d() {
-        return Rotation2d.fromDegrees(gyroInputs.robotYawDegrees);
+        return gyroInputs.robotYawRotation2d;
     }
 
     /**
@@ -114,6 +116,16 @@ public class Drivetrain extends SubsystemBase {
         }
         gyroIO.updateInputs(gyroInputs);
 
+        Logger.processInputs("gyroInputs", gyroInputs);
+
+        Logger.recordOutput(
+            "drivetrain/swerveModuleStates",
+            new SwerveModuleState[] {
+              swerveModules[0].getState(),
+              swerveModules[1].getState(),
+              swerveModules[2].getState(),
+              swerveModules[3].getState()
+          });
 
     }
 }
