@@ -4,9 +4,13 @@ package frc.robot.subsystems.drivetrain;
 import org.littletonrobotics.junction.Logger;
 
 import edu.wpi.first.math.filter.SlewRateLimiter;
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
+import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
+import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.DrivetrainConstants;
@@ -21,6 +25,10 @@ public class Drivetrain extends SubsystemBase {
 
     private SlewRateLimiter chassisSpeedsXSlewLimiter;
     private SlewRateLimiter chassisSpeedsYSlewLimiter;
+
+    private SwerveDriveOdometry swerveOdometry;
+
+    private Pose2d poseMeters;
 
     public Drivetrain(
         GyroIO gyroIO, 
@@ -41,27 +49,27 @@ public class Drivetrain extends SubsystemBase {
         };
 
         gyroIO.setRobotYaw(0);
+        swerveOdometry = new SwerveDriveOdometry(DrivetrainConstants.swerveKinematics, gyroInputs.robotYawRotation2d, getModulePositions());
 
         chassisSpeedsXSlewLimiter = new SlewRateLimiter(DrivetrainConstants.maxDesiredTeleopAccelMetersPerSecondSquared);
         chassisSpeedsYSlewLimiter = new SlewRateLimiter(DrivetrainConstants.maxDesiredTeleopAccelMetersPerSecondSquared);
     }
 
     /**
-   * Sets the gyroscope angle to zero.
-   * <br>
-   * This can be used to set the direction the robot is currently facing to the 'forwards' direction.
-   */
-    public void setYaw(double degrees) {
-        gyroIO.setRobotYaw(degrees);
-        //TODO: reset odometry when zeroing yaw
+     * Sets the robot pose's angle to the rotation passed into it.. This affects all subsequent uses of the robot's angle.
+     * <br>
+     * This can be used to set the direction the robot is currently facing to the 'forwards' direction.
+     */
+    public void setRobotRotation2d(Rotation2d rotation2d) {
+        setPoseMeters(new Pose2d(getTranslationMeters(), rotation2d));
     }
 
     /**
-   * Gets the angle of the robot measured by the gyroscope as a Rotation2d (continuous).
-   * @return rotation2d - this angle will be counterclockwise positive.
-   */
+     * Gets the angle of the robot measured by the gyroscope as a Rotation2d (continuous).
+     * @return rotation2d - this angle will be counterclockwise positive.
+     */
     public Rotation2d getRobotRotation2d() {
-        return gyroInputs.robotYawRotation2d;
+        return poseMeters.getRotation();
     }
 
     /**
@@ -109,14 +117,59 @@ public class Drivetrain extends SubsystemBase {
         }
     }
 
+
+    public SwerveModulePosition[] getModulePositions() {
+        SwerveModulePosition[] swervePositions = new SwerveModulePosition[4];
+
+        for (SwerveModule mod : swerveModules) {
+            swervePositions[mod.moduleIndex] = mod.getPosition();
+        }
+
+        return swervePositions;
+    }
+
+
+    /**
+     * Sets the current position of the robot on the field in meters.
+     * <p>
+     * A positive X value brings the robot towards the opposing alliance,
+     * and a positive Y value brings the robot left as viewed by your alliance.
+     * @param pose
+     */
+    public void setPoseMeters(Pose2d pose) {
+        swerveOdometry.resetPosition(gyroInputs.robotYawRotation2d, getModulePositions(), pose);
+        poseMeters = pose;
+    }
+
+    /**
+     * Gets the current position of the robot on the field in meters.
+     * This value considers the origin to be the right side of the robot's current alliance.
+     * <p>
+     * A positive X value brings the robot towards the opposing alliance,
+     * and a positive Y value brings the robot left as viewed by your alliance.
+     * @return The current position of the robot on the field in meters.
+     */ 
+    public Pose2d getPoseMeters() {
+        return poseMeters;
+    }
+
+    public Translation2d getTranslationMeters() {
+        return poseMeters.getTranslation();
+    }
+
     @Override
     public void periodic() {
-        for (SwerveModule mod : swerveModules) {
-            mod.periodic();
-        }
         gyroIO.updateInputs(gyroInputs);
-
+        for (SwerveModule mod : swerveModules)
+            mod.periodic();
         Logger.processInputs("gyroInputs", gyroInputs);
+
+
+        poseMeters = swerveOdometry.update(gyroInputs.robotYawRotation2d, getModulePositions());
+        
+
+
+        Logger.recordOutput("drivetrain/swerveOdometry", getPoseMeters());
 
         Logger.recordOutput(
             "drivetrain/swerveModuleStates",

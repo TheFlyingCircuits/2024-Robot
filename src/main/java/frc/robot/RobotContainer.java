@@ -14,6 +14,7 @@ import frc.robot.subsystems.drivetrain.SwerveModuleIONeo;
 import frc.robot.subsystems.shooter.Shooter;
 import frc.robot.subsystems.shooter.ShooterIO;
 import frc.robot.subsystems.shooter.ShooterIOSim;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
@@ -77,7 +78,7 @@ public class RobotContainer {
      * joysticks}.
      */
     private void configureBindings() {
-        controller.y().onTrue(new InstantCommand(() -> drivetrain.setYaw(0)));
+        controller.y().onTrue(new InstantCommand(() -> drivetrain.setRobotRotation2d(new Rotation2d(0))));
     }
 
     /**
