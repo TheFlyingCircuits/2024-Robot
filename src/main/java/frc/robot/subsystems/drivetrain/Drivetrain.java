@@ -3,6 +3,11 @@ package frc.robot.subsystems.drivetrain;
 
 import org.littletonrobotics.junction.Logger;
 
+import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.util.HolonomicPathFollowerConfig;
+import com.pathplanner.lib.util.PIDConstants;
+import com.pathplanner.lib.util.ReplanningConfig;
+
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -12,6 +17,7 @@ import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.DrivetrainConstants;
 import frc.robot.Constants.SwerveModuleConstants;
@@ -53,6 +59,7 @@ public class Drivetrain extends SubsystemBase {
 
         chassisSpeedsXSlewLimiter = new SlewRateLimiter(DrivetrainConstants.maxDesiredTeleopAccelMetersPerSecondSquared);
         chassisSpeedsYSlewLimiter = new SlewRateLimiter(DrivetrainConstants.maxDesiredTeleopAccelMetersPerSecondSquared);
+
     }
 
     /**
@@ -70,6 +77,16 @@ public class Drivetrain extends SubsystemBase {
      */
     public Rotation2d getRobotRotation2d() {
         return poseMeters.getRotation();
+    }
+
+    /**
+     * Drives the robot based on a desired ChassisSpeeds.
+     * <p>
+     * Takes in a robot relative ChassisSpeeds. Field relative control can be accomplished by using the ChassisSpeeds.fromFieldRelative() method.
+     * @param desiredChassisSpeeds - Robot relative ChassisSpeeds object in meters per second and radians per second.
+    */
+    public void drive(ChassisSpeeds desiredChassisSpeeds) {
+        drive(desiredChassisSpeeds, true);
     }
 
     /**
@@ -126,6 +143,20 @@ public class Drivetrain extends SubsystemBase {
         }
 
         return swervePositions;
+    }
+
+    public SwerveModuleState[] getModuleStates() {
+        SwerveModuleState[] swerveStates = new SwerveModuleState[4];
+
+        for (SwerveModule mod : swerveModules) {
+            swerveStates[mod.moduleIndex] = mod.getState();
+        }
+
+        return swerveStates;
+    }
+
+    public ChassisSpeeds getChassisSpeeds() {
+        return DrivetrainConstants.swerveKinematics.toChassisSpeeds(getModuleStates());
     }
 
 
