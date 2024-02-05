@@ -19,15 +19,23 @@ public class SwerveModuleIONeo implements SwerveModuleIO{
     /**
      * This angle offset is added directly to the raw angle read by the absolute encoder.
      */
-    private double angleOffsetDegrees;
+    private double angleOffset;
     private CANcoder absoluteEncoder;
     private CANSparkMax angleMotor;
     private CANSparkMax driveMotor;
     private RelativeEncoder angleEncoder;
     private RelativeEncoder driveEncoder;
 
-    public SwerveModuleIONeo(int driveMotorID, int angleMotorID, double angleOffsetDegrees, int cancoderID){
-        this.angleOffsetDegrees = angleOffsetDegrees;
+
+    /**
+     * Constructs the hardware implementation for each swerve module
+     * @param driveMotorID ID of the motor controller to the drive motor 
+     * @param angleMotorID ID of the motor controller to the angle motor
+     * @param angleOffset Offset for the individual CANcoders on each swerve module, in +-1
+     * @param cancoderID ID of the CANcoders mounted on each swerve module
+     */
+    public SwerveModuleIONeo(int driveMotorID, int angleMotorID, double angleOffset, int cancoderID){
+        this.angleOffset = angleOffset;
         
         /* Angle Encoder Config */
         absoluteEncoder = new CANcoder(cancoderID);
@@ -63,9 +71,9 @@ public class SwerveModuleIONeo implements SwerveModuleIO{
     }
 
     private void configCANCoder() {
-        CANcoderConfiguration cancoderConfigs = new CANcoderConfiguration(); //idk if this is how youre supposed to do this but its kinda packaged with talonFX sooo
-        cancoderConfigs.MagnetSensor.AbsoluteSensorRange = AbsoluteSensorRangeValue.Signed_PlusMinusHalf; // last config had [-180, +180) but this only has [-0.5, +0.5) as an option
-        cancoderConfigs.MagnetSensor.MagnetOffset = angleOffsetDegrees;
+        CANcoderConfiguration cancoderConfigs = new CANcoderConfiguration();
+        cancoderConfigs.MagnetSensor.AbsoluteSensorRange = AbsoluteSensorRangeValue.Signed_PlusMinusHalf;
+        cancoderConfigs.MagnetSensor.MagnetOffset = angleOffset;
         cancoderConfigs.MagnetSensor.SensorDirection = SensorDirectionValue.CounterClockwise_Positive;
 
         absoluteEncoder.getConfigurator().apply(cancoderConfigs);

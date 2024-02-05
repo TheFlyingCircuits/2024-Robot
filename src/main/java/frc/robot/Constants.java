@@ -30,6 +30,10 @@ public final class Constants {
         public final static double kSFlywheelsVolts = 0.;
         public final static double kVFlywheelsVoltsSecondsPerRotation = 0.;
         public final static double kAFlywheelsVoltsSecondsSquaredPerRotation = 0.;
+
+        /**temp device ids for motors */
+        public final static int leftMotorID = 12;
+        public final static int rightMotorID = 13;
     }
 
     public static final class DrivetrainConstants {
@@ -155,5 +159,12 @@ public final class Constants {
 
         /**Maximum angle of the arm, in degrees. This value should be positive and greater than 90, as it is beyond the vertical. */
         public final static double kArmMaxAngleDegrees = 100.;
+
+        /**temporary ids for motors and CANcoder of the shooting arm */
+        public final static int leftMotorID = 9;
+        public final static int rightMotorID = 10;
+        public final static int armCANcoderID = 11;
+        
     }
+
 }

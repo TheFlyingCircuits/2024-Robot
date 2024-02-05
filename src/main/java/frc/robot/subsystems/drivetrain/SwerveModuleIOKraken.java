@@ -6,6 +6,7 @@ import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.AbsoluteSensorRangeValue;
 import com.ctre.phoenix6.signals.InvertedValue;
+import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.signals.SensorDirectionValue;
 
 public class SwerveModuleIOKraken implements SwerveModuleIO {
@@ -14,8 +15,6 @@ public class SwerveModuleIOKraken implements SwerveModuleIO {
     private TalonFX angleMotor;
     private TalonFX driveMotor;
 
-
-    //TODO: THIS CLASS IS STILL A WORK IN PROGRESS. DO NOT CONSIDER IT DONE.
     public SwerveModuleIOKraken(int driveMotorID, int angleMotorID, int angleOffsetDegrees, int cancoderID){
         this.angleOffsetDegrees = angleOffsetDegrees;
         
@@ -25,9 +24,11 @@ public class SwerveModuleIOKraken implements SwerveModuleIO {
 
         /* Angle Motor Config */
         angleMotor = new TalonFX(angleMotorID);
+        configAngleMotor();
 
         /* Drive Motor Config */
         driveMotor = new TalonFX(driveMotorID);
+        configDriveMotor();
     }
 
     @Override
@@ -59,6 +60,14 @@ public class SwerveModuleIOKraken implements SwerveModuleIO {
     private void configAngleMotor() {
         TalonFXConfiguration config = new TalonFXConfiguration();
         config.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
-        
+        config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
+        angleMotor.getConfigurator().apply(config);
+    }
+
+    private void configDriveMotor() {
+        TalonFXConfiguration config = new TalonFXConfiguration();
+        config.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
+        config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
+        driveMotor.getConfigurator().apply(config);
     }
 }
