@@ -5,6 +5,9 @@
 package frc.robot;
 
 import frc.robot.commands.drivetrain.JoystickDrive;
+import frc.robot.subsystems.arm.Arm;
+import frc.robot.subsystems.arm.ArmIO;
+import frc.robot.subsystems.arm.ArmIOSim;
 import frc.robot.subsystems.drivetrain.Drivetrain;
 import frc.robot.subsystems.drivetrain.GyroIO;
 import frc.robot.subsystems.drivetrain.GyroIOPigeon;
@@ -35,6 +38,7 @@ public class RobotContainer {
     public static final CommandXboxController controller = new CommandXboxController(0);
     public final Shooter shooter;
     public final Drivetrain drivetrain;
+    public final Arm arm;
     
     public RobotContainer() {
 
@@ -48,11 +52,9 @@ public class RobotContainer {
             );
 
             shooter = new Shooter(new ShooterIO() {});
-        }
 
-        // if (RobotBase.isSimulation()) {
-        //     shooter = new Shooter(new ShooterIOSim());
-        // }
+            arm = new Arm(new ArmIO() {});
+        }
         else {
 
             drivetrain = new Drivetrain(
@@ -64,6 +66,8 @@ public class RobotContainer {
             );
 
             shooter = new Shooter(new ShooterIO() {});
+
+            arm = new Arm(new ArmIOSim());
         }
 
         configureBindings();
@@ -82,6 +86,8 @@ public class RobotContainer {
      */
     private void configureBindings() {
         controller.y().onTrue(new InstantCommand(() -> drivetrain.setRobotRotation2d(new Rotation2d(0))));
+
+        controller.b().onTrue(new InstantCommand(() -> arm.setArmDesiredPosition(30)));
     }
 
     /**

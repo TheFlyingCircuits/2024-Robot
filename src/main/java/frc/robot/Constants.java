@@ -8,6 +8,7 @@ import com.revrobotics.CANSparkBase.IdleMode;
 
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
+import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
 
 /**
@@ -152,19 +153,36 @@ public final class Constants {
 
     public final class ArmConstants {
         /**Rotations of the arm per rotations of the motor; a number greater than 1 represents a reduction. */
-        public final static double kArmGearReduction = 1.;
+        public final static double kArmGearReduction = 105.;
 
         /**Minimum angle of the arm, in degrees. This value should be negative, as it is below the horizontal.*/
-        public final static double kArmMinAngleDegrees = -50.;
+        public final static double kArmMinAngleDegrees = -20.;
 
         /**Maximum angle of the arm, in degrees. This value should be positive and greater than 90, as it is beyond the vertical. */
         public final static double kArmMaxAngleDegrees = 100.;
+
+        public final static double armMaxVelDegreesPerSecond = 1.;
+
+        public final static double armMaxAccelDegreesPerSecondSquared = 1.;
 
         /**temporary ids for motors and CANcoder of the shooting arm */
         public final static int leftMotorID = 9;
         public final static int rightMotorID = 10;
         public final static int armCANcoderID = 11;
         
+
+        public final static double kSArmVolts = 0.0;
+        public final static double kGArmVolts = 0.33;
+        public final static double kVArmVoltsSecondsPerDegree = 1.;
+        public final static double kAArmVoltsSecondsSquaredPerDegree = 0;
+
+        public final static double kPArmVoltsPerDegree = 0.;
+        public final static double kIArmVoltsPerDegreesSeconds = 0.;
+        public final static double kDArmVoltsSecondsPerDegree = 0.;
+
+        public final static TrapezoidProfile.Constraints constraints = new TrapezoidProfile.Constraints(
+            armMaxVelDegreesPerSecond, armMaxAccelDegreesPerSecondSquared
+        );
     }
 
 }

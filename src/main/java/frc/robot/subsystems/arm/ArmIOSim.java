@@ -17,8 +17,8 @@ public class ArmIOSim implements ArmIO {
         armSim = new SingleJointedArmSim(
             DCMotor.getNEO(2), 
             ArmConstants.kArmGearReduction,
-            5,
-            3, 
+            0.186,
+            0.5, 
             Math.toRadians(ArmConstants.kArmMinAngleDegrees), 
             Math.toRadians(ArmConstants.kArmMaxAngleDegrees), 
             true, 
@@ -31,6 +31,9 @@ public class ArmIOSim implements ArmIO {
 
         inputs.armAngleDegrees = Math.toDegrees(armSim.getAngleRads());
         inputs.armVelocityDegreesPerSecond = Math.toDegrees(armSim.getVelocityRadPerSec());
+
+        inputs.atLowerLimit = armSim.hasHitLowerLimit();
+        inputs.atUpperLimit = armSim.hasHitUpperLimit();
     }
 
     @Override

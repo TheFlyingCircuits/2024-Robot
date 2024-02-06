@@ -8,6 +8,8 @@ import com.pathplanner.lib.util.HolonomicPathFollowerConfig;
 import com.pathplanner.lib.util.PIDConstants;
 import com.pathplanner.lib.util.ReplanningConfig;
 
+import edu.wpi.first.math.estimator.PoseEstimator;
+import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -17,6 +19,7 @@ import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.math.trajectory.constraint.SwerveDriveKinematicsConstraint;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.DrivetrainConstants;
@@ -33,6 +36,7 @@ public class Drivetrain extends SubsystemBase {
     private SlewRateLimiter chassisSpeedsYSlewLimiter;
 
     private SwerveDriveOdometry swerveOdometry;
+    private SwerveDrivePoseEstimator poseEstimator;
 
     private Pose2d poseMeters;
 
@@ -55,11 +59,27 @@ public class Drivetrain extends SubsystemBase {
         };
 
         gyroIO.setRobotYaw(0);
-        swerveOdometry = new SwerveDriveOdometry(DrivetrainConstants.swerveKinematics, gyroInputs.robotYawRotation2d, getModulePositions());
+
+        poseMeters = new Pose2d(new Translation2d(0, 0), new Rotation2d(0));
+
+        swerveOdometry = new SwerveDriveOdometry(
+            DrivetrainConstants.swerveKinematics,
+            gyroInputs.robotYawRotation2d,
+            getModulePositions(),
+            poseMeters
+        );
+
+        // poseEstimator = new SwerveDrivePoseEstimator(
+        //     DrivetrainConstants.swerveKinematics, 
+        //     gyroInputs.robotYawRotation2d,
+        //     getModulePositions(),
+        //     poseMeters,
+        //     null,
+        //     null
+        // );
 
         chassisSpeedsXSlewLimiter = new SlewRateLimiter(DrivetrainConstants.maxDesiredTeleopAccelMetersPerSecondSquared);
         chassisSpeedsYSlewLimiter = new SlewRateLimiter(DrivetrainConstants.maxDesiredTeleopAccelMetersPerSecondSquared);
-
     }
 
     /**
@@ -173,7 +193,8 @@ public class Drivetrain extends SubsystemBase {
     }
 
     /**
-     * Gets the current position of the robot on the field in meters.
+     * Gets the current position of the robot on the field in meters, 
+     * based off of our odometry and vision estimation.
      * This value considers the origin to be the right side of the robot's current alliance.
      * <p>
      * A positive X value brings the robot towards the opposing alliance,
@@ -188,6 +209,7 @@ public class Drivetrain extends SubsystemBase {
         return poseMeters.getTranslation();
     }
 
+
     @Override
     public void periodic() {
         gyroIO.updateInputs(gyroInputs);
@@ -197,7 +219,7 @@ public class Drivetrain extends SubsystemBase {
 
 
         poseMeters = swerveOdometry.update(gyroInputs.robotYawRotation2d, getModulePositions());
-        
+        //poseEstimator.update(gyroInputs.robotYawRotation2d, getModulePositions());
 
 
         Logger.recordOutput("drivetrain/swerveOdometry", getPoseMeters());

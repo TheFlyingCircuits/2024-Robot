@@ -20,6 +20,9 @@ public interface ArmIO {
          * Follows the same direction as armAngleDegrees.
          */
         public double armVelocityDegreesPerSecond = 0.0;
+
+        public boolean atLowerLimit = false;
+        public boolean atUpperLimit = false;
     }
 
     /** Updates the set of loggable inputs. */
