@@ -8,7 +8,7 @@ import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkLowLevel.MotorType;
 
 import frc.robot.Constants.ArmConstants;
-import frc.robot.Constants.SwerveModuleConstants;
+import frc.robot.Constants.MotorConstants;
 import frc.robot.subsystems.arm.ArmIO.ArmIOInputs;
 
 public class ArmIONeo implements ArmIO {
@@ -40,27 +40,25 @@ public class ArmIONeo implements ArmIO {
         inputs.armAngleDegrees = absoluteEncoder.getAbsolutePosition().getValueAsDouble()*360;
     }
 
-    public void setLeftMotorVolts(double volts) {
+    @Override
+    public void setArmMotorVolts(double volts) {
         leftMotor.setVoltage(volts);
-    }
-
-    public void setRightMotorVolts(double volts) {
         rightMotor.setVoltage(volts);
     }
 
     private void configRightMotor() {
         rightMotor.restoreFactoryDefaults();
-        rightMotor.setSmartCurrentLimit(SwerveModuleConstants.angleContinuousCurrentLimit);
-        rightMotor.setInverted(SwerveModuleConstants.angleInvert);
-        rightMotor.setIdleMode(SwerveModuleConstants.angleNeutralMode);
+        rightMotor.setSmartCurrentLimit(MotorConstants.angleContinuousCurrentLimit);
+        rightMotor.setInverted(false);
+        rightMotor.setIdleMode(MotorConstants.angleNeutralMode);
         rightMotor.burnFlash();
     }
 
     private void configLeftMotor() {
         leftMotor.restoreFactoryDefaults();
-        leftMotor.setSmartCurrentLimit(SwerveModuleConstants.angleContinuousCurrentLimit);
-        leftMotor.setInverted(false);
-        leftMotor.setIdleMode(SwerveModuleConstants.angleNeutralMode);
+        leftMotor.setSmartCurrentLimit(MotorConstants.angleContinuousCurrentLimit);
+        leftMotor.setInverted(MotorConstants.angleInvert);
+        leftMotor.setIdleMode(MotorConstants.angleNeutralMode);
         leftMotor.burnFlash();
     }
 

@@ -102,6 +102,17 @@ public final class Constants {
         public static final double controllerDeadzone = 0.175;
     }
 
+    public final class MotorConstants {
+        // Motor configs
+        public static final int angleContinuousCurrentLimit = 50;
+        public static final boolean angleInvert = true;
+        public static final IdleMode angleNeutralMode = IdleMode.kBrake;
+        
+        public static final int driveContinuousCurrentLimit = 60;
+        public static final boolean driveInvert = true;
+        public static final IdleMode driveNeutralMode = IdleMode.kBrake;
+    }
+
     public final class SwerveModuleConstants {
         /** Rotations of the drive wheel per rotations of the drive motor. */
         public static final double driveGearReduction = (14.0 / 50.0) * (27.0 / 17.0) * (15.0 / 45.0);
@@ -126,15 +137,6 @@ public final class Constants {
         public static final double drivekSVolts = 0.1301;
         public static final double drivekVVoltsSecondsPerMeter = 2.6931; // .8679
         public static final double drivekAVoltsSecondsSquaredPerMeter = 0.43963;
-
-        // Motor configs
-        public static final int angleContinuousCurrentLimit = 50;
-        public static final boolean angleInvert = true;
-        public static final IdleMode angleNeutralMode = IdleMode.kBrake;
-        
-        public static final int driveContinuousCurrentLimit = 60;
-        public static final boolean driveInvert = true;
-        public static final IdleMode driveNeutralMode = IdleMode.kBrake;
 
     }
 

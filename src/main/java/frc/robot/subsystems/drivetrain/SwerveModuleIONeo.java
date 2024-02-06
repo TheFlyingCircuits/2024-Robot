@@ -11,6 +11,7 @@ import com.revrobotics.REVLibError;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.CANSparkLowLevel.MotorType;
 
+import frc.robot.Constants.MotorConstants;
 import frc.robot.Constants.SwerveModuleConstants;
 import frc.robot.subsystems.drivetrain.SwerveModuleIO.SwerveModuleIOInputs;
 
@@ -29,10 +30,10 @@ public class SwerveModuleIONeo implements SwerveModuleIO{
 
     /**
      * Constructs the hardware implementation for each swerve module
-     * @param driveMotorID ID of the motor controller to the drive motor 
-     * @param angleMotorID ID of the motor controller to the angle motor
-     * @param angleOffset Offset for the individual CANcoders on each swerve module, in +-1
-     * @param cancoderID ID of the CANcoders mounted on each swerve module
+     * @param driveMotorID - ID of the motor controller to the drive motor 
+     * @param angleMotorID - ID of the motor controller to the angle motor
+     * @param angleOffset - Offset for the individual CANcoders on each swerve module, in +-1
+     * @param cancoderID - ID of the CANcoders mounted on each swerve module
      */
     public SwerveModuleIONeo(int driveMotorID, int angleMotorID, double angleOffset, int cancoderID){
         this.angleOffset = angleOffset;
@@ -81,9 +82,9 @@ public class SwerveModuleIONeo implements SwerveModuleIO{
 
     private void configAngleMotor() {
         angleMotor.restoreFactoryDefaults();
-        angleMotor.setSmartCurrentLimit(SwerveModuleConstants.angleContinuousCurrentLimit);
-        angleMotor.setInverted(SwerveModuleConstants.angleInvert);
-        angleMotor.setIdleMode(SwerveModuleConstants.angleNeutralMode);
+        angleMotor.setSmartCurrentLimit(MotorConstants.angleContinuousCurrentLimit);
+        angleMotor.setInverted(MotorConstants.angleInvert);
+        angleMotor.setIdleMode(MotorConstants.angleNeutralMode);
         //converts rotations of motor into deg of wheel
         angleEncoder.setPositionConversionFactor(SwerveModuleConstants.steerGearReduction*360.0);
         //converts rpm of motor into deg/s of wheel
@@ -93,9 +94,9 @@ public class SwerveModuleIONeo implements SwerveModuleIO{
 
     private void configDriveMotor() {
         driveMotor.restoreFactoryDefaults();
-        driveMotor.setSmartCurrentLimit(SwerveModuleConstants.driveContinuousCurrentLimit);
-        driveMotor.setInverted(SwerveModuleConstants.driveInvert);
-        driveMotor.setIdleMode(SwerveModuleConstants.driveNeutralMode);
+        driveMotor.setSmartCurrentLimit(MotorConstants.driveContinuousCurrentLimit);
+        driveMotor.setInverted(MotorConstants.driveInvert);
+        driveMotor.setIdleMode(MotorConstants.driveNeutralMode);
         
         driveEncoder.setPosition(0.0);
 

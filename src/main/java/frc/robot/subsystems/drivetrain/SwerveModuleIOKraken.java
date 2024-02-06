@@ -24,11 +24,11 @@ public class SwerveModuleIOKraken implements SwerveModuleIO {
 
         /* Angle Motor Config */
         angleMotor = new TalonFX(angleMotorID);
-        configAngleMotor();
+        configMotor(angleMotor);
 
         /* Drive Motor Config */
         driveMotor = new TalonFX(driveMotorID);
-        configDriveMotor();
+        configMotor(driveMotor);
     }
 
     @Override
@@ -49,25 +49,18 @@ public class SwerveModuleIOKraken implements SwerveModuleIO {
     }
 
     private void configCANCoder() {
-        CANcoderConfiguration cancoderConfigs = new CANcoderConfiguration(); //idk if this is how youre supposed to do this but its kinda packaged with talonFX sooo
-        cancoderConfigs.MagnetSensor.AbsoluteSensorRange = AbsoluteSensorRangeValue.Signed_PlusMinusHalf; // last config had [-180, +180) but this only has [-0.5, +0.5) as an option
+        CANcoderConfiguration cancoderConfigs = new CANcoderConfiguration();
+        cancoderConfigs.MagnetSensor.AbsoluteSensorRange = AbsoluteSensorRangeValue.Signed_PlusMinusHalf;
         cancoderConfigs.MagnetSensor.MagnetOffset = angleOffsetDegrees;
         cancoderConfigs.MagnetSensor.SensorDirection = SensorDirectionValue.CounterClockwise_Positive;
 
         absoluteEncoder.getConfigurator().apply(cancoderConfigs);
     }
 
-    private void configAngleMotor() {
+    private void configMotor(TalonFX motor) {
         TalonFXConfiguration config = new TalonFXConfiguration();
         config.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
         config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
-        angleMotor.getConfigurator().apply(config);
-    }
-
-    private void configDriveMotor() {
-        TalonFXConfiguration config = new TalonFXConfiguration();
-        config.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
-        config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
-        driveMotor.getConfigurator().apply(config);
+        motor.getConfigurator().apply(config);
     }
 }
