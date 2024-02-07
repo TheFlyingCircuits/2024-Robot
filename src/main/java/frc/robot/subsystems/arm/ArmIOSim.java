@@ -17,12 +17,12 @@ public class ArmIOSim implements ArmIO {
         armSim = new SingleJointedArmSim(
             DCMotor.getNEO(2), 
             ArmConstants.kArmGearReduction,
-            0.186,
-            0.5, 
+            0.468,
+            0.508, 
             Math.toRadians(ArmConstants.kArmMinAngleDegrees), 
             Math.toRadians(ArmConstants.kArmMaxAngleDegrees), 
             true, 
-            Math.toRadians(ArmConstants.kArmMinAngleDegrees));
+            Math.toRadians(0));
     }
 
     @Override
@@ -37,7 +37,7 @@ public class ArmIOSim implements ArmIO {
     }
 
     @Override
-    public void setArmMotorVoltage(double volts) {
+    public void setArmMotorVolts(double volts) {
         armSim.setInputVoltage(volts);
     }
 }

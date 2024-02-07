@@ -26,7 +26,8 @@ public class Arm extends SubsystemBase {
     private TrapezoidProfile profile;
     private Timer timer;
 
-    public double targetAngleDegrees;
+    private TrapezoidProfile.State initState;
+    private double targetAngleDegrees;
     private boolean isMovingToTarget;
 
     public Arm(ArmIO armIO) {
@@ -36,8 +37,8 @@ public class Arm extends SubsystemBase {
         armFeedforward = new ArmFeedforward(
             ArmConstants.kSArmVolts,
             ArmConstants.kGArmVolts,
-            ArmConstants.kVArmVoltsSecondsPerDegree,
-            ArmConstants.kAArmVoltsSecondsSquaredPerDegree
+            ArmConstants.kVArmVoltsSecondsPerRadian,
+            ArmConstants.kAArmVoltsSecondsSquaredPerRadian
         );
 
         armPD = new ArmPDController(0, 0);
@@ -58,25 +59,26 @@ public class Arm extends SubsystemBase {
         if (Math.abs(this.targetAngleDegrees - targetAngleDegrees) < 0.1)
             return;
 
+        initState = new TrapezoidProfile.State(inputs.armAngleDegrees, inputs.armVelocityDegreesPerSecond);
         this.targetAngleDegrees = targetAngleDegrees;
         isMovingToTarget = true;
         
-        timer.reset();
-        timer.start();
+        timer.restart();
     }
 
 
     private void followTrapezoidProfile() {
 
-        if (Math.abs(targetAngleDegrees - inputs.armAngleDegrees) < 0.5)
-            isMovingToTarget = false;
+
 
 
         //Hold the current position if there's no trapezoidal profile active. 
         //I think? that generating new trapezoidal profiles for an inactive arm causes some oscillations.
         if (!isMovingToTarget) {
 
-            double feedforwardOutputVolts = armFeedforward.calculate(inputs.armAngleDegrees, 0);
+            double feedforwardOutputVolts = armFeedforward.calculate(
+                Math.toRadians(targetAngleDegrees),
+                0);
             double pidOutputVolts = armPD.calculate(
                 inputs.armAngleDegrees,
                 inputs.armVelocityDegreesPerSecond,
@@ -84,17 +86,25 @@ public class Arm extends SubsystemBase {
                 0
             );
 
-            io.setArmMotorVoltage(feedforwardOutputVolts + pidOutputVolts);
+            io.setArmMotorVolts(feedforwardOutputVolts + pidOutputVolts);
+
+            Logger.recordOutput("arm/postTotalOutputVolts", feedforwardOutputVolts + pidOutputVolts);
+
             return;
         }
 
+        
+
         TrapezoidProfile.State desiredState = profile.calculate(
             timer.get(),
-            new TrapezoidProfile.State(inputs.armAngleDegrees, inputs.armVelocityDegreesPerSecond),
+            initState,
             new TrapezoidProfile.State(targetAngleDegrees, 0)
         );
 
-        double feedforwardOutputVolts = armFeedforward.calculate(inputs.armAngleDegrees, desiredState.velocity);
+        double feedforwardOutputVolts = armFeedforward.calculate(
+            Math.toRadians(inputs.armAngleDegrees),
+            Math.toRadians(desiredState.velocity)
+        );
         double pidOutputVolts = armPD.calculate(
             inputs.armAngleDegrees,
             inputs.armVelocityDegreesPerSecond,
@@ -104,14 +114,18 @@ public class Arm extends SubsystemBase {
 
         double totalOutputVolts = feedforwardOutputVolts + pidOutputVolts;
 
-        Logger.recordOutput("arm/preTotalOutputVolts", totalOutputVolts);
-
         if ((inputs.atLowerLimit && totalOutputVolts < 0) || (inputs.atUpperLimit && totalOutputVolts > 0))
             totalOutputVolts = 0;
 
+        Logger.recordOutput("arm/trapezoidProfilePosition", desiredState.position);
+
         Logger.recordOutput("arm/postTotalOutputVolts", totalOutputVolts);
 
-        io.setArmMotorVoltage(totalOutputVolts);
+        io.setArmMotorVolts(totalOutputVolts);
+
+        //profile.calculate() must be called before this line in order for isFinished() to function properly
+        if (profile.isFinished(timer.get()))
+            isMovingToTarget = false;
     }
 
 

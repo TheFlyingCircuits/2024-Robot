@@ -163,9 +163,9 @@ public final class Constants {
         /**Maximum angle of the arm, in degrees. This value should be positive and greater than 90, as it is beyond the vertical. */
         public final static double kArmMaxAngleDegrees = 100.;
 
-        public final static double armMaxVelDegreesPerSecond = 1.;
+        public final static double armMaxVelDegreesPerSecond = 50.;
 
-        public final static double armMaxAccelDegreesPerSecondSquared = 1.;
+        public final static double armMaxAccelDegreesPerSecondSquared = 50.;
 
         /**temporary ids for motors and CANcoder of the shooting arm */
         public final static int leftMotorID = 9;
@@ -174,13 +174,13 @@ public final class Constants {
         
 
         public final static double kSArmVolts = 0.0;
-        public final static double kGArmVolts = 0.33;
-        public final static double kVArmVoltsSecondsPerDegree = 1.;
-        public final static double kAArmVoltsSecondsSquaredPerDegree = 0;
+        public final static double kGArmVolts = 0.3;
+        public final static double kVArmVoltsSecondsPerRadian = 2.5;
+        public final static double kAArmVoltsSecondsSquaredPerRadian = 0;
 
-        public final static double kPArmVoltsPerDegree = 0.;
+        public final static double kPArmVoltsPerDegree = 0.3;
         public final static double kIArmVoltsPerDegreesSeconds = 0.;
-        public final static double kDArmVoltsSecondsPerDegree = 0.;
+        public final static double kDArmVoltsSecondsPerDegree = 0.1;
 
         public final static TrapezoidProfile.Constraints constraints = new TrapezoidProfile.Constraints(
             armMaxVelDegreesPerSecond, armMaxAccelDegreesPerSecondSquared

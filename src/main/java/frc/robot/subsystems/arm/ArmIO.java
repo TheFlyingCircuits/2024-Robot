@@ -21,8 +21,8 @@ public interface ArmIO {
          */
         public double armVelocityDegreesPerSecond = 0.0;
 
-        public boolean atLowerLimit = false;
         public boolean atUpperLimit = false;
+        public boolean atLowerLimit = false;
     }
 
     /** Updates the set of loggable inputs. */
@@ -32,6 +32,6 @@ public interface ArmIO {
      * Run the two arm motors at the specified voltage.
      * A positive value will raise the arm, while a negative value will lower it.
     */
-    public default void setArmMotorVoltage(double volts) {};
+    public default void setArmMotorVolts(double volts) {};
 
 }
