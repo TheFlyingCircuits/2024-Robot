@@ -187,4 +187,23 @@ public final class Constants {
         );
     }
 
+    public final static class ClimbConstants {
+        
+        /**
+         * temp motor ids for climbing motors
+         */
+        public final static int leftMotorID = 14;
+        public final static int rightMotorID = 15;
+
+        /**
+         * Use this value as the conversion factor between the motors rotations and meters that the climb arms have extended.
+         * A positive rotation will result in a positive extension.
+         * This is plugged directly into the climb encoders' setPositionConversionFactor method.
+         */
+        public final static double climberArmMetersPerMotorRotation = 0.;
+
+        public final static double armMaxPosMeters = .79;
+
+    }
+
 }
