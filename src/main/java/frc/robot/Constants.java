@@ -6,7 +6,12 @@ package frc.robot;
 
 import com.revrobotics.CANSparkBase.IdleMode;
 
+import edu.wpi.first.apriltag.AprilTagFieldLayout;
+import edu.wpi.first.apriltag.AprilTagFields;
+import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
@@ -204,6 +209,16 @@ public final class Constants {
 
         public final static double armMaxPosMeters = .79;
 
+    }
+
+    public final static class VisionConstants {
+
+        public final static AprilTagFieldLayout aprilTagFieldLayout = AprilTagFields.k2024Crescendo.loadAprilTagLayoutField();
+    
+        public final static Transform3d robotToCamera = new Transform3d(
+            new Translation3d(0.064, 0, 0.466),
+            new Rotation3d(0, Math.toRadians(28), 0)
+        );
     }
 
 }

@@ -16,6 +16,8 @@ import frc.robot.subsystems.drivetrain.SwerveModuleIONeo;
 import frc.robot.subsystems.shooter.Shooter;
 import frc.robot.subsystems.shooter.ShooterIO;
 import frc.robot.subsystems.shooter.ShooterIOSim;
+import frc.robot.subsystems.vision.VisionIO;
+import frc.robot.subsystems.vision.VisionIOPhotonLib;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.path.PathPlannerPath;
@@ -48,7 +50,8 @@ public class RobotContainer {
                 new SwerveModuleIONeo(1, 2, -0.177978515625, 0),
                 new SwerveModuleIONeo(3, 4, 0.33935546875, 1),
                 new SwerveModuleIONeo(5, 6, -0.339599609375, 2),
-                new SwerveModuleIONeo(7, 8, -0.206787109375, 3)
+                new SwerveModuleIONeo(7, 8, -0.206787109375, 3),
+                new VisionIOPhotonLib()
             );
 
             shooter = new Shooter(new ShooterIO() {});
@@ -62,7 +65,8 @@ public class RobotContainer {
                 new SwerveModuleIO() {},
                 new SwerveModuleIO() {},
                 new SwerveModuleIO() {},
-                new SwerveModuleIO() {}
+                new SwerveModuleIO() {},
+                new VisionIO() {}
             );
 
             shooter = new Shooter(new ShooterIO() {});

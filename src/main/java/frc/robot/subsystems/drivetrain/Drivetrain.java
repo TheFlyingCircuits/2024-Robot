@@ -8,6 +8,8 @@ import com.pathplanner.lib.util.HolonomicPathFollowerConfig;
 import com.pathplanner.lib.util.PIDConstants;
 import com.pathplanner.lib.util.ReplanningConfig;
 
+import edu.wpi.first.math.Matrix;
+import edu.wpi.first.math.Nat;
 import edu.wpi.first.math.estimator.PoseEstimator;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.filter.SlewRateLimiter;
@@ -19,16 +21,23 @@ import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.math.numbers.N1;
+import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.trajectory.constraint.SwerveDriveKinematicsConstraint;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.DrivetrainConstants;
 import frc.robot.Constants.SwerveModuleConstants;
+import frc.robot.subsystems.vision.VisionIO;
+import frc.robot.subsystems.vision.VisionIOInputsAutoLogged;
 
 public class Drivetrain extends SubsystemBase {
 
     private GyroIO gyroIO;
     private GyroIOInputsAutoLogged gyroInputs;
+
+    private VisionIO visionIO;
+    private VisionIOInputsAutoLogged visionInputs;
 
     private SwerveModule[] swerveModules;
 
@@ -45,11 +54,15 @@ public class Drivetrain extends SubsystemBase {
         SwerveModuleIO flSwerveModuleIO, 
         SwerveModuleIO frSwerveModuleIO, 
         SwerveModuleIO blSwerveModuleIO, 
-        SwerveModuleIO brSwerveModuleIO
+        SwerveModuleIO brSwerveModuleIO,
+        VisionIO visionIO
     ) {
 
         this.gyroIO = gyroIO;
         gyroInputs = new GyroIOInputsAutoLogged();
+
+        this.visionIO = visionIO;
+        visionInputs = new VisionIOInputsAutoLogged();
 
         swerveModules = new SwerveModule[] {
             new SwerveModule(flSwerveModuleIO, 0),
@@ -69,14 +82,28 @@ public class Drivetrain extends SubsystemBase {
             poseMeters
         );
 
-        // poseEstimator = new SwerveDrivePoseEstimator(
-        //     DrivetrainConstants.swerveKinematics, 
-        //     gyroInputs.robotYawRotation2d,
-        //     getModulePositions(),
-        //     poseMeters,
-        //     null,
-        //     null
-        // );
+
+        Matrix<N3, N1> stateStdDevs = new Matrix(Nat.N3(), Nat.N1());
+        //corresponds to x, y, and rotation standard deviations (meters and radians)
+        stateStdDevs.set(0, 0, 0.1);
+        stateStdDevs.set(1, 0, 0.1);
+        stateStdDevs.set(2, 0, 0.005);
+
+        Matrix<N3, N1> visionStdDevs = new Matrix(Nat.N3(), Nat.N1());
+        //corresponds to x, y, and rotation standard deviations (meters and radians)
+        //these values are automatically recalculated periodically depending on distance
+        visionStdDevs.set(0, 0, 0.0);
+        visionStdDevs.set(1, 0, 0.0);
+        visionStdDevs.set(2, 0, 0.);
+
+        poseEstimator = new SwerveDrivePoseEstimator(
+            DrivetrainConstants.swerveKinematics, 
+            gyroInputs.robotYawRotation2d,
+            getModulePositions(),
+            poseMeters,
+            stateStdDevs,
+            visionStdDevs
+        );
 
         chassisSpeedsXSlewLimiter = new SlewRateLimiter(DrivetrainConstants.maxDesiredTeleopAccelMetersPerSecondSquared);
         chassisSpeedsYSlewLimiter = new SlewRateLimiter(DrivetrainConstants.maxDesiredTeleopAccelMetersPerSecondSquared);
@@ -209,20 +236,58 @@ public class Drivetrain extends SubsystemBase {
         return poseMeters.getTranslation();
     }
 
+    /**
+     * Calculates a matrix of standard deviations of the vision pose estimate, in meters and degrees. 
+     * This is a function of the distance from the camera to the april tag.
+     * @param distToTargetMeters - Distance from the camera to the apriltag. 
+     * @return
+     */
+    private Matrix<N3, N1> getVisionStdDevs(double distToTargetMeters) {
+
+        Matrix<N3, N1> visionStdDevs = new Matrix(Nat.N3(), Nat.N1());
+        //corresponds to x, y, and rotation standard deviations (meters and radians)
+        //these values are automatically recalculated periodically depending on distance
+
+
+        //large drop off in reliability after distance is greater than 3.5 meters, so we are interpreting as linear before then
+        if (distToTargetMeters <= 3.5) {
+            visionStdDevs.set(0, 0, -0.0182 + 0.00996*distToTargetMeters);
+            visionStdDevs.set(1, 0, -0.0196 + 0.0103*distToTargetMeters);
+            visionStdDevs.set(2, 0, -0.0078 + 0.00438);
+        }
+
+        else {
+
+            visionStdDevs.set(0, 0, 10);
+            visionStdDevs.set(1, 0, 10);
+            visionStdDevs.set(2, 0, 50);
+        }
+
+        return visionStdDevs;
+    }
+
 
     @Override
     public void periodic() {
         gyroIO.updateInputs(gyroInputs);
+        visionIO.updateInputs(visionInputs);
         for (SwerveModule mod : swerveModules)
             mod.periodic();
         Logger.processInputs("gyroInputs", gyroInputs);
+        Logger.processInputs("visionInputs", visionInputs);
 
 
         poseMeters = swerveOdometry.update(gyroInputs.robotYawRotation2d, getModulePositions());
-        //poseEstimator.update(gyroInputs.robotYawRotation2d, getModulePositions());
+        poseEstimator.update(gyroInputs.robotYawRotation2d, getModulePositions());
+        poseEstimator.addVisionMeasurement(
+            visionInputs.robotFieldPose, 
+            visionInputs.timestampSeconds, 
+            getVisionStdDevs(visionInputs.nearestTagDistanceMeters)
+        );
 
 
         Logger.recordOutput("drivetrain/swerveOdometry", getPoseMeters());
+        Logger.recordOutput("drivetrain/poseEstimatorPose", poseEstimator.getEstimatedPosition());
 
         Logger.recordOutput(
             "drivetrain/swerveModuleStates",

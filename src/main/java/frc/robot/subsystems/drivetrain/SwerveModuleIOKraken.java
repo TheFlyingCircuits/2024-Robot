@@ -57,6 +57,8 @@ public class SwerveModuleIOKraken implements SwerveModuleIO {
         absoluteEncoder.getConfigurator().apply(cancoderConfigs);
     }
 
+    //TODO: angle motor is neo, drive motor is kraken
+
     private void configMotor(TalonFX motor) {
         TalonFXConfiguration config = new TalonFXConfiguration();
         config.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
