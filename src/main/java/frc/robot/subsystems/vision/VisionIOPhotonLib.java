@@ -40,23 +40,28 @@ public class VisionIOPhotonLib implements VisionIO {
     @Override
     public void updateInputs(VisionIOInputs inputs) {
 
+
         var result = camera.getLatestResult();
+        if (!result.hasTargets()) return;
 
-        if (result.hasTargets()) {
-            inputs.nearestTagDistanceMeters = result.getBestTarget().getBestCameraToTarget().getTranslation().getDistance(new Translation3d());
-        };
-
+        inputs.nearestTagDistanceMeters = result.getBestTarget().getBestCameraToTarget().getTranslation().getDistance(new Translation3d());
 
         Optional<EstimatedRobotPose> poseEstimatorResult = photonPoseEstimator.update();
         if (poseEstimatorResult.isEmpty()) return;
-
+        
         Pose2d estimatedPose2d = poseEstimatorResult.get().estimatedPose.toPose2d();
 
-        //TODO: flip pose depending on team
-
+        
         Logger.recordOutput("vision/robotPose3d", estimatedPose2d);
+        Logger.recordOutput("vision/multiTagPoseAmbiguity", result.getMultiTagResult().estimatedPose.ambiguity);
 
-        inputs.robotFieldPose = estimatedPose2d;
-        inputs.timestampSeconds = poseEstimatorResult.get().timestampSeconds;
+
+        //either use multitag or
+        //if there's only one tag on the screen, only trust it if its pose ambiguity is below threshold
+        //photonPoseEstimator automatically switches techniques when detecting different number of tags
+        if (result.targets.size() > 1 || (result.targets.size() == 1 && result.getBestTarget().getPoseAmbiguity() < 0.2)) {
+            inputs.robotFieldPose = estimatedPose2d;
+            inputs.timestampSeconds = poseEstimatorResult.get().timestampSeconds;
+        }
     };
 }

@@ -3,29 +3,29 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 15.24991512179886,
-        "y": 5.562647359246215
+        "x": 10.811508070947667,
+        "y": 7.14361029292672
       },
       "prevControl": null,
       "nextControl": {
-        "x": 14.835503523744897,
-        "y": 6.164530870705546
+        "x": 12.252702445228067,
+        "y": 7.14361029292672
       },
       "isLocked": false,
-      "linkedName": "Center Speaker"
+      "linkedName": "Quarter Field Shot 1"
     },
     {
       "anchor": {
-        "x": 13.69237386120992,
-        "y": 7.003080254377342
+        "x": 15.24991512179886,
+        "y": 5.562647359246215
       },
       "prevControl": {
-        "x": 14.205454887371971,
-        "y": 6.608402541944994
+        "x": 14.24991512179886,
+        "y": 5.562647359246215
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "Ring 1"
+      "linkedName": "Center Speaker"
     }
   ],
   "rotationTargets": [],
@@ -44,6 +44,9 @@
   },
   "reversed": false,
   "folder": null,
-  "previewStartingState": null,
+  "previewStartingState": {
+    "rotation": -14.931417178137373,
+    "velocity": 0
+  },
   "useDefaultConstraints": true
 }

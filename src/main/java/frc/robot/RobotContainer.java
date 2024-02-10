@@ -101,6 +101,6 @@ public class RobotContainer {
      */
     public Command getAutonomousCommand() {
         PathPlannerPath path = PathPlannerPath.fromPathFile("path2");
-        return AutoBuilder.buildAuto("My First Auto!");
+        return AutoBuilder.buildAuto("Vision Test Path");
     }
 }

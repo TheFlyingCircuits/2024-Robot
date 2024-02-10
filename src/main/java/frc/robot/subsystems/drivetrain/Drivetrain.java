@@ -10,6 +10,7 @@ import com.pathplanner.lib.util.ReplanningConfig;
 
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.Nat;
+import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.estimator.PoseEstimator;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.filter.SlewRateLimiter;
@@ -44,7 +45,6 @@ public class Drivetrain extends SubsystemBase {
     private SlewRateLimiter chassisSpeedsXSlewLimiter;
     private SlewRateLimiter chassisSpeedsYSlewLimiter;
 
-    private SwerveDriveOdometry swerveOdometry;
     private SwerveDrivePoseEstimator poseEstimator;
 
     private Pose2d poseMeters;
@@ -75,12 +75,6 @@ public class Drivetrain extends SubsystemBase {
 
         poseMeters = new Pose2d(new Translation2d(0, 0), new Rotation2d(0));
 
-        swerveOdometry = new SwerveDriveOdometry(
-            DrivetrainConstants.swerveKinematics,
-            gyroInputs.robotYawRotation2d,
-            getModulePositions(),
-            poseMeters
-        );
 
 
         Matrix<N3, N1> stateStdDevs = new Matrix(Nat.N3(), Nat.N1());
@@ -215,7 +209,7 @@ public class Drivetrain extends SubsystemBase {
      * @param pose
      */
     public void setPoseMeters(Pose2d pose) {
-        swerveOdometry.resetPosition(gyroInputs.robotYawRotation2d, getModulePositions(), pose);
+        poseEstimator.resetPosition(gyroInputs.robotYawRotation2d, getModulePositions(), pose);
         poseMeters = pose;
     }
 
@@ -237,6 +231,13 @@ public class Drivetrain extends SubsystemBase {
     }
 
     /**
+     * Takes the estimated pose from the vision, and sets our current poseEstimator pose to this one.
+     */
+    public void setPoseToVisionMeasurement() {
+        setPoseMeters(visionInputs.robotFieldPose);
+    }
+
+    /**
      * Calculates a matrix of standard deviations of the vision pose estimate, in meters and degrees. 
      * This is a function of the distance from the camera to the april tag.
      * @param distToTargetMeters - Distance from the camera to the apriltag. 
@@ -244,26 +245,28 @@ public class Drivetrain extends SubsystemBase {
      */
     private Matrix<N3, N1> getVisionStdDevs(double distToTargetMeters) {
 
-        Matrix<N3, N1> visionStdDevs = new Matrix(Nat.N3(), Nat.N1());
+        // Matrix<N3, N1> visionStdDevs = new Matrix(Nat.N3(), Nat.N1());
         //corresponds to x, y, and rotation standard deviations (meters and radians)
         //these values are automatically recalculated periodically depending on distance
 
 
         //large drop off in reliability after distance is greater than 3.5 meters, so we are interpreting as linear before then
-        if (distToTargetMeters <= 3.5) {
-            visionStdDevs.set(0, 0, -0.0182 + 0.00996*distToTargetMeters);
-            visionStdDevs.set(1, 0, -0.0196 + 0.0103*distToTargetMeters);
-            visionStdDevs.set(2, 0, -0.0078 + 0.00438);
-        }
+        // if (distToTargetMeters <= 3.5) {
+        //     visionStdDevs.set(0, 0, -0.0182 + 0.00996*distToTargetMeters);
+        //     visionStdDevs.set(1, 0, -0.0196 + 0.0103*distToTargetMeters);
+        //     visionStdDevs.set(2, 0, -0.0078 + 0.00438);
+        // }
 
-        else {
+        double slopeStdDevMetersPerMeter = 2.;
+        double slopeStdDevRadiansPerMeter = 3;
 
-            visionStdDevs.set(0, 0, 10);
-            visionStdDevs.set(1, 0, 10);
-            visionStdDevs.set(2, 0, 50);
-        }
+        
 
-        return visionStdDevs;
+        return VecBuilder.fill(
+            slopeStdDevMetersPerMeter*distToTargetMeters,
+            slopeStdDevMetersPerMeter*distToTargetMeters,
+            slopeStdDevRadiansPerMeter*distToTargetMeters
+        );
     }
 
 
@@ -277,14 +280,12 @@ public class Drivetrain extends SubsystemBase {
         Logger.processInputs("visionInputs", visionInputs);
 
 
-        poseMeters = swerveOdometry.update(gyroInputs.robotYawRotation2d, getModulePositions());
-        poseEstimator.update(gyroInputs.robotYawRotation2d, getModulePositions());
+        poseMeters = poseEstimator.update(gyroInputs.robotYawRotation2d, getModulePositions());
         poseEstimator.addVisionMeasurement(
             visionInputs.robotFieldPose, 
             visionInputs.timestampSeconds, 
             getVisionStdDevs(visionInputs.nearestTagDistanceMeters)
         );
-
 
         Logger.recordOutput("drivetrain/swerveOdometry", getPoseMeters());
         Logger.recordOutput("drivetrain/poseEstimatorPose", poseEstimator.getEstimatedPosition());
