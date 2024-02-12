@@ -13,6 +13,7 @@ import com.pathplanner.lib.util.HolonomicPathFollowerConfig;
 import com.pathplanner.lib.util.PIDConstants;
 import com.pathplanner.lib.util.ReplanningConfig;
 
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
@@ -83,7 +84,7 @@ public class Robot extends LoggedRobot {
             drivetrain::getPoseMeters, // Robot pose supplier
             drivetrain::setPoseMeters, // Method to reset odometry (will be called if your auto has a starting pose)
             drivetrain::getChassisSpeeds, // ChassisSpeeds supplier. MUST BE ROBOT RELATIVE
-            drivetrain::drive, // Method that will drive the robot given ROBOT RELATIVE ChassisSpeeds
+            (ChassisSpeeds speeds) -> drivetrain.drive(speeds, true), // Method that will drive the robot given ROBOT RELATIVE ChassisSpeeds
             new HolonomicPathFollowerConfig( // HolonomicPathFollowerConfig, this should likely live in your Constants class
                     new PIDConstants(5.0, 0.0, 0.0), // Translation PID constants
                     new PIDConstants(5.0, 0.0, 0.0), // Rotation PID constants

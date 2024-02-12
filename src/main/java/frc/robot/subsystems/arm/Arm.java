@@ -49,6 +49,9 @@ public class Arm extends SubsystemBase {
         isMovingToTarget = false;
     }
 
+
+    //This method is in here because future commands which want to move the arm will be more easily written.
+    //Rather than having to motion profile within each command, it can be just one function call.
     /**
      * Sets the desired position for the arm's motion profile to follow.
      * @param targetDegrees - Target angle in degrees for the arm.
@@ -56,8 +59,10 @@ public class Arm extends SubsystemBase {
     public void setArmDesiredPosition(double targetAngleDegrees) {
         targetAngleDegrees = MathUtil.clamp(targetAngleDegrees, ArmConstants.kArmMinAngleDegrees, ArmConstants.kArmMaxAngleDegrees);
         
-        if (Math.abs(this.targetAngleDegrees - targetAngleDegrees) < 0.1)
+        //For continuous control
+        if (Math.abs(this.targetAngleDegrees - targetAngleDegrees) < 0.1) {
             return;
+        }
 
         initState = new TrapezoidProfile.State(inputs.armAngleDegrees, inputs.armVelocityDegreesPerSecond);
         this.targetAngleDegrees = targetAngleDegrees;

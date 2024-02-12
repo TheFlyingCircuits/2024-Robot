@@ -44,6 +44,8 @@ public final class Constants {
 
     public static final class DrivetrainConstants {
         // KINEMATICS CONSTANTS
+
+        //TODO: update these for final robot
         /**
          * Distance between the center point of the left wheels and the center point of the right wheels.
          */

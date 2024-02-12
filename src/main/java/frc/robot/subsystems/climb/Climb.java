@@ -73,11 +73,12 @@ public class Climb extends SubsystemBase{
         rightMotor.burnFlash();
     }
 
+    //TODO: add limit switches and zero encoders when hit
     public boolean climbArmsAreDown() {
-        return (leftEncoder.getPosition() == 0) && (rightEncoder.getPosition() == 0);
+        return (leftEncoder.getPosition() <= 0) && (rightEncoder.getPosition() <= 0);
     }
 
     public boolean climbArmsAreUp() {
-        return (leftEncoder.getPosition() == ClimbConstants.armMaxPosMeters) && (rightEncoder.getPosition() == ClimbConstants.armMaxPosMeters);
+        return (leftEncoder.getPosition() >= ClimbConstants.armMaxPosMeters) && (rightEncoder.getPosition() >= ClimbConstants.armMaxPosMeters);
     }
 }

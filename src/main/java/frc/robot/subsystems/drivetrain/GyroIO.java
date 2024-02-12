@@ -11,7 +11,7 @@ public interface GyroIO {
         /** 
          * The yaw rotation of the robot, as a Rotation2d.
          * A counterclockwise rotation will result in a positive increase in this value.
-         * An angle of 0 represents the robot facing precisely away from your alliance wall. 
+         * An angle of 0 represents the robot facing away from the blue alliance wall. 
          * */
         public Rotation2d robotYawRotation2d = new Rotation2d(0.0);
         
@@ -34,6 +34,7 @@ public interface GyroIO {
     /**
      * Sets the saved yaw position of the robot, in degrees.
      * Your robot will now read its current angular position as the value you pass into this function.
+     * Typically, an angle of 0 should be facing away from the blue alliance wall.
      */
     public default void setRobotYaw(double degrees) {};
 }

@@ -105,36 +105,31 @@ public class Drivetrain extends SubsystemBase {
 
     /**
      * Sets the robot pose's angle to the rotation passed into it.. This affects all subsequent uses of the robot's angle.
+     * You should be setting an angle of 0 to be facing away from the blue alliance wall.
      * <br>
      * This can be used to set the direction the robot is currently facing to the 'forwards' direction.
      */
     public void setRobotRotation2d(Rotation2d rotation2d) {
-        setPoseMeters(new Pose2d(getTranslationMeters(), rotation2d));
+        setPoseMeters(new Pose2d(getPoseMeters().getTranslation(), rotation2d));
     }
 
     /**
      * Gets the angle of the robot measured by the gyroscope as a Rotation2d (continuous).
+     * An angle of 0 is always facing away from the blue alliance wall.
      * @return rotation2d - this angle will be counterclockwise positive.
      */
     public Rotation2d getRobotRotation2d() {
         return poseMeters.getRotation();
     }
 
-    /**
-     * Drives the robot based on a desired ChassisSpeeds.
-     * <p>
-     * Takes in a robot relative ChassisSpeeds. Field relative control can be accomplished by using the ChassisSpeeds.fromFieldRelative() method.
-     * @param desiredChassisSpeeds - Robot relative ChassisSpeeds object in meters per second and radians per second.
-    */
-    public void drive(ChassisSpeeds desiredChassisSpeeds) {
-        drive(desiredChassisSpeeds, true);
-    }
+
 
     /**
      * Drives the robot based on a desired ChassisSpeeds.
      * <p>
      * Takes in a robot relative ChassisSpeeds. Field relative control can be accomplished by using the ChassisSpeeds.fromFieldRelative() method.
      * @param desiredChassisSpeeds - Robot relative ChassisSpeeds object in meters per second and radians per second.
+     * @param closedLoop - Whether or not to used closed loop PID control to control the speed of the drive wheels.
     */
     public void drive(ChassisSpeeds desiredChassisSpeeds, boolean closedLoop) {
 
@@ -143,35 +138,14 @@ public class Drivetrain extends SubsystemBase {
 
         SwerveModuleState[] swerveModuleStates = DrivetrainConstants.swerveKinematics.toSwerveModuleStates(desiredChassisSpeeds);
 
-        if (closedLoop) {
-            setModuleStatesClosedLoop(swerveModuleStates);
-        }
-        else {
-            setModuleStatesOpenLoop(swerveModuleStates);
-        }
+        setModuleStates(swerveModuleStates, closedLoop);
     }
 
-    /* Used by SwerveControllerCommand in Auto */
-    public void setModuleStatesClosedLoop(SwerveModuleState[] desiredStates) {
+    //could be used for a drivetrain command in the future; leave this as its own function
+    public void setModuleStates(SwerveModuleState[] desiredStates, boolean closedLoop) {
         SwerveDriveKinematics.desaturateWheelSpeeds(desiredStates, DrivetrainConstants.maxAchievableVelocityMetersPerSecond);
         for (SwerveModule mod : swerveModules) {
-            mod.setDesiredState(desiredStates[mod.moduleIndex], true);
-        }
-    }
-
-    public void setModuleStatesClosedLoopNoOptimize(SwerveModuleState[] desiredStates) {
-        SwerveDriveKinematics.desaturateWheelSpeeds(desiredStates, DrivetrainConstants.maxAchievableVelocityMetersPerSecond);
-        for (SwerveModule mod : swerveModules) {
-            mod.setDesiredStateNoOptimize(desiredStates[mod.moduleIndex], true);
-        }
-    }
-
-
-  //useful for debugging
-    public void setModuleStatesOpenLoop(SwerveModuleState[] desiredStates) {
-        SwerveDriveKinematics.desaturateWheelSpeeds(desiredStates, DrivetrainConstants.maxAchievableVelocityMetersPerSecond);
-        for (SwerveModule mod : swerveModules) {
-            mod.setDesiredState(desiredStates[mod.moduleIndex], false);
+            mod.setDesiredState(desiredStates[mod.moduleIndex], closedLoop);
         }
     }
 
@@ -206,6 +180,7 @@ public class Drivetrain extends SubsystemBase {
      * <p>
      * A positive X value brings the robot towards the opposing alliance,
      * and a positive Y value brings the robot left as viewed by your alliance.
+     * Rotations are counter-clockwise positive, with an angle of 0 facing away from the blue alliance wall.
      * @param pose
      */
     public void setPoseMeters(Pose2d pose) {
@@ -220,14 +195,11 @@ public class Drivetrain extends SubsystemBase {
      * <p>
      * A positive X value brings the robot towards the opposing alliance,
      * and a positive Y value brings the robot left as viewed by your alliance.
+     * Rotations are counter-clockwise positive, with an angle of 0 facing away from the blue alliance wall.
      * @return The current position of the robot on the field in meters.
      */ 
     public Pose2d getPoseMeters() {
         return poseMeters;
-    }
-
-    public Translation2d getTranslationMeters() {
-        return poseMeters.getTranslation();
     }
 
     /**
@@ -245,23 +217,10 @@ public class Drivetrain extends SubsystemBase {
      */
     private Matrix<N3, N1> getVisionStdDevs(double distToTargetMeters) {
 
-        // Matrix<N3, N1> visionStdDevs = new Matrix(Nat.N3(), Nat.N1());
-        //corresponds to x, y, and rotation standard deviations (meters and radians)
-        //these values are automatically recalculated periodically depending on distance
-
-
-        //large drop off in reliability after distance is greater than 3.5 meters, so we are interpreting as linear before then
-        // if (distToTargetMeters <= 3.5) {
-        //     visionStdDevs.set(0, 0, -0.0182 + 0.00996*distToTargetMeters);
-        //     visionStdDevs.set(1, 0, -0.0196 + 0.0103*distToTargetMeters);
-        //     visionStdDevs.set(2, 0, -0.0078 + 0.00438);
-        // }
-
         double slopeStdDevMetersPerMeter = 2.;
         double slopeStdDevRadiansPerMeter = 3;
 
-        
-
+        //corresponds to x, y, and rotation standard deviations (meters and radians)
         return VecBuilder.fill(
             slopeStdDevMetersPerMeter*distToTargetMeters,
             slopeStdDevMetersPerMeter*distToTargetMeters,
