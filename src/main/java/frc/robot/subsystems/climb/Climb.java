@@ -2,6 +2,7 @@ package frc.robot.subsystems.climb;
 
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
+import com.revrobotics.CANSparkBase.IdleMode;
 import com.revrobotics.CANSparkLowLevel.MotorType;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -56,6 +57,9 @@ public class Climb extends SubsystemBase{
         //TOOD: figure out motor inversions
         leftMotor.setInverted(true);
         rightMotor.setInverted(false);
+
+        leftMotor.setIdleMode(IdleMode.kBrake);
+        rightMotor.setIdleMode(IdleMode.kBrake);
 
         leftMotor.burnFlash();
         rightMotor.burnFlash();

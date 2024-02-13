@@ -56,6 +56,9 @@ public class Intake extends SubsystemBase {
 
         frontIntakeMotor.setIdleMode(IdleMode.kBrake);
         backIntakeMotor.setIdleMode(IdleMode.kBrake);
+
+        frontIntakeMotor.burnFlash();
+        backIntakeMotor.burnFlash();
     }
 
     @Override

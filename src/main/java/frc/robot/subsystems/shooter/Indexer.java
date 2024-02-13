@@ -2,6 +2,7 @@ package frc.robot.subsystems.shooter;
 
 import com.revrobotics.CANSparkBase;
 import com.revrobotics.CANSparkMax;
+import com.revrobotics.CANSparkBase.IdleMode;
 import com.revrobotics.CANSparkLowLevel.MotorType;
 
 import edu.wpi.first.wpilibj.DigitalInput;
@@ -34,6 +35,10 @@ public class Indexer extends SubsystemBase {
 
     private void configMotor() {
         indexerMotor.setInverted(false);
+
+        indexerMotor.setIdleMode(IdleMode.kBrake);
+
+        indexerMotor.burnFlash();
     }
 
     @Override
