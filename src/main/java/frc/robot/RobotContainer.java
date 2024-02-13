@@ -7,6 +7,7 @@ package frc.robot;
 import frc.robot.commands.arm.AimShooterAtSpeaker;
 import frc.robot.commands.drivetrain.AimAtSpeakerWhileJoystickDrive;
 import frc.robot.commands.drivetrain.JoystickDrive;
+import frc.robot.commands.intake.IndexNote;
 import frc.robot.subsystems.arm.Arm;
 import frc.robot.subsystems.arm.ArmIO;
 import frc.robot.subsystems.arm.ArmIOSim;
@@ -18,6 +19,7 @@ import frc.robot.subsystems.drivetrain.SwerveModuleIO;
 import frc.robot.subsystems.drivetrain.SwerveModuleIONeo;
 import frc.robot.subsystems.drivetrain.SwerveModuleIOSim;
 import frc.robot.subsystems.intake.Intake;
+import frc.robot.subsystems.shooter.Indexer;
 import frc.robot.subsystems.shooter.Shooter;
 import frc.robot.subsystems.shooter.ShooterIO;
 import frc.robot.subsystems.shooter.ShooterIOSim;
@@ -47,6 +49,9 @@ public class RobotContainer {
     public final Drivetrain drivetrain;
     public final Arm arm;
     public final Intake intake;
+    public final Indexer indexer;
+
+    private Trigger isRingInIntake;
     
     public RobotContainer() {
 
@@ -82,11 +87,13 @@ public class RobotContainer {
         
 
         intake = new Intake();
+        indexer = new Indexer();
 
         configureBindings();
         
         drivetrain.setDefaultCommand(new JoystickDrive(true, drivetrain));
         //arm.setDefaultCommand(new InstantCommand(() -> arm.setArmDesiredPosition(0), arm));
+        isRingInIntake = new Trigger(intake::isRingInIntake);
     }
 
     /**
@@ -104,8 +111,10 @@ public class RobotContainer {
         controller.b().onTrue(new InstantCommand(() -> arm.setArmDesiredPosition(30)));
 
         controller.a().toggleOnTrue(new AimShooterAtSpeaker(arm, drivetrain));
-
         controller.x().toggleOnTrue(new AimAtSpeakerWhileJoystickDrive(drivetrain));
+
+        isRingInIntake.onTrue(new IndexNote(intake, indexer));
+        
     }
 
     /**

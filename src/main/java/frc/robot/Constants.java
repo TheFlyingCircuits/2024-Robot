@@ -38,8 +38,12 @@ public final class Constants {
         public final static double kAFlywheelsVoltsSecondsSquaredPerRotation = 0.;
 
         /**temp device ids for motors */
-        public final static int leftMotorID = 12;
-        public final static int rightMotorID = 13;
+        public final static int leftMotorID = 0;
+        public final static int rightMotorID = 0;
+
+        public final static int indexerMotorID = 0;
+
+        public static final int indexerProximitySwitchID = 0;
     }
 
     public static final class DrivetrainConstants {
@@ -233,6 +237,14 @@ public final class Constants {
 
         /** X-Y position of the center of the front edge of the blue speaker. */
         public final static Translation2d blueSpeakerTranslation2d = new Translation2d(16.08, 5.55);
+    }
+
+    public final static class IntakeConstants {
+        
+
+        public final static int frontIntakeMotorID = 0;
+        public final static int backIntakeMotorID = 0;
+        public static final int intakeProximitySwitchID = 0;
     }
 
 }
