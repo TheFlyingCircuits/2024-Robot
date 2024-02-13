@@ -3,6 +3,7 @@ package frc.robot.subsystems.drivetrain;
 import org.littletonrobotics.junction.AutoLog;
 
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.kinematics.SwerveModulePosition;
 
 public interface GyroIO {
 
@@ -37,4 +38,7 @@ public interface GyroIO {
      * Typically, an angle of 0 should be facing away from the blue alliance wall.
      */
     public default void setRobotYaw(double degrees) {};
+
+    //this shouldn't need to be implemented by anything besides the sim implementation
+    public default void calculateYaw(SwerveModulePosition[] modulePositions) {};
 }

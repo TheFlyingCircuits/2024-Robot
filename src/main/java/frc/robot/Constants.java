@@ -223,4 +223,16 @@ public final class Constants {
         );
     }
 
+    public final static class FieldConstants {
+
+        /** Distance from the front edge of the speaker structure to the carpet. */
+        public final static double speakerHeightMeters = 2.09;
+
+        /** X-Y position of the center of the front edge of the red speaker.  */
+        public final static Translation2d redSpeakerTranslation2d = new Translation2d(0.46, 5.55);
+
+        /** X-Y position of the center of the front edge of the blue speaker. */
+        public final static Translation2d blueSpeakerTranslation2d = new Translation2d(16.08, 5.55);
+    }
+
 }

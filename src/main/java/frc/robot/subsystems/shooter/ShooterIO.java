@@ -16,5 +16,4 @@ public interface ShooterIO {
 
     /** Run the shooter's right motor at the specified volts. */
     public default void setRightMotorVolts(double volts) {};
-
 }

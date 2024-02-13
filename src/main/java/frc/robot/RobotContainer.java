@@ -4,6 +4,8 @@
 
 package frc.robot;
 
+import frc.robot.commands.arm.AimShooterAtSpeaker;
+import frc.robot.commands.drivetrain.AimAtSpeakerWhileJoystickDrive;
 import frc.robot.commands.drivetrain.JoystickDrive;
 import frc.robot.subsystems.arm.Arm;
 import frc.robot.subsystems.arm.ArmIO;
@@ -11,8 +13,10 @@ import frc.robot.subsystems.arm.ArmIOSim;
 import frc.robot.subsystems.drivetrain.Drivetrain;
 import frc.robot.subsystems.drivetrain.GyroIO;
 import frc.robot.subsystems.drivetrain.GyroIOPigeon;
+import frc.robot.subsystems.drivetrain.GyroIOSim;
 import frc.robot.subsystems.drivetrain.SwerveModuleIO;
 import frc.robot.subsystems.drivetrain.SwerveModuleIONeo;
+import frc.robot.subsystems.drivetrain.SwerveModuleIOSim;
 import frc.robot.subsystems.shooter.Shooter;
 import frc.robot.subsystems.shooter.ShooterIO;
 import frc.robot.subsystems.shooter.ShooterIOSim;
@@ -61,11 +65,11 @@ public class RobotContainer {
         else {
 
             drivetrain = new Drivetrain(
-                new GyroIO() {},
-                new SwerveModuleIO() {},
-                new SwerveModuleIO() {},
-                new SwerveModuleIO() {},
-                new SwerveModuleIO() {},
+                new GyroIOSim(),
+                new SwerveModuleIOSim() {},
+                new SwerveModuleIOSim() {},
+                new SwerveModuleIOSim() {},
+                new SwerveModuleIOSim() {},
                 new VisionIO() {}
             );
 
@@ -77,6 +81,7 @@ public class RobotContainer {
         configureBindings();
         
         drivetrain.setDefaultCommand(new JoystickDrive(true, drivetrain));
+        //arm.setDefaultCommand(new InstantCommand(() -> arm.setArmDesiredPosition(0), arm));
     }
 
     /**
@@ -92,6 +97,10 @@ public class RobotContainer {
         controller.y().onTrue(new InstantCommand(() -> drivetrain.setRobotRotation2d(new Rotation2d(0))));
 
         controller.b().onTrue(new InstantCommand(() -> arm.setArmDesiredPosition(30)));
+
+        controller.a().toggleOnTrue(new AimShooterAtSpeaker(arm, drivetrain));
+
+        controller.x().toggleOnTrue(new AimAtSpeakerWhileJoystickDrive(drivetrain));
     }
 
     /**

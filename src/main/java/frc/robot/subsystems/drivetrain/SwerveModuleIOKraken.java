@@ -15,7 +15,7 @@ public class SwerveModuleIOKraken implements SwerveModuleIO {
     private TalonFX angleMotor;
     private TalonFX driveMotor;
 
-    public SwerveModuleIOKraken(int driveMotorID, int angleMotorID, int angleOffsetDegrees, int cancoderID){
+    public SwerveModuleIOKraken(int driveMotorID, int angleMotorID, int angleOffsetDegrees, int cancoderID) {
         this.angleOffsetDegrees = angleOffsetDegrees;
         
         /* Angle Encoder Config */

@@ -3,11 +3,6 @@ package frc.robot.subsystems.drivetrain;
 
 import org.littletonrobotics.junction.Logger;
 
-import com.pathplanner.lib.auto.AutoBuilder;
-import com.pathplanner.lib.util.HolonomicPathFollowerConfig;
-import com.pathplanner.lib.util.PIDConstants;
-import com.pathplanner.lib.util.ReplanningConfig;
-
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.Nat;
 import edu.wpi.first.math.VecBuilder;
@@ -26,8 +21,10 @@ import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.trajectory.constraint.SwerveDriveKinematicsConstraint;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.DrivetrainConstants;
+import frc.robot.Constants.FieldConstants;
 import frc.robot.Constants.SwerveModuleConstants;
 import frc.robot.subsystems.vision.VisionIO;
 import frc.robot.subsystems.vision.VisionIOInputsAutoLogged;
@@ -202,6 +199,26 @@ public class Drivetrain extends SubsystemBase {
         return poseMeters;
     }
 
+    /** Calculates the horizontal translational distance from the center of the robot to the center of the front edge of the speaker.*/
+    public double distToSpeakerBaseMeters() {
+        return getPoseMeters().getTranslation().getDistance(
+            DriverStation.getAlliance().get() == Alliance.Red ? 
+                FieldConstants.redSpeakerTranslation2d : FieldConstants.blueSpeakerTranslation2d
+        );
+    }
+
+    /** 
+     * Gets the angle the robot needs to aim in order for the shooter to 
+     * point at the center of the front edge of your alliance's speaker. 
+     * This angle is counter-clockwise positive with an angle of zero facing away from the blue alliance wall.
+     * */
+    public Rotation2d getAngleToSpeaker() {
+
+        return (DriverStation.getAlliance().get() == Alliance.Red ? 
+                FieldConstants.redSpeakerTranslation2d : FieldConstants.blueSpeakerTranslation2d)
+                    .minus(getPoseMeters().getTranslation()).getAngle();
+    }
+
     /**
      * Takes the estimated pose from the vision, and sets our current poseEstimator pose to this one.
      */
@@ -235,6 +252,11 @@ public class Drivetrain extends SubsystemBase {
         visionIO.updateInputs(visionInputs);
         for (SwerveModule mod : swerveModules)
             mod.periodic();
+
+        if (gyroIO instanceof GyroIOSim) //calculates sim gyro
+            gyroIO.calculateYaw(getModulePositions());
+          
+
         Logger.processInputs("gyroInputs", gyroInputs);
         Logger.processInputs("visionInputs", visionInputs);
 
@@ -257,6 +279,6 @@ public class Drivetrain extends SubsystemBase {
               swerveModules[2].getState(),
               swerveModules[3].getState()
           });
-
+        
     }
 }

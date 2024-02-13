@@ -39,6 +39,11 @@ public class Shooter extends SubsystemBase {
             ShooterConstants.kIFlywheelsVoltsPerRotation, 
             ShooterConstants.kDFlywheelsVoltsSecondsSquaredPerRotation);
 
+        rightFlywheelsPID = new PIDController(
+            ShooterConstants.kPFlywheelsVoltsSecondsPerRotation, 
+            ShooterConstants.kIFlywheelsVoltsPerRotation, 
+            ShooterConstants.kDFlywheelsVoltsSecondsSquaredPerRotation);
+
         flywheelsFeedforward = new SimpleMotorFeedforward(
             ShooterConstants.kSFlywheelsVolts,
             ShooterConstants.kVFlywheelsVoltsSecondsPerRotation,
@@ -64,6 +69,8 @@ public class Shooter extends SubsystemBase {
     public void setRightFlywheelsRPM(double rpm) {
         setRightFlywheelsRotationsPerSecond(rpm*60);
     }
+
+    
 
     @Override
     public void periodic() {

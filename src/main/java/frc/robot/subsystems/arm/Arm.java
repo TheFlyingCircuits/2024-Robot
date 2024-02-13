@@ -12,6 +12,9 @@ import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
+import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
+import edu.wpi.first.wpilibj.smartdashboard.MechanismRoot2d;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.ArmConstants;
 
@@ -30,6 +33,12 @@ public class Arm extends SubsystemBase {
     private double targetAngleDegrees;
     private boolean isMovingToTarget;
 
+    private Mechanism2d armMech2d;
+    private MechanismRoot2d armMechRoot;
+    private MechanismLigament2d mechLigament;
+
+    
+
     public Arm(ArmIO armIO) {
         io = armIO;
         inputs = new ArmIOInputsAutoLogged();
@@ -47,6 +56,11 @@ public class Arm extends SubsystemBase {
         timer = new Timer();
 
         isMovingToTarget = false;
+
+        armMech2d = new Mechanism2d(1, 1);
+        armMechRoot = armMech2d.getRoot("root", 0.3, 0.1);
+        mechLigament = armMechRoot.append(new MechanismLigament2d("arm", 0.508, inputs.armAngleDegrees));
+
     }
 
 
@@ -141,9 +155,12 @@ public class Arm extends SubsystemBase {
         io.updateInputs(inputs);
 
         followTrapezoidProfile();
+        mechLigament.setAngle(inputs.armAngleDegrees);
+
+
 
         Logger.processInputs("Arm", inputs);
-
+        Logger.recordOutput("arm/mech2d", armMech2d);
         Logger.recordOutput("arm/isMovingToTarget", isMovingToTarget);
         Logger.recordOutput("arm/targetAngleDegrees", targetAngleDegrees);
     }
