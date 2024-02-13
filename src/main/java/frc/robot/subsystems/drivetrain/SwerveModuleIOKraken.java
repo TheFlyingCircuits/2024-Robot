@@ -8,14 +8,29 @@ import com.ctre.phoenix6.signals.AbsoluteSensorRangeValue;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.signals.SensorDirectionValue;
+import com.revrobotics.CANSparkLowLevel.MotorType;
+import com.revrobotics.CANSparkMax;
+import com.revrobotics.RelativeEncoder;
+
+import frc.robot.Constants.MotorConstants;
+import frc.robot.Constants.SwerveModuleConstants;
 
 public class SwerveModuleIOKraken implements SwerveModuleIO {
     private double angleOffsetDegrees;
     private CANcoder absoluteEncoder;
-    private TalonFX angleMotor;
+    private CANSparkMax angleMotor;
     private TalonFX driveMotor;
-
-    public SwerveModuleIOKraken(int driveMotorID, int angleMotorID, int angleOffsetDegrees, int cancoderID) {
+    private RelativeEncoder angleEncoder;
+    /**
+     * 
+     * @param driveMotorID - ID of the drive motor
+     * @param angleMotorID - ID of the angle motor
+     * @param angleOffsetDegrees - Offset of the angle motor, in degrees
+     * @param cancoderID - ID of the absolute CANcoder mounted ontop of the swerve
+     * @param isDriveMotorOnTop - Is drive motor mounted on top
+     * @param isAngleMotorOnTop - Is angle motor mounted on top
+     */
+    public SwerveModuleIOKraken(int driveMotorID, int angleMotorID, int angleOffsetDegrees, int cancoderID, boolean isDriveMotorOnTop, boolean isAngleMotorOnTop){
         this.angleOffsetDegrees = angleOffsetDegrees;
         
         /* Angle Encoder Config */
@@ -23,18 +38,27 @@ public class SwerveModuleIOKraken implements SwerveModuleIO {
         configCANCoder();
 
         /* Angle Motor Config */
-        angleMotor = new TalonFX(angleMotorID);
-        configMotor(angleMotor);
+        angleMotor = new CANSparkMax(angleMotorID, MotorType.kBrushless);
+        angleEncoder = angleMotor.getEncoder();
+        if(isAngleMotorOnTop) {
+            configAngleMotor(false);
+        } else {
+            configAngleMotor(true);
+        }
 
         /* Drive Motor Config */
         driveMotor = new TalonFX(driveMotorID);
-        configMotor(driveMotor);
+        if(isDriveMotorOnTop) {
+            configDriveMotor(InvertedValue.CounterClockwise_Positive);
+        } else {
+            configDriveMotor(InvertedValue.Clockwise_Positive);
+        }
     }
 
     @Override
     public void updateInputs(SwerveModuleIOInputs inputs) {
-        inputs.drivePositionMeters = driveMotor.getPosition().getValueAsDouble();
-        inputs.driveVelocityMetersPerSecond = driveMotor.getVelocity().getValueAsDouble();
+        inputs.drivePositionMeters = driveMotor.getPosition().getValueAsDouble() * (SwerveModuleConstants.driveGearReduction * SwerveModuleConstants.wheelCircumferenceMeters);
+        inputs.driveVelocityMetersPerSecond = driveMotor.getVelocity().getValueAsDouble() * (SwerveModuleConstants.driveGearReduction * SwerveModuleConstants.wheelCircumferenceMeters);
         inputs.angleAbsolutePositionDegrees = absoluteEncoder.getAbsolutePosition().getValueAsDouble()*360;
     }
 
@@ -59,10 +83,23 @@ public class SwerveModuleIOKraken implements SwerveModuleIO {
 
     //TODO: angle motor is neo, drive motor is kraken
 
-    private void configMotor(TalonFX motor) {
+    private void configDriveMotor(InvertedValue invertedValue) {
         TalonFXConfiguration config = new TalonFXConfiguration();
-        config.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
+        config.MotorOutput.Inverted = invertedValue;
         config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
-        motor.getConfigurator().apply(config);
+        driveMotor.getConfigurator().apply(config);
     }
+
+    private void configAngleMotor(boolean invertedValue) {
+        angleMotor.restoreFactoryDefaults();
+        angleMotor.setSmartCurrentLimit(MotorConstants.angleContinuousCurrentLimit);
+        angleMotor.setInverted(invertedValue);
+        angleMotor.setIdleMode(MotorConstants.angleNeutralMode);
+        //converts rotations of motor into deg of wheel
+        angleEncoder.setPositionConversionFactor(SwerveModuleConstants.steerGearReduction*360.0);
+        //converts rpm of motor into deg/s of wheel
+        angleEncoder.setVelocityConversionFactor(SwerveModuleConstants.steerGearReduction*360.0/60.0);
+        angleMotor.burnFlash();
+    }
+
 }
