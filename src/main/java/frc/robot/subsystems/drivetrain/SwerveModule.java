@@ -69,8 +69,6 @@ public class SwerveModule {
         );
 
                 
-        
-        // Logger.recordOutput("desiredState", desiredState);
         setDesiredStateNoOptimize(desiredState, closedLoop);
     }
 

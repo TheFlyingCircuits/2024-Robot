@@ -107,7 +107,7 @@ public class Arm extends SubsystemBase {
 
             io.setArmMotorVolts(feedforwardOutputVolts + pidOutputVolts);
 
-            Logger.recordOutput("arm/postTotalOutputVolts", feedforwardOutputVolts + pidOutputVolts);
+            Logger.recordOutput("arm/totalOutputVolts", feedforwardOutputVolts + pidOutputVolts);
 
             return;
         }
@@ -138,7 +138,7 @@ public class Arm extends SubsystemBase {
 
         Logger.recordOutput("arm/trapezoidProfilePosition", desiredState.position);
 
-        Logger.recordOutput("arm/postTotalOutputVolts", totalOutputVolts);
+        Logger.recordOutput("arm/totalOutputVolts", totalOutputVolts);
 
         io.setArmMotorVolts(totalOutputVolts);
 

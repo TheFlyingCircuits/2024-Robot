@@ -17,6 +17,7 @@ import frc.robot.subsystems.drivetrain.GyroIOSim;
 import frc.robot.subsystems.drivetrain.SwerveModuleIO;
 import frc.robot.subsystems.drivetrain.SwerveModuleIONeo;
 import frc.robot.subsystems.drivetrain.SwerveModuleIOSim;
+import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.shooter.Shooter;
 import frc.robot.subsystems.shooter.ShooterIO;
 import frc.robot.subsystems.shooter.ShooterIOSim;
@@ -45,6 +46,7 @@ public class RobotContainer {
     public final Shooter shooter;
     public final Drivetrain drivetrain;
     public final Arm arm;
+    public final Intake intake;
     
     public RobotContainer() {
 
@@ -77,6 +79,9 @@ public class RobotContainer {
 
             arm = new Arm(new ArmIOSim());
         }
+        
+
+        intake = new Intake();
 
         configureBindings();
         

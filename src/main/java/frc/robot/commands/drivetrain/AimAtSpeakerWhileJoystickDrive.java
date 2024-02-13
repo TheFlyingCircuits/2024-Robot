@@ -93,7 +93,6 @@ public class AimAtSpeakerWhileJoystickDrive extends Command {
             drivetrain.getRobotRotation2d()    
             );
 
-        //Logger.recordOutput("drivetrain", outputChassisSpeeds);
         drivetrain.drive(outputChassisSpeeds, true);
 
     }

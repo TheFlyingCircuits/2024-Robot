@@ -268,7 +268,6 @@ public class Drivetrain extends SubsystemBase {
             getVisionStdDevs(visionInputs.nearestTagDistanceMeters)
         );
 
-        Logger.recordOutput("drivetrain/swerveOdometry", getPoseMeters());
         Logger.recordOutput("drivetrain/poseEstimatorPose", poseEstimator.getEstimatedPosition());
 
         Logger.recordOutput(
