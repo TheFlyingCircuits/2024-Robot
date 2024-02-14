@@ -213,7 +213,6 @@ public class Drivetrain extends SubsystemBase {
      * This angle is counter-clockwise positive with an angle of zero facing away from the blue alliance wall.
      * */
     public Rotation2d getAngleToSpeaker() {
-
         return (DriverStation.getAlliance().get() == Alliance.Red ? 
                 FieldConstants.redSpeakerTranslation2d : FieldConstants.blueSpeakerTranslation2d)
                     .minus(getPoseMeters().getTranslation()).getAngle();
@@ -243,6 +242,18 @@ public class Drivetrain extends SubsystemBase {
             slopeStdDevMetersPerMeter*distToTargetMeters,
             slopeStdDevRadiansPerMeter*distToTargetMeters
         );
+    }
+
+
+    /**
+     * Sets the angle of the robot's pose so that it is facing forward, away from your alliance wall. 
+     * This allows the driver to realign the drive direction and other calls to our angle.
+     */
+    public void setRobotFacingForward() {
+        Rotation2d rotation = (DriverStation.getAlliance().get() == Alliance.Blue) ?
+            Rotation2d.fromDegrees(0) : Rotation2d.fromDegrees(180);
+
+        setPoseMeters(new Pose2d(getPoseMeters().getTranslation(), rotation));
     }
 
 

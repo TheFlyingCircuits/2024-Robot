@@ -8,7 +8,6 @@ import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants.FieldConstants;
 import frc.robot.subsystems.arm.Arm;
 import frc.robot.subsystems.drivetrain.Drivetrain;
-import frc.robot.subsystems.shooter.Shooter;
 
 public class AimShooterAtSpeaker extends Command {
 
@@ -28,7 +27,6 @@ public class AimShooterAtSpeaker extends Command {
 
     @Override
     public void execute() {
-
         double targetAngleRadians = Math.atan2(FieldConstants.speakerHeightMeters, drivetrain.distToSpeakerBaseMeters());
 
         arm.setArmDesiredPosition(Math.toDegrees(targetAngleRadians));
@@ -41,6 +39,6 @@ public class AimShooterAtSpeaker extends Command {
     // Returns true when the command should end.
     @Override
     public boolean isFinished() {
-        return false;
+        return !arm.isMovingToTarget;
     }
 }

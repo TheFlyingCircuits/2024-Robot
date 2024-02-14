@@ -31,7 +31,7 @@ public class Arm extends SubsystemBase {
 
     private TrapezoidProfile.State initState;
     private double targetAngleDegrees;
-    private boolean isMovingToTarget;
+    public boolean isMovingToTarget;
 
     private Mechanism2d armMech2d;
     private MechanismRoot2d armMechRoot;

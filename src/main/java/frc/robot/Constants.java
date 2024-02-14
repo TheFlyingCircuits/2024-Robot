@@ -39,11 +39,11 @@ public final class Constants {
 
         /**temp device ids for motors */
         public final static int leftMotorID = 0;
-        public final static int rightMotorID = 0;
+        public final static int rightMotorID = 1;
 
-        public final static int indexerMotorID = 0;
+        public final static int indexerMotorID = 2;
 
-        public static final int indexerProximitySwitchID = 0;
+        public static final int indexerProximitySwitchID = 3;
     }
 
     public static final class DrivetrainConstants {
@@ -174,9 +174,9 @@ public final class Constants {
         /**Maximum angle of the arm, in degrees. This value should be positive and greater than 90, as it is beyond the vertical. */
         public final static double kArmMaxAngleDegrees = 100.;
 
-        public final static double armMaxVelDegreesPerSecond = 50.;
+        public final static double armMaxVelDegreesPerSecond = 150.;
 
-        public final static double armMaxAccelDegreesPerSecondSquared = 50.;
+        public final static double armMaxAccelDegreesPerSecondSquared = 360.;
 
         /**temporary ids for motors and CANcoder of the shooting arm */
         public final static int leftMotorID = 9;
@@ -242,9 +242,9 @@ public final class Constants {
     public final static class IntakeConstants {
         
 
-        public final static int frontIntakeMotorID = 0;
-        public final static int backIntakeMotorID = 0;
-        public static final int intakeProximitySwitchID = 0;
+        public final static int frontIntakeMotorID = 99;
+        public final static int backIntakeMotorID = 98;
+        public static final int intakeProximitySwitchID = 2;
     }
 
 }

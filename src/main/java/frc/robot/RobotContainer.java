@@ -4,42 +4,43 @@
 
 package frc.robot;
 
+import frc.robot.Constants.ArmConstants;
 import frc.robot.commands.arm.AimShooterAtSpeaker;
 import frc.robot.commands.drivetrain.AimAtSpeakerWhileJoystickDrive;
 import frc.robot.commands.drivetrain.JoystickDrive;
-import frc.robot.commands.intake.IndexNote;
+import frc.robot.commands.intake.IntakeNote;
+import frc.robot.commands.shooter.FireNote;
+import frc.robot.commands.shooter.SpinFlywheels;
 import frc.robot.subsystems.arm.Arm;
 import frc.robot.subsystems.arm.ArmIO;
 import frc.robot.subsystems.arm.ArmIOSim;
 import frc.robot.subsystems.drivetrain.Drivetrain;
-import frc.robot.subsystems.drivetrain.GyroIO;
 import frc.robot.subsystems.drivetrain.GyroIOPigeon;
 import frc.robot.subsystems.drivetrain.GyroIOSim;
-import frc.robot.subsystems.drivetrain.SwerveModuleIO;
 import frc.robot.subsystems.drivetrain.SwerveModuleIONeo;
 import frc.robot.subsystems.drivetrain.SwerveModuleIOSim;
 import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.shooter.Indexer;
 import frc.robot.subsystems.shooter.Shooter;
-import frc.robot.subsystems.shooter.ShooterIO;
+import frc.robot.subsystems.shooter.ShooterIOKraken;
 import frc.robot.subsystems.shooter.ShooterIOSim;
 import frc.robot.subsystems.vision.VisionIO;
 import frc.robot.subsystems.vision.VisionIOPhotonLib;
 
 import com.pathplanner.lib.auto.AutoBuilder;
-import com.pathplanner.lib.path.PathPlannerPath;
-
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
+import edu.wpi.first.wpilibj2.command.ParallelRaceGroup;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
- * "declarative" paradigm, very little robot logic should actually be handled in the {@link Robot}
- * periodic methods (other than the scheduler calls). Instead, the structure of the robot (including
+ * "declarative" paradigm, very little robot logic shoud actually be handled in the {@link Robot}
+ * periodic methods (other than the scheduler calls). Instlead, the structure of the robot (including
  * subsystems, commands, and trigger mappings) should be declared here.
  */
 public class RobotContainer {
@@ -65,34 +66,33 @@ public class RobotContainer {
                 new VisionIOPhotonLib()
             );
 
-            shooter = new Shooter(new ShooterIO() {});
+            shooter = new Shooter(new ShooterIOKraken());
 
             arm = new Arm(new ArmIO() {});
+
         }
         else {
 
             drivetrain = new Drivetrain(
                 new GyroIOSim(),
-                new SwerveModuleIOSim() {},
-                new SwerveModuleIOSim() {},
-                new SwerveModuleIOSim() {},
-                new SwerveModuleIOSim() {},
+                new SwerveModuleIOSim(),
+                new SwerveModuleIOSim(),
+                new SwerveModuleIOSim(),
+                new SwerveModuleIOSim(),
                 new VisionIO() {}
             );
 
-            shooter = new Shooter(new ShooterIO() {});
+            shooter = new Shooter(new ShooterIOSim());
 
             arm = new Arm(new ArmIOSim());
         }
-        
 
         intake = new Intake();
         indexer = new Indexer();
-
+        
         configureBindings();
         
         drivetrain.setDefaultCommand(new JoystickDrive(true, drivetrain));
-        //arm.setDefaultCommand(new InstantCommand(() -> arm.setArmDesiredPosition(0), arm));
         isRingInIntake = new Trigger(intake::isRingInIntake);
     }
 
@@ -106,14 +106,37 @@ public class RobotContainer {
      * joysticks}.
      */
     private void configureBindings() {
-        controller.y().onTrue(new InstantCommand(() -> drivetrain.setRobotRotation2d(new Rotation2d(0))));
+        /** Command to prepare for a shot. Finishes after the drivetrain aims at the speaker, 
+         * the flywheels spin up to a desired speed, and the shooter reaches the correct angle. */
+        ParallelRaceGroup prepShot = 
+            new ParallelRaceGroup(
+                new ParallelCommandGroup(
+                    new SpinFlywheels(500, 500, shooter),
+                    new AimShooterAtSpeaker(arm, drivetrain)),
+                new AimAtSpeakerWhileJoystickDrive(drivetrain));
 
-        controller.b().onTrue(new InstantCommand(() -> arm.setArmDesiredPosition(30)));
+        /** Resets the angle and speed of the shooter back to its default idle position. */
+        ParallelCommandGroup resetShooter = 
+            new ParallelCommandGroup(
+                new SpinFlywheels(0, 0, shooter),
+                new InstantCommand(() -> arm.setArmDesiredPosition(ArmConstants.kArmMinAngleDegrees)));
 
+        //aims and then shoots!
+        controller.b().onTrue(
+            new SequentialCommandGroup(
+                prepShot,
+                new FireNote(indexer),
+                resetShooter));
+
+        controller.rightTrigger().whileTrue(
+            new IntakeNote(intake));
+
+        controller.y().onTrue(new InstantCommand(() -> drivetrain.setRobotFacingForward()));
         controller.a().toggleOnTrue(new AimShooterAtSpeaker(arm, drivetrain));
         controller.x().toggleOnTrue(new AimAtSpeakerWhileJoystickDrive(drivetrain));
 
-        isRingInIntake.onTrue(new IndexNote(intake, indexer));
+
+        //isRingInIntake.onTrue(new IndexNote(intake, indexer));
         
     }
 
@@ -123,7 +146,6 @@ public class RobotContainer {
      * @return the command to run in autonomous
      */
     public Command getAutonomousCommand() {
-        PathPlannerPath path = PathPlannerPath.fromPathFile("path2");
         return AutoBuilder.buildAuto("Vision Test Path");
     }
 }

@@ -5,7 +5,6 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
-import edu.wpi.first.wpilibj.motorcontrol.Talon;
 import frc.robot.Constants.ShooterConstants;
 
 public class ShooterIOKraken implements ShooterIO {
