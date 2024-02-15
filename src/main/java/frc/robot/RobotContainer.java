@@ -30,6 +30,8 @@ import frc.robot.subsystems.vision.VisionIO;
 import frc.robot.subsystems.vision.VisionIOPhotonLib;
 
 import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.auto.NamedCommands;
+
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
@@ -139,6 +141,23 @@ public class RobotContainer {
             new AimAtSpeakerWhileJoystickDrive(drivetrain));
     }
 
+    //aims and then shoots in one motion
+    SequentialCommandGroup shootFromSubwoofer() { 
+        return new SequentialCommandGroup(
+            prepSubwooferShot(),
+            new FireNote(indexer),
+            resetShooter());
+    }
+
+
+    //aims and then shoots in one motion
+    SequentialCommandGroup shootFromAnywhere() {
+        return new SequentialCommandGroup(
+            prepShotFromAnywhere(),
+            new FireNote(indexer),
+            resetShooter());
+    }
+
     /**
      * Use this method to define your trigger->command mappings. Triggers can be created via the
      * {@link Trigger#Trigger(java.util.function.BooleanSupplier)} constructor with an arbitrary
@@ -149,28 +168,10 @@ public class RobotContainer {
      * joysticks}.
      */
     private void configureBindings() {
-
-
-        //any commands constructed in here will only be able to be used in one composition.
-
-        //aims and then shoots in one motion
-        SequentialCommandGroup shootFromAnywhere = 
-            new SequentialCommandGroup(
-                prepShotFromAnywhere(),
-                new FireNote(indexer),
-                resetShooter());
-        
-        //aims and then shoots in one motion
-        SequentialCommandGroup shootFromSubwoofer = 
-            new SequentialCommandGroup(
-                prepSubwooferShot(),
-                new FireNote(indexer),
-                resetShooter());
-
         controller.rightTrigger().whileTrue(new IntakeNote(intake));
 
-        controller.b().onTrue(shootFromAnywhere);
-        controller.rightBumper().onTrue(shootFromSubwoofer);
+        controller.b().onTrue(shootFromAnywhere());
+        controller.rightBumper().onTrue(shootFromSubwoofer());
 
 
         controller.y().onTrue(new InstantCommand(() -> drivetrain.setRobotFacingForward()));
@@ -187,6 +188,11 @@ public class RobotContainer {
      * @return the command to run in autonomous
      */
     public Command getAutonomousCommand() {
+
+        NamedCommands.registerCommand("shootFromSubwoofer", shootFromSubwoofer());
+        NamedCommands.registerCommand("shootFromAnywhere", shootFromAnywhere());
+        NamedCommands.registerCommand("indexNote", new IndexNote(intake, indexer));
+
         return AutoBuilder.buildAuto("Vision Test Path");
     }
 }

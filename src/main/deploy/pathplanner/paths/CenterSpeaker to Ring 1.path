@@ -3,29 +3,29 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 13.69237386120992,
-        "y": 7.003080254377342
+        "x": 15.24991512179886,
+        "y": 5.562647359246215
       },
       "prevControl": null,
       "nextControl": {
-        "x": 13.762638880484609,
-        "y": 6.323851734722014
+        "x": 14.835503523744897,
+        "y": 6.164530870705546
       },
       "isLocked": false,
-      "linkedName": "Ring 1"
+      "linkedName": "Center Speaker"
     },
     {
       "anchor": {
         "x": 13.69237386120992,
-        "y": 4.098792791023527
+        "y": 7.003080254377342
       },
       "prevControl": {
-        "x": 14.60581911178088,
-        "y": 3.9348410793825868
+        "x": 14.205454887371971,
+        "y": 6.608402541944994
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "Ring 3"
+      "linkedName": "Ring 1"
     }
   ],
   "rotationTargets": [],
@@ -39,11 +39,11 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 0,
-    "rotateFast": false
+    "rotation": -45.0,
+    "rotateFast": true
   },
   "reversed": false,
-  "folder": "Starts at Ring",
+  "folder": "Starts at Speaker",
   "previewStartingState": null,
   "useDefaultConstraints": true
 }

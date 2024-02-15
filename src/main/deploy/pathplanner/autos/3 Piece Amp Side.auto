@@ -1,0 +1,75 @@
+{
+  "version": 1.0,
+  "startingPose": null,
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "named",
+          "data": {
+            "name": "shootFromSubwoofer"
+          }
+        },
+        {
+          "type": "parallel",
+          "data": {
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "Amp Side Speaker to Ring 1"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "indexNote"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "shootFromAnywhere"
+          }
+        },
+        {
+          "type": "parallel",
+          "data": {
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "Center Speaker to Ring 4"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "indexNote"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Ring 4 to Ring 1"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "shootFromAnywhere"
+          }
+        }
+      ]
+    }
+  },
+  "folder": null,
+  "choreoAuto": false
+}
