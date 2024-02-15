@@ -14,12 +14,12 @@ public class ShooterIOSim implements ShooterIO {
         leftSim = new FlywheelSim(
             DCMotor.getKrakenX60(1),
             ShooterConstants.kFlywheelGearReduction,
-            0.03);
+            0.000374);
 
         rightSim = new FlywheelSim(
             DCMotor.getKrakenX60(1),
             ShooterConstants.kFlywheelGearReduction,
-            0.03);
+            0.000374);
             
     }
 

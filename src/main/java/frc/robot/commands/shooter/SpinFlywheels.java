@@ -6,22 +6,22 @@ import frc.robot.subsystems.shooter.Shooter;
 public class SpinFlywheels extends Command {
 
     private Shooter shooter; 
-    private double leftFlywheelRPM;
-    private double rightFlywheelRPM;   
+    private double leftTargetFlywheelRPM;
+    private double rightTargetFlywheelRPM;   
 
     /** Spins the shooter flywheels up to a desired RPM. This does not launch the note. */
     public SpinFlywheels(double leftFlywheelRPM, double rightFlywheelRPM, Shooter shooter) {
         this.shooter = shooter;
-        this.leftFlywheelRPM = leftFlywheelRPM;
-        this.rightFlywheelRPM = rightFlywheelRPM;
+        this.leftTargetFlywheelRPM = leftFlywheelRPM;
+        this.rightTargetFlywheelRPM = rightFlywheelRPM;
 
         addRequirements(shooter);
     }
 
     @Override
     public void initialize() {
-        shooter.setLeftFlywheelsRPM(leftFlywheelRPM);
-        shooter.setRightFlywheelsRPM(rightFlywheelRPM);
+        shooter.setLeftFlywheelsRPM(leftTargetFlywheelRPM);
+        shooter.setRightFlywheelsRPM(rightTargetFlywheelRPM);
     };
 
     @Override
@@ -33,7 +33,7 @@ public class SpinFlywheels extends Command {
 
     @Override
     public boolean isFinished() {
-        return false;
+        return shooter.flywheelsAtSetpoints(20);
     }
     
 }

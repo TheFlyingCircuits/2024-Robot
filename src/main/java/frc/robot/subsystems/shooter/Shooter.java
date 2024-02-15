@@ -1,5 +1,7 @@
 package frc.robot.subsystems.shooter;
 
+import org.littletonrobotics.junction.Logger;
+
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -44,19 +46,21 @@ public class Shooter extends SubsystemBase {
             ShooterConstants.kIFlywheelsVoltsPerRotation, 
             ShooterConstants.kDFlywheelsVoltsSecondsSquaredPerRotation);
 
+
+
         flywheelsFeedforward = new SimpleMotorFeedforward(
             ShooterConstants.kSFlywheelsVolts,
             ShooterConstants.kVFlywheelsVoltsSecondsPerRotation,
             ShooterConstants.kAFlywheelsVoltsSecondsSquaredPerRotation);
     }
 
-    public void setLeftFlywheelsRotationsPerSecond(double rotationsPerSecond) {
+    private void setLeftFlywheelsRotationsPerSecond(double rotationsPerSecond) {
         double feedforwardOutput = flywheelsFeedforward.calculate(rotationsPerSecond);
         double pidOutput = leftFlywheelsPID.calculate(inputs.leftFlywheelsRotationsPerSecond, rotationsPerSecond);
         io.setLeftMotorVolts(feedforwardOutput + pidOutput);
     }
 
-    public void setRightFlywheelsRotationsPerSecond(double rotationsPerSecond) {
+    private void setRightFlywheelsRotationsPerSecond(double rotationsPerSecond) {
         double feedforwardOutput = flywheelsFeedforward.calculate(rotationsPerSecond);
         double pidOutput = rightFlywheelsPID.calculate(inputs.rightFlywheelsRotationsPerSecond, rotationsPerSecond);
         io.setRightMotorVolts(feedforwardOutput + pidOutput);
@@ -70,10 +74,34 @@ public class Shooter extends SubsystemBase {
         setRightFlywheelsRotationsPerSecond(rpm*60);
     }
 
+    public double getLeftFlywheelsRPM() {
+        return inputs.leftFlywheelsRotationsPerSecond/60.;
+    }
+
+    public double getRightFlywheelsRPM() {
+        return inputs.rightFlywheelsRotationsPerSecond/60.;
+    }
+
+    /**
+     * Returns true if both flywheels are spinning within some threshold of their target speeds.
+     */
+    public boolean flywheelsAtSetpoints(double rpmThreshold) {
+
+        
+        leftFlywheelsPID.setTolerance(rpmThreshold*60); //multiply by 60 to change rpm threshold to rps threshold
+        rightFlywheelsPID.setTolerance(rpmThreshold*60);
+
+        return leftFlywheelsPID.atSetpoint() && rightFlywheelsPID.atSetpoint();
+    }
     
 
     @Override
     public void periodic() {
         io.updateInputs(inputs);
+
+        Logger.recordOutput("shooter/leftFlywheelsSetpoint", leftFlywheelsPID.getSetpoint());
+        Logger.recordOutput("shooter/rightFlywheelsSetpoint", rightFlywheelsPID.getSetpoint());
+
+        Logger.processInputs("shooterInputs", inputs);
     };
 }

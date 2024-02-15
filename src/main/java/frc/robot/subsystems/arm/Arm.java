@@ -74,7 +74,7 @@ public class Arm extends SubsystemBase {
         targetAngleDegrees = MathUtil.clamp(targetAngleDegrees, ArmConstants.kArmMinAngleDegrees, ArmConstants.kArmMaxAngleDegrees);
         
         //For continuous control
-        if (Math.abs(this.targetAngleDegrees - targetAngleDegrees) < 0.1) {
+        if (Math.abs(this.targetAngleDegrees - targetAngleDegrees) < 0.5) {
             return;
         }
 
@@ -133,11 +133,12 @@ public class Arm extends SubsystemBase {
 
         double totalOutputVolts = feedforwardOutputVolts + pidOutputVolts;
 
+        totalOutputVolts = MathUtil.clamp(totalOutputVolts, -12, 12);
+
         if ((inputs.atLowerLimit && totalOutputVolts < 0) || (inputs.atUpperLimit && totalOutputVolts > 0))
             totalOutputVolts = 0;
 
         Logger.recordOutput("arm/trapezoidProfilePosition", desiredState.position);
-
         Logger.recordOutput("arm/totalOutputVolts", totalOutputVolts);
 
         io.setArmMotorVolts(totalOutputVolts);

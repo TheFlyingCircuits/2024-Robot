@@ -33,7 +33,7 @@ public final class Constants {
         public final static double kIFlywheelsVoltsPerRotation = 0.;
         public final static double kDFlywheelsVoltsSecondsSquaredPerRotation = 0.;
 
-        public final static double kSFlywheelsVolts = 0.;
+        public final static double kSFlywheelsVolts = 1.0;
         public final static double kVFlywheelsVoltsSecondsPerRotation = 0.;
         public final static double kAFlywheelsVoltsSecondsSquaredPerRotation = 0.;
 

@@ -5,9 +5,11 @@
 package frc.robot;
 
 import frc.robot.Constants.ArmConstants;
+import frc.robot.commands.arm.AimShooterAtAngle;
 import frc.robot.commands.arm.AimShooterAtSpeaker;
 import frc.robot.commands.drivetrain.AimAtSpeakerWhileJoystickDrive;
 import frc.robot.commands.drivetrain.JoystickDrive;
+import frc.robot.commands.intake.IndexNote;
 import frc.robot.commands.intake.IntakeNote;
 import frc.robot.commands.shooter.FireNote;
 import frc.robot.commands.shooter.SpinFlywheels;
@@ -90,10 +92,51 @@ public class RobotContainer {
         intake = new Intake();
         indexer = new Indexer();
         
-        configureBindings();
         
         drivetrain.setDefaultCommand(new JoystickDrive(true, drivetrain));
+
         isRingInIntake = new Trigger(intake::isRingInIntake);
+        
+        configureBindings();
+    }
+
+
+    //these command compositions must be separated into their own methods
+    //since wpilib requires a new instance of a command to be used in each
+    //composition (the same instance of a command cannot be used in multiple compositions).
+
+
+    /** Moves the arm back and spins up the flywheels to prepare for an amp shot. */
+    ParallelCommandGroup prepAmpShot() {
+        return new ParallelCommandGroup(
+            new SpinFlywheels(500, 500, shooter),
+            new AimShooterAtAngle(100, arm));
+    }
+
+
+    /** Resets the angle and speed of the shooter back to its default idle position. */
+    ParallelCommandGroup resetShooter() {
+        return new ParallelCommandGroup(
+            new SpinFlywheels(0, 0, shooter),
+            new InstantCommand(() -> arm.setArmDesiredPosition(ArmConstants.kArmMinAngleDegrees)));
+    }
+
+    /** Spins the flywheels up to speed and aims arm when pressed against the subwoofer. */
+    ParallelCommandGroup prepSubwooferShot() {
+        return new ParallelCommandGroup(
+            new SpinFlywheels(500, 500, shooter),
+            new AimShooterAtAngle(70, arm));
+    }
+
+    
+    /** Command to prepare for a shot. Finishes after the flywheels spin up to a desired
+     *  speed, and the shooter reaches the correct angle. */
+    ParallelRaceGroup prepShotFromAnywhere() { 
+        return new ParallelRaceGroup(
+            new ParallelCommandGroup(
+                new SpinFlywheels(500, 500, shooter),
+                new AimShooterAtSpeaker(arm, drivetrain)),
+            new AimAtSpeakerWhileJoystickDrive(drivetrain));
     }
 
     /**
@@ -106,38 +149,36 @@ public class RobotContainer {
      * joysticks}.
      */
     private void configureBindings() {
-        /** Command to prepare for a shot. Finishes after the drivetrain aims at the speaker, 
-         * the flywheels spin up to a desired speed, and the shooter reaches the correct angle. */
-        ParallelRaceGroup prepShot = 
-            new ParallelRaceGroup(
-                new ParallelCommandGroup(
-                    new SpinFlywheels(500, 500, shooter),
-                    new AimShooterAtSpeaker(arm, drivetrain)),
-                new AimAtSpeakerWhileJoystickDrive(drivetrain));
 
-        /** Resets the angle and speed of the shooter back to its default idle position. */
-        ParallelCommandGroup resetShooter = 
-            new ParallelCommandGroup(
-                new SpinFlywheels(0, 0, shooter),
-                new InstantCommand(() -> arm.setArmDesiredPosition(ArmConstants.kArmMinAngleDegrees)));
 
-        //aims and then shoots!
-        controller.b().onTrue(
+        //any commands constructed in here will only be able to be used in one composition.
+
+        //aims and then shoots in one motion
+        SequentialCommandGroup shootFromAnywhere = 
             new SequentialCommandGroup(
-                prepShot,
+                prepShotFromAnywhere(),
                 new FireNote(indexer),
-                resetShooter));
+                resetShooter());
+        
+        //aims and then shoots in one motion
+        SequentialCommandGroup shootFromSubwoofer = 
+            new SequentialCommandGroup(
+                prepSubwooferShot(),
+                new FireNote(indexer),
+                resetShooter());
 
-        controller.rightTrigger().whileTrue(
-            new IntakeNote(intake));
+        controller.rightTrigger().whileTrue(new IntakeNote(intake));
+
+        controller.b().onTrue(shootFromAnywhere);
+        controller.rightBumper().onTrue(shootFromSubwoofer);
+
 
         controller.y().onTrue(new InstantCommand(() -> drivetrain.setRobotFacingForward()));
         controller.a().toggleOnTrue(new AimShooterAtSpeaker(arm, drivetrain));
         controller.x().toggleOnTrue(new AimAtSpeakerWhileJoystickDrive(drivetrain));
 
 
-        //isRingInIntake.onTrue(new IndexNote(intake, indexer));
-        
+        isRingInIntake.onTrue(new IndexNote(intake, indexer));
     }
 
     /**
