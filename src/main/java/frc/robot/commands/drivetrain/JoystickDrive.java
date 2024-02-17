@@ -5,6 +5,8 @@
 package frc.robot.commands.drivetrain;
 
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.RobotContainer;
 import frc.robot.Constants.ControllerConstants;
@@ -74,9 +76,14 @@ public class JoystickDrive extends Command {
         double finalControllerY = controllerXY * Math.sin(theta);
         double controllerR = modifyAxis(-RobotContainer.controller.getRightX());
 
+
+        if (DriverStation.getAlliance().get() == Alliance.Red) {
+            finalControllerX *= -1;
+            finalControllerY *= -1;
+        }
+        
         // Raw controller values after modifyAxis will be between -1 and 1.
         // Coefficient = maximum speed in meters or radians per second.
-
         ChassisSpeeds outputChassisSpeeds = new ChassisSpeeds(
             finalControllerY*DrivetrainConstants.maxDesiredTeleopVelocityMetersPerSecond,
             finalControllerX*DrivetrainConstants.maxDesiredTeleopVelocityMetersPerSecond,
@@ -84,8 +91,8 @@ public class JoystickDrive extends Command {
 
         if (fieldOriented) {
             outputChassisSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(
-            outputChassisSpeeds,
-            drivetrain.getRobotRotation2d());
+                outputChassisSpeeds,
+                drivetrain.getRobotRotation2d());
         }
 
         drivetrain.drive(outputChassisSpeeds, true);
