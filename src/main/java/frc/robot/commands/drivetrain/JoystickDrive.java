@@ -76,12 +76,11 @@ public class JoystickDrive extends Command {
         double finalControllerY = controllerXY * Math.sin(theta);
         double controllerR = modifyAxis(-RobotContainer.controller.getRightX());
 
-
         if (DriverStation.getAlliance().get() == Alliance.Red) {
-            finalControllerX *= -1;
-            finalControllerY *= -1;
+            finalControllerX*=-1;
+            finalControllerY*=-1;
         }
-        
+
         // Raw controller values after modifyAxis will be between -1 and 1.
         // Coefficient = maximum speed in meters or radians per second.
         ChassisSpeeds outputChassisSpeeds = new ChassisSpeeds(

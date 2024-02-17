@@ -235,7 +235,7 @@ public class Drivetrain extends SubsystemBase {
     private Matrix<N3, N1> getVisionStdDevs(double distToTargetMeters) {
 
         double slopeStdDevMetersPerMeter = 2.;
-        double slopeStdDevRadiansPerMeter = 3;
+        double slopeStdDevRadiansPerMeter = 1000;
 
         //corresponds to x, y, and rotation standard deviations (meters and radians)
         return VecBuilder.fill(

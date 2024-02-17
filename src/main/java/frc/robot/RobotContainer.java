@@ -24,6 +24,7 @@ import frc.robot.subsystems.drivetrain.SwerveModuleIOSim;
 import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.shooter.Indexer;
 import frc.robot.subsystems.shooter.Shooter;
+import frc.robot.subsystems.shooter.ShooterIO;
 import frc.robot.subsystems.shooter.ShooterIOKraken;
 import frc.robot.subsystems.shooter.ShooterIOSim;
 import frc.robot.subsystems.vision.VisionIO;
@@ -33,6 +34,7 @@ import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
 
 import edu.wpi.first.wpilibj.RobotBase;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
@@ -53,8 +55,8 @@ public class RobotContainer {
     public final Shooter shooter;
     public final Drivetrain drivetrain;
     public final Arm arm;
-    public final Intake intake;
-    public final Indexer indexer;
+    // public final Intake intake;
+    // public final Indexer indexer;
 
     private Trigger isRingInIntake;
     
@@ -70,7 +72,7 @@ public class RobotContainer {
                 new VisionIOPhotonLib()
             );
 
-            shooter = new Shooter(new ShooterIOKraken());
+            shooter = new Shooter(new ShooterIO() {});
 
             arm = new Arm(new ArmIO() {});
 
@@ -91,13 +93,13 @@ public class RobotContainer {
             arm = new Arm(new ArmIOSim());
         }
 
-        intake = new Intake();
-        indexer = new Indexer();
+        // intake = new Intake();
+        // indexer = new Indexer();
         
         
         drivetrain.setDefaultCommand(new JoystickDrive(true, drivetrain));
 
-        isRingInIntake = new Trigger(intake::isRingInIntake);
+        // isRingInIntake = new Trigger(intake::isRingInIntake);
         
         configureBindings();
     }
@@ -141,22 +143,22 @@ public class RobotContainer {
             new AimAtSpeakerWhileJoystickDrive(drivetrain));
     }
 
-    //aims and then shoots in one motion
-    SequentialCommandGroup shootFromSubwoofer() { 
-        return new SequentialCommandGroup(
-            prepSubwooferShot(),
-            new FireNote(indexer),
-            resetShooter());
-    }
+    // //aims and then shoots in one motion
+    // SequentialCommandGroup shootFromSubwoofer() { 
+    //     return new SequentialCommandGroup(
+    //         prepSubwooferShot(),
+    //         new FireNote(indexer),
+    //         resetShooter());
+    // }
 
 
-    //aims and then shoots in one motion
-    SequentialCommandGroup shootFromAnywhere() {
-        return new SequentialCommandGroup(
-            prepShotFromAnywhere(),
-            new FireNote(indexer),
-            resetShooter());
-    }
+    // //aims and then shoots in one motion
+    // SequentialCommandGroup shootFromAnywhere() {
+    //     return new SequentialCommandGroup(
+    //         prepShotFromAnywhere(),
+    //         new FireNote(indexer),
+    //         resetShooter());
+    // }
 
     /**
      * Use this method to define your trigger->command mappings. Triggers can be created via the
@@ -168,10 +170,10 @@ public class RobotContainer {
      * joysticks}.
      */
     private void configureBindings() {
-        controller.rightTrigger().whileTrue(new IntakeNote(intake));
+        // controller.rightTrigger().whileTrue(new IntakeNote(intake));
 
-        controller.b().onTrue(shootFromAnywhere());
-        controller.rightBumper().onTrue(shootFromSubwoofer());
+        // controller.b().onTrue(shootFromAnywhere());
+        // controller.rightBumper().onTrue(shootFromSubwoofer());
 
 
         controller.y().onTrue(new InstantCommand(() -> drivetrain.setRobotFacingForward()));
@@ -179,7 +181,7 @@ public class RobotContainer {
         controller.x().toggleOnTrue(new AimAtSpeakerWhileJoystickDrive(drivetrain));
 
 
-        isRingInIntake.onTrue(new IndexNote(intake, indexer));
+        // isRingInIntake.onTrue(new IndexNote(intake, indexer));
     }
 
     /**
@@ -189,10 +191,10 @@ public class RobotContainer {
      */
     public Command getAutonomousCommand() {
 
-        NamedCommands.registerCommand("shootFromSubwoofer", shootFromSubwoofer());
-        NamedCommands.registerCommand("shootFromAnywhere", shootFromAnywhere());
-        NamedCommands.registerCommand("indexNote", new IndexNote(intake, indexer));
+        // NamedCommands.registerCommand("shootFromSubwoofer", shootFromSubwoofer());
+        // NamedCommands.registerCommand("shootFromAnywhere", shootFromAnywhere());
+        // NamedCommands.registerCommand("indexNote", new IndexNote(intake, indexer));
 
-        return AutoBuilder.buildAuto("Vision Test Path");
+        return AutoBuilder.buildAuto("3 Piece Amp Side");
     }
 }

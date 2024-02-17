@@ -81,8 +81,8 @@ public class AimAtSpeakerWhileJoystickDrive extends Command {
         double finalControllerY = controllerXY * Math.sin(theta);
 
         if (DriverStation.getAlliance().get() == Alliance.Red) {
-            finalControllerX *= -1;
-            finalControllerY *= -1;
+            finalControllerX*=-1;
+            finalControllerY*=-1;
         }
 
         // Raw controller values after modifyAxis will be between -1 and 1.
