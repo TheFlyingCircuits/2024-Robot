@@ -1,0 +1,74 @@
+package frc.robot.VendorWrappers;
+
+import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.StatusCode;
+import com.ctre.phoenix6.configs.TalonFXConfiguration;
+
+/**
+ * A wrapper class around TalonFX that provides some convience features,
+ * like auto-retyring configs if they fail.
+ */
+public class Kraken extends TalonFX {
+
+    /** How we should refer to this motor in error messages. */
+    private String name;
+
+    public Kraken(int canID, String canBusName) {
+        this("Kraken #"+canID, canID, canBusName);
+    }
+
+    public Kraken(String motorName, int canID, String canBusName) {
+        super(canID, canBusName);
+        name = motorName;
+    }
+    
+    
+    public void applyConfig(TalonFXConfiguration config) {
+        /** Check that we've set some critical safety configs */
+        double statorCurrentLimit = config.CurrentLimits.StatorCurrentLimit;
+        boolean currentLimitEnabled = config.CurrentLimits.StatorCurrentLimitEnable;
+        while (statorCurrentLimit == 0) {
+            System.out.println("bruh, u forgot to set a current limit for "+name);
+            System.out.println("u gotta set something for TalonFXConfiguration.CurrentLimits.StatorCurrentLimit");
+        }
+        while (!currentLimitEnabled) {
+            System.out.println("bruh, u forgot to enable the current limit for "+name);
+            System.out.println("u gotta explicitly set TalonFXConfiguration.CurrentLimits.StatorCurrentLimitEnable to true");
+        }
+
+
+
+        /** Now start the process of applying the configs */
+
+
+
+        /** Wait up to 0.25 seconds for an error code after each config attempt. */
+        super.getConfigurator().DefaultTimeoutSeconds = 0.25;
+
+        while(true) {
+            /** Attempt to apply configs */
+            StatusCode configStatus = super.getConfigurator().apply(config);
+
+            /** Read back the configs that are actually in use */
+            TalonFXConfiguration configsInUse = new TalonFXConfiguration();
+            super.getConfigurator().refresh(configsInUse);
+
+            /** Verify all configs match their expected values.
+             *  Note that we have to compare the configs using
+             *  their String representation, because CTRE
+             *  did not override the .equals() method for
+             *  the TalonFXConfiguration type.
+             */
+            if (configStatus.isOK() && config.toString().equals(configsInUse.toString())) {
+                System.out.println("Successfully configured "+name);
+                return;
+            }
+
+            /** Log the failure if it occurred */
+            String errorMessage = "Error encounted while configuring "+name;
+            String errorName = "Error name: " + configStatus.getName();
+            String errorDescription = "Error description: " + configStatus.getDescription();
+            System.out.println(errorMessage+"\n"+errorName+"\n"+errorDescription+"\n"+"Retrying config...");
+        }
+    }
+}
