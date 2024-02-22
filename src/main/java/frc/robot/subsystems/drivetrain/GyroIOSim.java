@@ -7,9 +7,7 @@ package frc.robot.subsystems.drivetrain;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Twist2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
-import frc.robot.Constants;
 import frc.robot.Constants.DrivetrainConstants;
-import frc.robot.Constants.SwerveModuleConstants;
 
 /** Add your docs here. */
 public class GyroIOSim implements GyroIO {

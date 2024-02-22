@@ -9,18 +9,15 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.signals.SensorDirectionValue;
 import com.revrobotics.CANSparkLowLevel.MotorType;
 import com.revrobotics.CANSparkMax;
-import com.revrobotics.RelativeEncoder;
 
 import frc.robot.Constants.MotorConstants;
 import frc.robot.Constants.SwerveModuleConstants;
 import frc.robot.VendorWrappers.Kraken;
 
 public class SwerveModuleIOKraken implements SwerveModuleIO {
-    private double angleOffsetDegrees;
     private CANcoder absoluteEncoder;
     private CANSparkMax angleMotor;
     private Kraken driveMotor;
-    private RelativeEncoder angleEncoder;
     /**
      * 
      * @param driveMotorID - ID of the drive motor
@@ -31,15 +28,13 @@ public class SwerveModuleIOKraken implements SwerveModuleIO {
      * @param isAngleMotorOnTop - Is angle motor mounted on top
      */
     public SwerveModuleIOKraken(int driveMotorID, int angleMotorID, double angleOffsetDegrees, int cancoderID, boolean isDriveMotorOnTop, boolean isAngleMotorOnTop){
-        this.angleOffsetDegrees = angleOffsetDegrees;
         
         /* Angle Encoder Config */
         absoluteEncoder = new CANcoder(cancoderID, "CTRENetwork");
-        configCANCoder();
+        configCANCoder(angleOffsetDegrees);
 
         /* Angle Motor Config */
         angleMotor = new CANSparkMax(angleMotorID, MotorType.kBrushless);
-        angleEncoder = angleMotor.getEncoder();
         if(isAngleMotorOnTop) {
             configAngleMotor(false);
         } else {
@@ -72,7 +67,7 @@ public class SwerveModuleIOKraken implements SwerveModuleIO {
         angleMotor.setVoltage(volts);
     }
 
-    private void configCANCoder() {
+    private void configCANCoder(double angleOffsetDegrees) {
         CANcoderConfiguration cancoderConfigs = new CANcoderConfiguration();
         cancoderConfigs.MagnetSensor.AbsoluteSensorRange = AbsoluteSensorRangeValue.Signed_PlusMinusHalf;
         cancoderConfigs.MagnetSensor.MagnetOffset = angleOffsetDegrees;
@@ -93,10 +88,6 @@ public class SwerveModuleIOKraken implements SwerveModuleIO {
         angleMotor.setSmartCurrentLimit(MotorConstants.angleContinuousCurrentLimit);
         angleMotor.setInverted(invertedValue);
         angleMotor.setIdleMode(MotorConstants.angleNeutralMode);
-        //converts rotations of motor into deg of wheel
-        angleEncoder.setPositionConversionFactor(SwerveModuleConstants.steerGearReduction*360.0);
-        //converts rpm of motor into deg/s of wheel
-        angleEncoder.setVelocityConversionFactor(SwerveModuleConstants.steerGearReduction*360.0/60.0);
         angleMotor.burnFlash();
     }
 

@@ -169,10 +169,10 @@ public final class Constants {
         public final static double kArmGearReduction = 105.;
 
         /**Minimum angle of the arm, in degrees. This value should be negative, as it is below the horizontal.*/
-        public final static double kArmMinAngleDegrees = -20.;
+        public final static double kArmMinAngleDegrees = -24.;
 
         /**Maximum angle of the arm, in degrees. This value should be positive and greater than 90, as it is beyond the vertical. */
-        public final static double kArmMaxAngleDegrees = 100.;
+        public final static double kArmMaxAngleDegrees = 145.;
 
         public final static double armMaxVelDegreesPerSecond = 150.;
 

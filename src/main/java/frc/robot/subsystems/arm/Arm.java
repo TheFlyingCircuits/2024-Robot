@@ -24,6 +24,7 @@ import edu.wpi.first.wpilibj.sysid.SysIdRoutineLog;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Config;
 import frc.robot.Constants.ArmConstants;
 
 public class Arm extends SubsystemBase {
@@ -159,25 +160,22 @@ public class Arm extends SubsystemBase {
     private void motorSysIdLog(SysIdRoutineLog log) {
         log.motor("dgsg");
     }
-
+    /** 
     public Command generateSysIDCommand() {
 
         SysIdRoutine.Mechanism mech = new SysIdRoutine.Mechanism(
-                (Measure<Voltage> volts) -> {io.setArmMotorVolts(volts.in(Volts))},
+                (Measure<Voltage> volts) -> {io.setArmMotorVolts(volts.in(Volts));},
                 this::motorSysIdLog,
                 null);
 
 
-        SysIdRoutine routine =  new SysIdRoutine(
-            new SysIdRoutine.Config(),
-            ;
+        SysIdRoutine routine =  new SysIdRoutine(new Config(), new Mechanism2d());
 
 
 
         routine.quasistatic(null);
     }
-
-
+    */
     @Override
     public void periodic() {
         

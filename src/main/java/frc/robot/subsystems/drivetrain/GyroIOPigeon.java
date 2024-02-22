@@ -19,10 +19,6 @@ public class GyroIOPigeon implements GyroIO {
     private void configPigeon() {
         Pigeon2Configuration configs = new Pigeon2Configuration();
 
-        configs.Pigeon2Features.DisableNoMotionCalibration = false;
-        configs.Pigeon2Features.DisableTemperatureCompensation = false;
-        configs.Pigeon2Features.EnableCompass = false;
-
         /**
          * Setting the 'mountpose' or orientation the gyroscope is mounted on the robot
          */

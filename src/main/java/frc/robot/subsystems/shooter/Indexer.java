@@ -5,9 +5,6 @@ import org.littletonrobotics.junction.Logger;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
-import com.revrobotics.CANSparkMax;
-import com.revrobotics.CANSparkBase.IdleMode;
-import com.revrobotics.CANSparkLowLevel.MotorType;
 
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -18,6 +15,8 @@ public class Indexer extends SubsystemBase {
 
     private Kraken indexerMotor;
     private DigitalInput indexerProximitySwitch;
+    //Position never used, only read for error detection
+    private double motorPosition;
 
     public Indexer() {
         indexerMotor = new Kraken(ShooterConstants.indexerMotorID, "CTRENetwork");
@@ -43,12 +42,14 @@ public class Indexer extends SubsystemBase {
         config.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
         config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
 
-        indexerMotor.applyConfig(config);;
+        indexerMotor.applyConfig(config);
     }
 
     @Override
     public void periodic() {
         Logger.recordOutput("indexer/isNoteIndexed()", isNoteIndexed());
+        //Position never used, only read for error detection
+        motorPosition = indexerMotor.getPosition().getValueAsDouble();
     };
 
 }
