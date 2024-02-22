@@ -11,6 +11,7 @@ import frc.robot.commands.drivetrain.AimAtSpeakerWhileJoystickDrive;
 import frc.robot.commands.drivetrain.JoystickDrive;
 import frc.robot.commands.intake.IndexNote;
 import frc.robot.commands.intake.IntakeNote;
+import frc.robot.commands.intake.ReverseIntake;
 import frc.robot.commands.shooter.FireNote;
 import frc.robot.commands.shooter.SpinFlywheels;
 import frc.robot.subsystems.arm.Arm;
@@ -57,7 +58,7 @@ public class RobotContainer {
     public final Drivetrain drivetrain;
     public final Arm arm;
     public final Intake intake;
-    // public final Indexer indexer;
+    public final Indexer indexer;
 
     private Trigger isRingInIntake;
     
@@ -105,12 +106,12 @@ public class RobotContainer {
         }
 
         intake = new Intake();
-        // indexer = new Indexer();
+        indexer = new Indexer();
         
         
         drivetrain.setDefaultCommand(new JoystickDrive(true, drivetrain));
 
-        // isRingInIntake = new Trigger(intake::isRingInIntake);
+        isRingInIntake = new Trigger(intake::isRingInIntake);
         
         configureBindings();
     }
@@ -181,7 +182,8 @@ public class RobotContainer {
      * joysticks}.
      */
     private void configureBindings() {
-        controller.rightTrigger().whileTrue(new IntakeNote(intake));
+        controller.rightTrigger().whileTrue(new IndexNote(intake, indexer));
+        controller.leftTrigger().whileTrue(new ReverseIntake(intake, indexer));
 
         // controller.b().onTrue(shootFromAnywhere());
         // controller.rightBumper().onTrue(shootFromSubwoofer());
@@ -191,8 +193,7 @@ public class RobotContainer {
         controller.a().toggleOnTrue(new AimShooterAtSpeaker(arm, drivetrain));
         controller.x().toggleOnTrue(new AimAtSpeakerWhileJoystickDrive(drivetrain));
 
-
-        // isRingInIntake.onTrue(new IndexNote(intake, indexer));
+        isRingInIntake.onTrue(new IndexNote(intake, indexer));
     }
 
     /**

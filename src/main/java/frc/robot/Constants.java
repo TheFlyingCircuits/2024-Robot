@@ -25,7 +25,7 @@ import edu.wpi.first.math.util.Units;
  * constants are needed, to reduce verbosity.
  */
 public final class Constants {
-    public final class ShooterConstants {
+    public final static class ShooterConstants {
         /**Rotations of the wheel per rotations of the motor; a number greater than 1 represents a reduction. */
         public final static double kFlywheelGearReduction = 1.;
     
@@ -46,7 +46,7 @@ public final class Constants {
         public static final int indexerProximitySwitchID = 1;
     }
 
-    public static final class DrivetrainConstants {
+    public final static class DrivetrainConstants {
         // KINEMATICS CONSTANTS
 
         //TODO: update these for final robot
@@ -110,12 +110,12 @@ public final class Constants {
 
     }
 
-    public final class ControllerConstants {
+    public final static class ControllerConstants {
         public static final double controllerDeadzone = 0.175;
     }
 
-    public final class MotorConstants {
-        public static final int universalCurrentLimitAmps = 50;
+    public final static class MotorConstants {
+        public static final int universalCurrentLimitAmps = 30;
 
         // Motor configs
         public static final int angleContinuousCurrentLimit = 50;
@@ -127,7 +127,7 @@ public final class Constants {
         public static final IdleMode driveNeutralMode = IdleMode.kBrake;
     }
 
-    public final class SwerveModuleConstants {
+    public final static class SwerveModuleConstants {
         /** Rotations of the drive wheel per rotations of the drive motor. */
         public static final double driveGearReduction = (14.0 / 50.0) * (27.0 / 17.0) * (15.0 / 45.0);
 
@@ -154,7 +154,7 @@ public final class Constants {
 
     }
 
-    public final class GyroConstants {
+    public final static class GyroConstants {
         public static final int pigeonID = 0;
 
 
@@ -164,7 +164,7 @@ public final class Constants {
         public static final double mountPoseRollDegrees = -1.0425487756729126;
     }
 
-    public final class ArmConstants {
+    public final static class ArmConstants {
         /**Rotations of the arm per rotations of the motor; a number greater than 1 represents a reduction. */
         public final static double kArmGearReduction = 105.;
 

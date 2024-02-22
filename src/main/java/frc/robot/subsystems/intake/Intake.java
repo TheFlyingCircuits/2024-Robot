@@ -13,6 +13,7 @@ import com.revrobotics.CANSparkLowLevel.MotorType;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.IntakeConstants;
+import frc.robot.Constants.MotorConstants;
 
 /** Add your docs here. */
 public class Intake extends SubsystemBase {
@@ -51,8 +52,11 @@ public class Intake extends SubsystemBase {
     }
 
     private void configMotors() {
-        frontIntakeMotor.setInverted(true);
+        frontIntakeMotor.setInverted(false);
         backIntakeMotor.setInverted(false);
+
+        frontIntakeMotor.setSmartCurrentLimit(MotorConstants.universalCurrentLimitAmps);
+        backIntakeMotor.setSmartCurrentLimit(MotorConstants.universalCurrentLimitAmps);
 
         frontIntakeMotor.setIdleMode(IdleMode.kBrake);
         backIntakeMotor.setIdleMode(IdleMode.kBrake);
@@ -63,7 +67,7 @@ public class Intake extends SubsystemBase {
 
     @Override
     public void periodic() {
-        Logger.recordOutput("intake/intakeProximitySwitch.get()", intakeProximitySwitch.get());
+        Logger.recordOutput("intake/isRingInIntake", isRingInIntake());
     }
 
 }

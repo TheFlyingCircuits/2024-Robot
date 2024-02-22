@@ -1,5 +1,7 @@
 package frc.robot.subsystems.shooter;
 
+import org.littletonrobotics.junction.Logger;
+
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
@@ -45,6 +47,8 @@ public class Indexer extends SubsystemBase {
     }
 
     @Override
-    public void periodic() {};
+    public void periodic() {
+        Logger.recordOutput("indexer/isNoteIndexed()", isNoteIndexed());
+    };
 
 }

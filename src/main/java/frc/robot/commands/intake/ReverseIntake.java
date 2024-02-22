@@ -9,21 +9,21 @@ import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.shooter.Indexer;
 
 /** Add your docs here. */
-public class IndexNote extends Command {
+public class ReverseIntake extends Command {
 
 
     private Intake intake;
     private Indexer indexer;
 
-    public IndexNote(Intake intake, Indexer indexer) {
+    public ReverseIntake(Intake intake, Indexer indexer) {
         this.intake = intake;
         this.indexer = indexer;
     }
 
     @Override
     public void initialize() {
-        intake.setVolts(5);
-        indexer.setVolts(5);
+        intake.setVolts(-5);
+        indexer.setVolts(-5);
     }
 
     @Override
@@ -37,6 +37,6 @@ public class IndexNote extends Command {
 
     @Override
     public boolean isFinished() {
-        return indexer.isNoteIndexed();
+        return false;
     }
 }

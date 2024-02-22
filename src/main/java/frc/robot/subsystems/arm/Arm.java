@@ -6,16 +6,24 @@ package frc.robot.subsystems.arm;
 
 import org.littletonrobotics.junction.Logger;
 
+import static edu.wpi.first.units.Units.Volts;
+
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
+import edu.wpi.first.units.Measure;
+import edu.wpi.first.units.Voltage;
+import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismRoot2d;
+import edu.wpi.first.wpilibj.sysid.SysIdRoutineLog;
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants.ArmConstants;
 
 public class Arm extends SubsystemBase {
@@ -148,6 +156,26 @@ public class Arm extends SubsystemBase {
             isMovingToTarget = false;
     }
 
+    private void motorSysIdLog(SysIdRoutineLog log) {
+        log.motor("dgsg");
+    }
+
+    public Command generateSysIDCommand() {
+
+        SysIdRoutine.Mechanism mech = new SysIdRoutine.Mechanism(
+                (Measure<Voltage> volts) -> {io.setArmMotorVolts(volts.in(Volts))},
+                this::motorSysIdLog,
+                null);
+
+
+        SysIdRoutine routine =  new SysIdRoutine(
+            new SysIdRoutine.Config(),
+            ;
+
+
+
+        routine.quasistatic(null);
+    }
 
 
     @Override
