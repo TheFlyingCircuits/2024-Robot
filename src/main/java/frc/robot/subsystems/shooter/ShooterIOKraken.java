@@ -1,24 +1,24 @@
 package frc.robot.subsystems.shooter;
 
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
-import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import frc.robot.Constants.ShooterConstants;
+import frc.robot.VendorWrappers.Kraken;
 
 public class ShooterIOKraken implements ShooterIO {
     
-    public TalonFX leftMotor;
-    public TalonFX rightMotor;
+    public Kraken leftMotor;
+    public Kraken rightMotor;
 
     public ShooterIOKraken() {
 
         /**Left motor config */
-        leftMotor = new TalonFX(ShooterConstants.leftMotorID, "CTRENetwork");
+        leftMotor = new Kraken(ShooterConstants.leftMotorID, "CTRENetwork");
 
         /**Right motor config */
-        rightMotor = new TalonFX(ShooterConstants.rightMotorID, "CTRENetwork");
+        rightMotor = new Kraken(ShooterConstants.rightMotorID, "CTRENetwork");
 
         configMotors();
 
@@ -34,12 +34,12 @@ public class ShooterIOKraken implements ShooterIO {
         TalonFXConfiguration leftConfig = new TalonFXConfiguration();
         leftConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
         leftConfig.MotorOutput.NeutralMode = NeutralModeValue.Coast;
-        leftMotor.getConfigurator().apply(leftConfig);
+        leftMotor.applyConfig(leftConfig);
 
         TalonFXConfiguration rightConfig = new TalonFXConfiguration();
         rightConfig.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
         rightConfig.MotorOutput.NeutralMode = NeutralModeValue.Coast;
-        rightMotor.getConfigurator().apply(rightConfig);
+        rightMotor.applyConfig(rightConfig);
     }
 
     @Override

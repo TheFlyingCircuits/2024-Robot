@@ -3,7 +3,6 @@ package frc.robot.subsystems.shooter;
 import org.littletonrobotics.junction.Logger;
 
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
-import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.revrobotics.CANSparkMax;
@@ -13,14 +12,15 @@ import com.revrobotics.CANSparkLowLevel.MotorType;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.ShooterConstants;
+import frc.robot.VendorWrappers.Kraken;
 
 public class Indexer extends SubsystemBase {
 
-    private TalonFX indexerMotor;
+    private Kraken indexerMotor;
     private DigitalInput indexerProximitySwitch;
 
     public Indexer() {
-        indexerMotor = new TalonFX(ShooterConstants.indexerMotorID, "CTRENetwork");
+        indexerMotor = new Kraken(ShooterConstants.indexerMotorID, "CTRENetwork");
         indexerProximitySwitch = new DigitalInput(ShooterConstants.indexerProximitySwitchID);
 
         configMotor();
@@ -43,7 +43,7 @@ public class Indexer extends SubsystemBase {
         config.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
         config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
 
-        indexerMotor.getConfigurator().apply(config);
+        indexerMotor.applyConfig(config);;
     }
 
     @Override

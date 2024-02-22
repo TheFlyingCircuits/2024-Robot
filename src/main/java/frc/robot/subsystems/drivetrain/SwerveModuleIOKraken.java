@@ -3,7 +3,6 @@ package frc.robot.subsystems.drivetrain;
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.hardware.CANcoder;
-import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.AbsoluteSensorRangeValue;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
@@ -14,12 +13,13 @@ import com.revrobotics.RelativeEncoder;
 
 import frc.robot.Constants.MotorConstants;
 import frc.robot.Constants.SwerveModuleConstants;
+import frc.robot.VendorWrappers.Kraken;
 
 public class SwerveModuleIOKraken implements SwerveModuleIO {
     private double angleOffsetDegrees;
     private CANcoder absoluteEncoder;
     private CANSparkMax angleMotor;
-    private TalonFX driveMotor;
+    private Kraken driveMotor;
     private RelativeEncoder angleEncoder;
     /**
      * 
@@ -47,7 +47,7 @@ public class SwerveModuleIOKraken implements SwerveModuleIO {
         }
 
         /* Drive Motor Config */
-        driveMotor = new TalonFX(driveMotorID, "CTRENetwork");
+        driveMotor = new Kraken(driveMotorID, "CTRENetwork");
         if(isDriveMotorOnTop) {
             configDriveMotor(InvertedValue.CounterClockwise_Positive);
         } else {
@@ -85,7 +85,7 @@ public class SwerveModuleIOKraken implements SwerveModuleIO {
         TalonFXConfiguration config = new TalonFXConfiguration();
         config.MotorOutput.Inverted = invertedValue;
         config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
-        driveMotor.getConfigurator().apply(config);
+        driveMotor.applyConfig(config);
     }
 
     private void configAngleMotor(boolean invertedValue) {

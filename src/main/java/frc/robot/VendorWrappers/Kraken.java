@@ -36,6 +36,12 @@ public class Kraken extends TalonFX {
             System.out.println("u gotta explicitly set TalonFXConfiguration.CurrentLimits.StatorCurrentLimitEnable to true");
         }
 
+        /** Print a warning if you're running a test and don't want a current limit to interfere. */
+        if (statorCurrentLimit >= 100) {
+            System.out.println("Stator Current Limit for "+name+" seems a little high");
+            System.out.println("Make sure to lower it after you're done testing whatever it is you're testing!");
+        }
+
 
 
         /** Now start the process of applying the configs */
