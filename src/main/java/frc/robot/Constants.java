@@ -27,7 +27,7 @@ import edu.wpi.first.math.util.Units;
 public final class Constants {
     public final static class ShooterConstants {
         /**Rotations of the wheel per rotations of the motor; a number greater than 1 represents a reduction. */
-        public final static double kFlywheelGearReduction = 1.;
+        public final static double kFlywheelGearReduction = 460./3.;
     
         public final static double kPFlywheelsVoltsSecondsPerRotation = 0.;
         public final static double kIFlywheelsVoltsPerRotation = 0.;
@@ -165,7 +165,7 @@ public final class Constants {
     }
 
     public final static class ArmConstants {
-        /**Rotations of the arm per rotations of the motor; a number greater than 1 represents a reduction. */
+        /**Rotations of the motor per rotations of the arm; a number greater than 1 represents a reduction. */
         public final static double kArmGearReduction = 105.;
 
         /**Minimum angle of the arm, in degrees. This value should be negative, as it is below the horizontal.*/
@@ -174,9 +174,9 @@ public final class Constants {
         /**Maximum angle of the arm, in degrees. This value should be positive and greater than 90, as it is beyond the vertical. */
         public final static double kArmMaxAngleDegrees = 145.;
 
-        public final static double armMaxVelDegreesPerSecond = 150.;
+        public final static double armMaxVelDegreesPerSecond = 30.;
 
-        public final static double armMaxAccelDegreesPerSecondSquared = 360.;
+        public final static double armMaxAccelDegreesPerSecondSquared = 30.;
 
         /**temporary ids for motors and CANcoder of the shooting arm */
         public final static int leftMotorID = 8;
@@ -185,17 +185,25 @@ public final class Constants {
         public final static int rightArmCANcoderID = 8;
         
 
-        public final static double leftArmCANcoderOffset = -0.471435546875;
-        public final static double rightArmCANcoderOffset = 0.06298828125;
+        public final static double rightArmCANcoderOffset = -0.44482421875;
+        public final static double leftArmCANcoderOffset = 0.08349609375;
 
         public final static double kSArmVolts = 0.0;
-        public final static double kGArmVolts = 0.3;
-        public final static double kVArmVoltsSecondsPerRadian = 2.5;
+        public final static double kGArmVolts = 0.2;
+        public final static double kVArmVoltsSecondsPerRadian = 0.;
         public final static double kAArmVoltsSecondsSquaredPerRadian = 0;
-
-        public final static double kPArmVoltsPerDegree = 0.3;
+        public final static double kPArmVoltsPerDegree = 0.0;
         public final static double kIArmVoltsPerDegreesSeconds = 0.;
-        public final static double kDArmVoltsSecondsPerDegree = 0.1;
+        public final static double kDArmVoltsSecondsPerDegree = 0.;
+
+        /**** SIM CONSTANTS  ******/
+        // public final static double kSArmVolts = 0.0;
+        // public final static double kGArmVolts = 0.3;
+        // public final static double kVArmVoltsSecondsPerRadian = 2.5;
+        // public final static double kAArmVoltsSecondsSquaredPerRadian = 0;
+        // public final static double kPArmVoltsPerDegree = 0.3;
+        // public final static double kIArmVoltsPerDegreesSeconds = 0.;
+        // public final static double kDArmVoltsSecondsPerDegree = 0.1;
 
         public final static TrapezoidProfile.Constraints constraints = new TrapezoidProfile.Constraints(
             armMaxVelDegreesPerSecond, armMaxAccelDegreesPerSecondSquared

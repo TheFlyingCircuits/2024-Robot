@@ -16,6 +16,7 @@ import frc.robot.commands.shooter.FireNote;
 import frc.robot.commands.shooter.SpinFlywheels;
 import frc.robot.subsystems.arm.Arm;
 import frc.robot.subsystems.arm.ArmIO;
+import frc.robot.subsystems.arm.ArmIONeo;
 import frc.robot.subsystems.arm.ArmIOSim;
 import frc.robot.subsystems.drivetrain.Drivetrain;
 import frc.robot.subsystems.drivetrain.GyroIOPigeon;
@@ -85,7 +86,7 @@ public class RobotContainer {
 
             shooter = new Shooter(new ShooterIO() {});
 
-            arm = new Arm(new ArmIO() {});
+            arm = new Arm(new ArmIONeo());
 
         }
         else {
@@ -189,7 +190,7 @@ public class RobotContainer {
 
 
         controller.y().onTrue(new InstantCommand(() -> drivetrain.setRobotFacingForward()));
-        controller.a().toggleOnTrue(new AimShooterAtAngle(30,arm));
+        controller.a().toggleOnTrue(new InstantCommand(() -> arm.setArmDesiredPosition(0)));
         controller.x().toggleOnTrue(new AimAtSpeakerWhileJoystickDrive(drivetrain));
 
         isRingInIntake.onTrue(new IndexNote(intake, indexer));

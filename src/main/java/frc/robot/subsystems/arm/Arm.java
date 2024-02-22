@@ -160,7 +160,7 @@ public class Arm extends SubsystemBase {
     private void motorSysIdLog(SysIdRoutineLog log) {
         log.motor("dgsg");
     }
-    /** 
+    
     public Command generateSysIDCommand() {
 
         SysIdRoutine.Mechanism mech = new SysIdRoutine.Mechanism(
@@ -169,13 +169,13 @@ public class Arm extends SubsystemBase {
                 null);
 
 
-        SysIdRoutine routine =  new SysIdRoutine(new Config(), new Mechanism2d());
+        SysIdRoutine routine =  new SysIdRoutine(new Config(), mech);
 
 
 
-        routine.quasistatic(null);
+        return routine.quasistatic(null);
     }
-    */
+    
     @Override
     public void periodic() {
         
