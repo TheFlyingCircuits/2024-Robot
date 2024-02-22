@@ -38,12 +38,12 @@ public final class Constants {
         public final static double kAFlywheelsVoltsSecondsSquaredPerRotation = 0.;
 
         /**temp device ids for motors */
-        public final static int leftMotorID = 0;
-        public final static int rightMotorID = 1;
+        public final static int leftMotorID = 5;
+        public final static int rightMotorID = 6;
 
-        public final static int indexerMotorID = 2;
+        public final static int indexerMotorID = 4;
 
-        public static final int indexerProximitySwitchID = 3;
+        public static final int indexerProximitySwitchID = 1;
     }
 
     public static final class DrivetrainConstants {
@@ -115,6 +115,8 @@ public final class Constants {
     }
 
     public final class MotorConstants {
+        public static final int universalCurrentLimitAmps = 50;
+
         // Motor configs
         public static final int angleContinuousCurrentLimit = 50;
         public static final boolean angleInvert = true;
@@ -153,8 +155,6 @@ public final class Constants {
     }
 
     public final class GyroConstants {
-        public static final String pigeonCANbus = "rio";
-
         public static final int pigeonID = 0;
 
 
@@ -179,10 +179,14 @@ public final class Constants {
         public final static double armMaxAccelDegreesPerSecondSquared = 360.;
 
         /**temporary ids for motors and CANcoder of the shooting arm */
-        public final static int leftMotorID = 9;
-        public final static int rightMotorID = 10;
-        public final static int armCANcoderID = 11;
+        public final static int leftMotorID = 8;
+        public final static int rightMotorID = 7;
+        public final static int leftArmCANcoderID = 9;
+        public final static int rightArmCANcoderID = 8;
         
+
+        public final static double leftArmCANcoderOffset = -0.471435546875;
+        public final static double rightArmCANcoderOffset = 0.06298828125;
 
         public final static double kSArmVolts = 0.0;
         public final static double kGArmVolts = 0.3;
@@ -203,8 +207,8 @@ public final class Constants {
         /**
          * temp motor ids for climbing motors
          */
-        public final static int leftMotorID = 14;
-        public final static int rightMotorID = 15;
+        public final static int leftMotorID = 10;
+        public final static int rightMotorID = 9;
 
         /**
          * Use this value as the conversion factor between the motors rotations and meters that the climb arms have extended.
@@ -240,11 +244,22 @@ public final class Constants {
     }
 
     public final static class IntakeConstants {
-        
+        public final static int frontIntakeMotorID = 4;
+        public final static int backIntakeMotorID = 3;
+        public static final int intakeProximitySwitchID = 0;
+    }
 
-        public final static int frontIntakeMotorID = 5;
-        public final static int backIntakeMotorID = 6;
-        public static final int intakeProximitySwitchID = 2;
+    public final static class LEDConstants {
+        public final static int ledID = 0;
+
+        //total number of leds
+        public final static int ledLength = 60;
+
+        public static enum LEDColor {
+            RED,
+            GREEN,
+            ORANGE
+        }
     }
 
 }

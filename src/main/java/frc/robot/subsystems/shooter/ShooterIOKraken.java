@@ -15,12 +15,12 @@ public class ShooterIOKraken implements ShooterIO {
     public ShooterIOKraken() {
 
         /**Left motor config */
-        leftMotor = new TalonFX(ShooterConstants.leftMotorID);
-        configMotor(leftMotor);
+        leftMotor = new TalonFX(ShooterConstants.leftMotorID, "CTRENetwork");
 
         /**Right motor config */
-        rightMotor = new TalonFX(ShooterConstants.rightMotorID);
-        configMotor(rightMotor);
+        rightMotor = new TalonFX(ShooterConstants.rightMotorID, "CTRENetwork");
+
+        configMotors();
 
     }
 
@@ -30,11 +30,16 @@ public class ShooterIOKraken implements ShooterIO {
         inputs.rightFlywheelsRotationsPerSecond = rightMotor.getVelocity().getValueAsDouble();
     }
 
-    private void configMotor(TalonFX motor) {
-        TalonFXConfiguration config = new TalonFXConfiguration();
-        config.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
-        config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
-        motor.getConfigurator().apply(config);
+    private void configMotors() {
+        TalonFXConfiguration leftConfig = new TalonFXConfiguration();
+        leftConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
+        leftConfig.MotorOutput.NeutralMode = NeutralModeValue.Coast;
+        leftMotor.getConfigurator().apply(leftConfig);
+
+        TalonFXConfiguration rightConfig = new TalonFXConfiguration();
+        rightConfig.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
+        rightConfig.MotorOutput.NeutralMode = NeutralModeValue.Coast;
+        rightMotor.getConfigurator().apply(rightConfig);
     }
 
     @Override

@@ -54,7 +54,6 @@ public class Climb extends SubsystemBase{
 
     private void configMotors() {
 
-        //TOOD: figure out motor inversions
         leftMotor.setInverted(true);
         rightMotor.setInverted(false);
 

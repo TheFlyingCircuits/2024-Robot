@@ -30,11 +30,11 @@ public class SwerveModuleIOKraken implements SwerveModuleIO {
      * @param isDriveMotorOnTop - Is drive motor mounted on top
      * @param isAngleMotorOnTop - Is angle motor mounted on top
      */
-    public SwerveModuleIOKraken(int driveMotorID, int angleMotorID, int angleOffsetDegrees, int cancoderID, boolean isDriveMotorOnTop, boolean isAngleMotorOnTop){
+    public SwerveModuleIOKraken(int driveMotorID, int angleMotorID, double angleOffsetDegrees, int cancoderID, boolean isDriveMotorOnTop, boolean isAngleMotorOnTop){
         this.angleOffsetDegrees = angleOffsetDegrees;
         
         /* Angle Encoder Config */
-        absoluteEncoder = new CANcoder(cancoderID);
+        absoluteEncoder = new CANcoder(cancoderID, "CTRENetwork");
         configCANCoder();
 
         /* Angle Motor Config */
@@ -47,7 +47,7 @@ public class SwerveModuleIOKraken implements SwerveModuleIO {
         }
 
         /* Drive Motor Config */
-        driveMotor = new TalonFX(driveMotorID);
+        driveMotor = new TalonFX(driveMotorID, "CTRENetwork");
         if(isDriveMotorOnTop) {
             configDriveMotor(InvertedValue.CounterClockwise_Positive);
         } else {
@@ -80,8 +80,6 @@ public class SwerveModuleIOKraken implements SwerveModuleIO {
 
         absoluteEncoder.getConfigurator().apply(cancoderConfigs);
     }
-
-    //TODO: angle motor is neo, drive motor is kraken
 
     private void configDriveMotor(InvertedValue invertedValue) {
         TalonFXConfiguration config = new TalonFXConfiguration();

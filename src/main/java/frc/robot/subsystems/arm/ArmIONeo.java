@@ -5,6 +5,7 @@ import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.signals.AbsoluteSensorRangeValue;
 import com.ctre.phoenix6.signals.SensorDirectionValue;
 import com.revrobotics.CANSparkMax;
+import com.revrobotics.CANSparkBase.IdleMode;
 import com.revrobotics.CANSparkLowLevel.MotorType;
 
 import frc.robot.Constants.ArmConstants;
@@ -15,29 +16,29 @@ public class ArmIONeo implements ArmIO {
     
     private CANSparkMax leftMotor;
     private CANSparkMax rightMotor;
-    private CANcoder absoluteEncoder;
-    private double angleOffset;
-    public ArmIONeo(double angleOffset) {
-        this.angleOffset = angleOffset;
+    private CANcoder leftAbsoluteEncoder;
+    private CANcoder rightAbsoluteEncoder;
+
+    public ArmIONeo() {
 
         /**CANcoder config */
-        absoluteEncoder = new CANcoder(ArmConstants.armCANcoderID);
-        configCANCoder();
+        leftAbsoluteEncoder = new CANcoder(ArmConstants.leftArmCANcoderID, "CTRENetwork");
+        rightAbsoluteEncoder = new CANcoder(ArmConstants.rightArmCANcoderID, "CTRENetwork");
+        configCANCoders();
 
-        /** Left motor config */
+        /** Motor config */
         leftMotor = new CANSparkMax(ArmConstants.leftMotorID, MotorType.kBrushless);
-        configLeftMotor();
-
-        /** Right motor config */
         rightMotor = new CANSparkMax(ArmConstants.rightMotorID, MotorType.kBrushless);
-        configRightMotor();
+        
+        configMotors();
 
     }
 
     @Override
     public void updateInputs(ArmIOInputs inputs) {
-        inputs.armVelocityDegreesPerSecond = absoluteEncoder.getVelocity().getValueAsDouble() * 360;
-        inputs.armAngleDegrees = absoluteEncoder.getAbsolutePosition().getValueAsDouble()*360;
+        //TODO: fuse both cancoder measurements
+        inputs.armVelocityDegreesPerSecond = rightAbsoluteEncoder.getVelocity().getValueAsDouble() * 360;
+        inputs.armAngleDegrees = rightAbsoluteEncoder.getAbsolutePosition().getValueAsDouble()*360;
     }
 
     @Override
@@ -46,29 +47,34 @@ public class ArmIONeo implements ArmIO {
         rightMotor.setVoltage(volts);
     }
 
-    private void configRightMotor() {
+    private void configMotors() {
         rightMotor.restoreFactoryDefaults();
         rightMotor.setSmartCurrentLimit(MotorConstants.angleContinuousCurrentLimit);
         rightMotor.setInverted(false);
-        rightMotor.setIdleMode(MotorConstants.angleNeutralMode);
+        rightMotor.setIdleMode(IdleMode.kBrake);
         rightMotor.burnFlash();
-    }
 
-    private void configLeftMotor() {
         leftMotor.restoreFactoryDefaults();
         leftMotor.setSmartCurrentLimit(MotorConstants.angleContinuousCurrentLimit);
-        leftMotor.setInverted(MotorConstants.angleInvert);
-        leftMotor.setIdleMode(MotorConstants.angleNeutralMode);
+        leftMotor.setInverted(true);
+        leftMotor.setIdleMode(IdleMode.kBrake);
         leftMotor.burnFlash();
     }
 
-    private void configCANCoder() {
-        CANcoderConfiguration cancoderConfigs = new CANcoderConfiguration();
-        cancoderConfigs.MagnetSensor.AbsoluteSensorRange = AbsoluteSensorRangeValue.Signed_PlusMinusHalf;
-        cancoderConfigs.MagnetSensor.MagnetOffset = angleOffset;
-        cancoderConfigs.MagnetSensor.SensorDirection = SensorDirectionValue.CounterClockwise_Positive;
+    private void configCANCoders() {
+        CANcoderConfiguration leftCANCoderConfig = new CANcoderConfiguration();
+        leftCANCoderConfig.MagnetSensor.AbsoluteSensorRange = AbsoluteSensorRangeValue.Signed_PlusMinusHalf;
+        leftCANCoderConfig.MagnetSensor.MagnetOffset = ArmConstants.leftArmCANcoderOffset;
+        leftCANCoderConfig.MagnetSensor.SensorDirection = SensorDirectionValue.Clockwise_Positive;
 
-        absoluteEncoder.getConfigurator().apply(cancoderConfigs);
+        leftAbsoluteEncoder.getConfigurator().apply(leftCANCoderConfig);
+
+        CANcoderConfiguration rightCANCoderConfig = new CANcoderConfiguration();
+        rightCANCoderConfig.MagnetSensor.AbsoluteSensorRange = AbsoluteSensorRangeValue.Signed_PlusMinusHalf;
+        rightCANCoderConfig.MagnetSensor.MagnetOffset = ArmConstants.rightArmCANcoderOffset;
+        rightCANCoderConfig.MagnetSensor.SensorDirection = SensorDirectionValue.CounterClockwise_Positive;        
+
+        rightAbsoluteEncoder.getConfigurator().apply(rightCANCoderConfig);
     }
 
 }

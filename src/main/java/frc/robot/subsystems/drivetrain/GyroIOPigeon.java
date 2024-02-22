@@ -11,7 +11,7 @@ public class GyroIOPigeon implements GyroIO {
 
     public GyroIOPigeon() {
 
-        pigeon = new Pigeon2(GyroConstants.pigeonID, GyroConstants.pigeonCANbus);
+        pigeon = new Pigeon2(GyroConstants.pigeonID, "CTRENetwork");
         configPigeon();
     }
 

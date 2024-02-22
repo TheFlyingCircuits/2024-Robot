@@ -19,6 +19,7 @@ import frc.robot.subsystems.arm.ArmIOSim;
 import frc.robot.subsystems.drivetrain.Drivetrain;
 import frc.robot.subsystems.drivetrain.GyroIOPigeon;
 import frc.robot.subsystems.drivetrain.GyroIOSim;
+import frc.robot.subsystems.drivetrain.SwerveModuleIOKraken;
 import frc.robot.subsystems.drivetrain.SwerveModuleIONeo;
 import frc.robot.subsystems.drivetrain.SwerveModuleIOSim;
 import frc.robot.subsystems.intake.Intake;
@@ -55,7 +56,7 @@ public class RobotContainer {
     public final Shooter shooter;
     public final Drivetrain drivetrain;
     public final Arm arm;
-    // public final Intake intake;
+    public final Intake intake;
     // public final Indexer indexer;
 
     private Trigger isRingInIntake;
@@ -65,12 +66,22 @@ public class RobotContainer {
         if (RobotBase.isReal()) {
             drivetrain = new Drivetrain(
                 new GyroIOPigeon(),
-                new SwerveModuleIONeo(1, 2, -0.177978515625, 0),
-                new SwerveModuleIONeo(3, 4, 0.33935546875, 1),
-                new SwerveModuleIONeo(5, 6, -0.339599609375, 2),
-                new SwerveModuleIONeo(7, 8, -0.206787109375, 3),
+                new SwerveModuleIOKraken(3, 1, -0.00342, 7, false, false),
+                new SwerveModuleIOKraken(2, 2, 0.36816, 6, false, false),
+                new SwerveModuleIOKraken(1, 5, -0.09009, 5, false, true),
+                new SwerveModuleIOKraken(0, 6, -0.37622, 4, true, false),
                 new VisionIOPhotonLib()
             );
+
+            /****** FOR NOODLE *******/
+            // drivetrain = new Drivetrain(
+            //     new GyroIOPigeon(),
+            //     new SwerveModuleIONeo(1, 2, -0.177978515625, 0),
+            //     new SwerveModuleIONeo(3, 4, 0.33935546875, 1),
+            //     new SwerveModuleIONeo(5, 6, -0.339599609375, 2),
+            //     new SwerveModuleIONeo(7, 8, -0.206787109375, 3),
+            //     new VisionIOPhotonLib()
+            // );
 
             shooter = new Shooter(new ShooterIO() {});
 
@@ -93,7 +104,7 @@ public class RobotContainer {
             arm = new Arm(new ArmIOSim());
         }
 
-        // intake = new Intake();
+        intake = new Intake();
         // indexer = new Indexer();
         
         
@@ -170,7 +181,7 @@ public class RobotContainer {
      * joysticks}.
      */
     private void configureBindings() {
-        // controller.rightTrigger().whileTrue(new IntakeNote(intake));
+        controller.rightTrigger().whileTrue(new IntakeNote(intake));
 
         // controller.b().onTrue(shootFromAnywhere());
         // controller.rightBumper().onTrue(shootFromSubwoofer());

@@ -1,5 +1,9 @@
 package frc.robot.subsystems.shooter;
 
+import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.InvertedValue;
+import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkBase.IdleMode;
 import com.revrobotics.CANSparkLowLevel.MotorType;
@@ -10,11 +14,11 @@ import frc.robot.Constants.ShooterConstants;
 
 public class Indexer extends SubsystemBase {
 
-    private CANSparkMax indexerMotor;
+    private TalonFX indexerMotor;
     private DigitalInput indexerProximitySwitch;
 
     public Indexer() {
-        indexerMotor = new CANSparkMax(ShooterConstants.indexerMotorID, MotorType.kBrushless);
+        indexerMotor = new TalonFX(ShooterConstants.indexerMotorID, "CTRENetwork");
         indexerProximitySwitch = new DigitalInput(ShooterConstants.indexerProximitySwitchID);
 
         configMotor();
@@ -33,11 +37,11 @@ public class Indexer extends SubsystemBase {
     }
 
     private void configMotor() {
-        indexerMotor.setInverted(false);
+        TalonFXConfiguration config = new TalonFXConfiguration();
+        config.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
+        config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
 
-        indexerMotor.setIdleMode(IdleMode.kBrake);
-
-        indexerMotor.burnFlash();
+        indexerMotor.getConfigurator().apply(config);
     }
 
     @Override
