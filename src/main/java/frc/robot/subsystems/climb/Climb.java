@@ -52,6 +52,14 @@ public class Climb extends SubsystemBase{
         rightMotor.setVoltage(volts);
     }
 
+    /**
+     * @param volts - A positive value will extend the climb arms upwards
+     */
+    public void setVolts(double volts) {
+        setLeftMotorVolts(volts);
+        setRightMotorVolts(volts);
+    }
+
     private void configMotors() {
 
         leftMotor.setInverted(true);
@@ -78,10 +86,10 @@ public class Climb extends SubsystemBase{
 
     //TODO: add limit switches and zero encoders when hit
     public boolean climbArmsAreDown() {
-        return (leftEncoder.getPosition() <= 0) && (rightEncoder.getPosition() <= 0);
+        return (leftEncoder.getPosition() <= 0) || (rightEncoder.getPosition() <= 0);
     }
 
     public boolean climbArmsAreUp() {
-        return (leftEncoder.getPosition() >= ClimbConstants.armMaxPosMeters) && (rightEncoder.getPosition() >= ClimbConstants.armMaxPosMeters);
+        return (leftEncoder.getPosition() >= ClimbConstants.armMaxPosMeters) || (rightEncoder.getPosition() >= ClimbConstants.armMaxPosMeters);
     }
 }

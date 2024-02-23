@@ -114,7 +114,7 @@ public final class Constants {
     }
 
     public final static class MotorConstants {
-        public static final int universalCurrentLimitAmps = 30;
+        public static final int universalCurrentLimitAmps = 50;
 
         // Motor configs
         public static final int angleContinuousCurrentLimit = 50;
@@ -222,7 +222,7 @@ public final class Constants {
          * A positive rotation will result in a positive extension.
          * This is plugged directly into the climb encoders' setPositionConversionFactor method.
          */
-        public final static double climberArmMetersPerMotorRotation = 0.;
+        public final static double climberArmMetersPerMotorRotation = 0.; //TOOD: FIGURE THIS OUT!
 
         public final static double armMaxPosMeters = .79;
 

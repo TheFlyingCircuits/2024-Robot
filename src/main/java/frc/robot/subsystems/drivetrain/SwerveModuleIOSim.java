@@ -11,14 +11,13 @@ import frc.robot.Constants.SwerveModuleConstants;
 
 /** Add your docs here. */
 public class SwerveModuleIOSim implements SwerveModuleIO {
-    //TODO: fiddle around with rotational inertias for more realism (try increasing drive rotational inertia)
     private FlywheelSim angleSim = new FlywheelSim(DCMotor.getNEO(1), 1./SwerveModuleConstants.steerGearReduction, 0.025);
     private FlywheelSim driveSim = new FlywheelSim(DCMotor.getNEO(1), 1./SwerveModuleConstants.driveGearReduction, 0.004);
 
     @Override
     public void updateInputs(SwerveModuleIOInputs inputs) {
         angleSim.update(0.02);
-        driveSim.update(0.02); //TODO: add 0.02 to constants as loop time
+        driveSim.update(0.02);
 
         //DRIVE MOTOR ----
         //converts rpm of wheel into m/s of wheel

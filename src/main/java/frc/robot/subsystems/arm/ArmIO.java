@@ -21,6 +21,9 @@ public interface ArmIO {
          */
         public double armVelocityDegreesPerSecond = 0.0;
 
+        public double leftMotorAppliedVoltage = 0.0;
+        public double rightMotorAppliedVoltage = 0.0;
+
         public boolean atUpperLimit = false;
         public boolean atLowerLimit = false;
     }

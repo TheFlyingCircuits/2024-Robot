@@ -6,6 +6,8 @@ package frc.robot.subsystems.arm;
 
 import org.littletonrobotics.junction.Logger;
 
+import static edu.wpi.first.units.Units.Degrees;
+import static edu.wpi.first.units.Units.DegreesPerSecond;
 import static edu.wpi.first.units.Units.Volts;
 
 import edu.wpi.first.math.MathUtil;
@@ -46,6 +48,8 @@ public class Arm extends SubsystemBase {
     private MechanismRoot2d armMechRoot;
     private MechanismLigament2d mechLigament;
 
+    private SysIdRoutine.Mechanism sysIdMech;
+    private SysIdRoutine sysIdRoutine;
     
 
     public Arm(ArmIO armIO) {
@@ -70,6 +74,15 @@ public class Arm extends SubsystemBase {
         armMechRoot = armMech2d.getRoot("root", 0.3, 0.1);
         mechLigament = armMechRoot.append(new MechanismLigament2d("arm", 0.508, inputs.armAngleDegrees));
 
+
+        
+        sysIdMech = new SysIdRoutine.Mechanism(
+                (Measure<Voltage> volts) -> {io.setArmMotorVolts(volts.in(Volts));},
+                this::motorSysIdLog,
+                this);
+
+
+        sysIdRoutine = new SysIdRoutine(new Config(), sysIdMech);
     }
 
 
@@ -158,22 +171,23 @@ public class Arm extends SubsystemBase {
     }
 
     private void motorSysIdLog(SysIdRoutineLog log) {
-        log.motor("dgsg");
+        log.motor("leftMotor")
+            .voltage(Volts.of(inputs.leftMotorAppliedVoltage))
+            .angularPosition(Degrees.of(inputs.armAngleDegrees))
+            .angularVelocity(DegreesPerSecond.of(inputs.armVelocityDegreesPerSecond));
+        
+        log.motor("rightMotor")
+            .voltage(Volts.of(inputs.rightMotorAppliedVoltage))
+            .angularPosition(Degrees.of(inputs.armAngleDegrees))
+            .angularVelocity(DegreesPerSecond.of(inputs.armVelocityDegreesPerSecond));
     }
     
-    public Command generateSysIDCommand() {
+    public Command generateSysIdQuasistatic(SysIdRoutine.Direction direction) {
+        return sysIdRoutine.quasistatic(direction);
+    }
 
-        SysIdRoutine.Mechanism mech = new SysIdRoutine.Mechanism(
-                (Measure<Voltage> volts) -> {io.setArmMotorVolts(volts.in(Volts));},
-                this::motorSysIdLog,
-                null);
-
-
-        SysIdRoutine routine =  new SysIdRoutine(new Config(), mech);
-
-
-
-        return routine.quasistatic(null);
+    public Command generateSysIdDynamic(SysIdRoutine.Direction direction) {
+        return sysIdRoutine.dynamic(direction);
     }
     
     @Override

@@ -80,6 +80,8 @@ public class SwerveModuleIOKraken implements SwerveModuleIO {
         TalonFXConfiguration config = new TalonFXConfiguration();
         config.MotorOutput.Inverted = invertedValue;
         config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
+        config.CurrentLimits.StatorCurrentLimit = 70;
+        config.CurrentLimits.StatorCurrentLimitEnable = true;
         driveMotor.applyConfig(config);
     }
 

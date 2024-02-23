@@ -55,8 +55,8 @@ public class Intake extends SubsystemBase {
         frontIntakeMotor.setInverted(false);
         backIntakeMotor.setInverted(false);
 
-        frontIntakeMotor.setSmartCurrentLimit(MotorConstants.universalCurrentLimitAmps);
-        backIntakeMotor.setSmartCurrentLimit(MotorConstants.universalCurrentLimitAmps);
+        frontIntakeMotor.setSmartCurrentLimit(50);
+        backIntakeMotor.setSmartCurrentLimit(50);
 
         frontIntakeMotor.setIdleMode(IdleMode.kBrake);
         backIntakeMotor.setIdleMode(IdleMode.kBrake);

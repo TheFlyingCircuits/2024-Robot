@@ -2,25 +2,23 @@
 // Open Source Software; you can modify and/or share it under the terms of
 // the WPILib BSD license file in the root directory of this project.
 
-package frc.robot.commands.intake;
+package frc.robot.commands.climb;
 
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.subsystems.intake.Intake;
+import frc.robot.subsystems.climb.Climb;
 
-public class IntakeNote extends Command {
+public class RaiseClimbArms extends Command {
 
-    Intake intake;
+    Climb climb;
 
-    public IntakeNote(Intake intake) {
-        this.intake=intake;
-
-        addRequirements(intake);
+    public RaiseClimbArms(Climb climb) {
+        this.climb=climb;
+        addRequirements(climb);
     }
 
-    // Called when the command is initially scheduled.
     @Override
     public void initialize() {
-        intake.setVolts(5);
+        climb.setVolts(2);
     }
 
     // Called every time the scheduler runs while the command is scheduled.
@@ -30,12 +28,12 @@ public class IntakeNote extends Command {
     // Called once the command ends or is interrupted.
     @Override
     public void end(boolean interrupted) {
-        intake.setVolts(0);
+        climb.setVolts(0);
     }
 
     // Returns true when the command should end.
     @Override
     public boolean isFinished() {
-        return false;
+        return climb.climbArmsAreUp();
     }
 }

@@ -18,6 +18,7 @@ public class IndexNote extends Command {
     public IndexNote(Intake intake, Indexer indexer) {
         this.intake = intake;
         this.indexer = indexer;
+        addRequirements(intake, indexer);
     }
 
     @Override

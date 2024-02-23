@@ -44,6 +44,7 @@ import edu.wpi.first.wpilibj2.command.ParallelRaceGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -182,18 +183,25 @@ public class RobotContainer {
      * joysticks}.
      */
     private void configureBindings() {
-        controller.rightTrigger().whileTrue(new IndexNote(intake, indexer));
+        controller.rightTrigger()
+            .whileTrue(new IntakeNote(intake))
+            .onFalse(new IndexNote(intake, indexer));
+            
         controller.leftTrigger().whileTrue(new ReverseIntake(intake, indexer));
 
+        
+        // controller.y().onTrue(new InstantCommand(() -> drivetrain.setRobotFacingForward()));
         // controller.b().onTrue(shootFromAnywhere());
         // controller.rightBumper().onTrue(shootFromSubwoofer());
 
 
-        controller.y().onTrue(new InstantCommand(() -> drivetrain.setRobotFacingForward()));
-        controller.a().toggleOnTrue(new InstantCommand(() -> arm.setArmDesiredPosition(0)));
-        controller.x().toggleOnTrue(new AimAtSpeakerWhileJoystickDrive(drivetrain));
+        controller.a().whileTrue(arm.generateSysIdQuasistatic(SysIdRoutine.Direction.kForward));
+        controller.b().whileTrue(arm.generateSysIdQuasistatic(SysIdRoutine.Direction.kReverse));
+        
+        controller.x().whileTrue(arm.generateSysIdDynamic(SysIdRoutine.Direction.kForward));
+        controller.y().whileTrue(arm.generateSysIdDynamic(SysIdRoutine.Direction.kReverse));
 
-        isRingInIntake.onTrue(new IndexNote(intake, indexer));
+        //isRingInIntake.onTrue(new IndexNote(intake, indexer));
     }
 
     /**
