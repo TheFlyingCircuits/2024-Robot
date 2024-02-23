@@ -51,13 +51,13 @@ public class ArmIONeo implements ArmIO {
         rightMotor.restoreFactoryDefaults();
         rightMotor.setSmartCurrentLimit(MotorConstants.angleContinuousCurrentLimit);
         rightMotor.setInverted(false);
-        rightMotor.setIdleMode(IdleMode.kCoast);
+        rightMotor.setIdleMode(IdleMode.kBrake);
         rightMotor.burnFlash();
 
         leftMotor.restoreFactoryDefaults();
         leftMotor.setSmartCurrentLimit(MotorConstants.angleContinuousCurrentLimit);
         leftMotor.setInverted(true);
-        leftMotor.setIdleMode(IdleMode.kCoast);
+        leftMotor.setIdleMode(IdleMode.kBrake);
         leftMotor.burnFlash();
     }
 

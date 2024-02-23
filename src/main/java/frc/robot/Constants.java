@@ -27,7 +27,7 @@ import edu.wpi.first.math.util.Units;
 public final class Constants {
     public final static class ShooterConstants {
         /**Rotations of the wheel per rotations of the motor; a number greater than 1 represents a reduction. */
-        public final static double kFlywheelGearReduction = 460./3.;
+        public final static double kFlywheelGearReduction = 1.;
     
         public final static double kPFlywheelsVoltsSecondsPerRotation = 0.;
         public final static double kIFlywheelsVoltsPerRotation = 0.;
@@ -37,9 +37,8 @@ public final class Constants {
         public final static double kVFlywheelsVoltsSecondsPerRotation = 0.;
         public final static double kAFlywheelsVoltsSecondsSquaredPerRotation = 0.;
 
-        /**temp device ids for motors */
-        public final static int leftMotorID = 5;
-        public final static int rightMotorID = 6;
+        public final static int leftMotorID = 6;
+        public final static int rightMotorID = 5;
 
         public final static int indexerMotorID = 4;
 
@@ -166,7 +165,7 @@ public final class Constants {
 
     public final static class ArmConstants {
         /**Rotations of the motor per rotations of the arm; a number greater than 1 represents a reduction. */
-        public final static double kArmGearReduction = 105.;
+        public final static double kArmGearReduction = 460./3.;
 
         /**Minimum angle of the arm, in degrees. This value should be negative, as it is below the horizontal.*/
         public final static double kArmMinAngleDegrees = -24.;
@@ -179,8 +178,8 @@ public final class Constants {
         public final static double armMaxAccelDegreesPerSecondSquared = 30.;
 
         /**temporary ids for motors and CANcoder of the shooting arm */
-        public final static int leftMotorID = 8;
-        public final static int rightMotorID = 7;
+        public final static int leftMotorID = 7;
+        public final static int rightMotorID = 8;
         public final static int leftArmCANcoderID = 9;
         public final static int rightArmCANcoderID = 8;
         
@@ -189,7 +188,7 @@ public final class Constants {
         public final static double leftArmCANcoderOffset = 0.08349609375;
 
         public final static double kSArmVolts = 0.0;
-        public final static double kGArmVolts = 0.2;
+        public final static double kGArmVolts = 1.0/16.0; // no bigger than (1/2), no smaller than (1/16)
         public final static double kVArmVoltsSecondsPerRadian = 0.;
         public final static double kAArmVoltsSecondsSquaredPerRadian = 0;
         public final static double kPArmVoltsPerDegree = 0.0;
@@ -215,8 +214,8 @@ public final class Constants {
         /**
          * temp motor ids for climbing motors
          */
-        public final static int leftMotorID = 10;
-        public final static int rightMotorID = 9;
+        public final static int leftMotorID = 9;
+        public final static int rightMotorID = 10;
 
         /**
          * Use this value as the conversion factor between the motors rotations and meters that the climb arms have extended.

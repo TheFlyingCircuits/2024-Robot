@@ -1,6 +1,9 @@
 package frc.robot.VendorWrappers;
 
 import com.ctre.phoenix6.hardware.TalonFX;
+
+import edu.wpi.first.wpilibj.Timer;
+
 import com.ctre.phoenix6.StatusCode;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 
@@ -30,10 +33,12 @@ public class Kraken extends TalonFX {
         while (statorCurrentLimit == 0) {
             System.out.println("bruh, u forgot to set a current limit for "+name);
             System.out.println("u gotta set something for TalonFXConfiguration.CurrentLimits.StatorCurrentLimit");
+            Timer.delay(5);
         }
         while (!currentLimitEnabled) {
             System.out.println("bruh, u forgot to enable the current limit for "+name);
             System.out.println("u gotta explicitly set TalonFXConfiguration.CurrentLimits.StatorCurrentLimitEnable to true");
+            Timer.delay(5);
         }
 
         /** Print a warning if you're running a test and don't want a current limit to interfere. */
