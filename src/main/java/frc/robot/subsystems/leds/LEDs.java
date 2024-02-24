@@ -14,7 +14,7 @@ public class LEDs {
 
         
 
-        leds = new AddressableLED(LEDConstants.ledID);
+        leds = new AddressableLED(LEDConstants.ledPWMPort);
         buffer = new AddressableLEDBuffer(LEDConstants.ledLength);
 
         leds.setLength(buffer.getLength());

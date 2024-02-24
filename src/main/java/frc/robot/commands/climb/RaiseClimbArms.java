@@ -34,6 +34,6 @@ public class RaiseClimbArms extends Command {
     // Returns true when the command should end.
     @Override
     public boolean isFinished() {
-        return climb.climbArmsAreUp();
+        return false;//climb.climbArmsAreUp();
     }
 }

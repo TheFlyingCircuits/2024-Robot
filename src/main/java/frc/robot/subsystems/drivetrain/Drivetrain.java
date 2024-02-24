@@ -73,7 +73,7 @@ public class Drivetrain extends SubsystemBase {
         poseMeters = new Pose2d(new Translation2d(0, 0), new Rotation2d(0));
 
 
-
+        // TODO: Change these to vec builders to clean up a bit.
         Matrix<N3, N1> stateStdDevs = new Matrix(Nat.N3(), Nat.N1());
         //corresponds to x, y, and rotation standard deviations (meters and radians)
         stateStdDevs.set(0, 0, 0.1);
@@ -96,6 +96,7 @@ public class Drivetrain extends SubsystemBase {
             visionStdDevs
         );
 
+        // TODO: single slew limiter for total speed instead of seperate for x and y
         chassisSpeedsXSlewLimiter = new SlewRateLimiter(DrivetrainConstants.maxDesiredTeleopAccelMetersPerSecondSquared);
         chassisSpeedsYSlewLimiter = new SlewRateLimiter(DrivetrainConstants.maxDesiredTeleopAccelMetersPerSecondSquared);
     }
@@ -141,6 +142,7 @@ public class Drivetrain extends SubsystemBase {
 
     //could be used for a drivetrain command in the future; leave this as its own function
     public void setModuleStates(SwerveModuleState[] desiredStates, boolean closedLoop) {
+        // TODO: why saturate based on theory instead of emperical measurements?
         SwerveDriveKinematics.desaturateWheelSpeeds(desiredStates, DrivetrainConstants.maxAchievableVelocityMetersPerSecond);
         for (SwerveModule mod : swerveModules) {
             mod.setDesiredState(desiredStates[mod.moduleIndex], closedLoop);

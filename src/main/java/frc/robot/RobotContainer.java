@@ -7,6 +7,8 @@ package frc.robot;
 import frc.robot.Constants.ArmConstants;
 import frc.robot.commands.arm.AimShooterAtAngle;
 import frc.robot.commands.arm.AimShooterAtSpeaker;
+import frc.robot.commands.climb.LowerClimbArms;
+import frc.robot.commands.climb.RaiseClimbArms;
 import frc.robot.commands.drivetrain.AimAtSpeakerWhileJoystickDrive;
 import frc.robot.commands.drivetrain.JoystickDrive;
 import frc.robot.commands.intake.IndexNote;
@@ -18,6 +20,7 @@ import frc.robot.subsystems.arm.Arm;
 import frc.robot.subsystems.arm.ArmIO;
 import frc.robot.subsystems.arm.ArmIONeo;
 import frc.robot.subsystems.arm.ArmIOSim;
+import frc.robot.subsystems.climb.Climb;
 import frc.robot.subsystems.drivetrain.Drivetrain;
 import frc.robot.subsystems.drivetrain.GyroIOPigeon;
 import frc.robot.subsystems.drivetrain.GyroIOSim;
@@ -60,6 +63,7 @@ public class RobotContainer {
     public final Arm arm;
     public final Intake intake;
     public final Indexer indexer;
+    public final Climb climb;
 
     private Trigger isRingInIntake;
     
@@ -108,6 +112,7 @@ public class RobotContainer {
 
         intake = new Intake();
         indexer = new Indexer();
+        climb = new Climb();
         
         
         drivetrain.setDefaultCommand(new JoystickDrive(true, drivetrain));
@@ -189,18 +194,21 @@ public class RobotContainer {
             
         controller.leftTrigger().whileTrue(new ReverseIntake(intake, indexer));
 
+        controller.rightBumper().whileTrue(new RaiseClimbArms(climb));
+        controller.leftBumper().whileTrue(new LowerClimbArms(climb));
         
-        // controller.y().onTrue(new InstantCommand(() -> drivetrain.setRobotFacingForward()));
+        controller.y().onTrue(new InstantCommand(() -> drivetrain.setRobotFacingForward()));
         // controller.b().onTrue(shootFromAnywhere());
         // controller.rightBumper().onTrue(shootFromSubwoofer());
 
-
-        controller.a().whileTrue(arm.generateSysIdQuasistatic(SysIdRoutine.Direction.kForward));
-        controller.b().whileTrue(arm.generateSysIdQuasistatic(SysIdRoutine.Direction.kReverse));
+        /** SYSID BINDINGS **/
+        // controller.a().whileTrue(arm.generateSysIdQuasistatic(SysIdRoutine.Direction.kForward));
+        // controller.b().whileTrue(arm.generateSysIdQuasistatic(SysIdRoutine.Direction.kReverse));
         
-        controller.x().whileTrue(arm.generateSysIdDynamic(SysIdRoutine.Direction.kForward));
-        controller.y().whileTrue(arm.generateSysIdDynamic(SysIdRoutine.Direction.kReverse));
+        // controller.x().whileTrue(arm.generateSysIdDynamic(SysIdRoutine.Direction.kForward));
+        // controller.y().whileTrue(arm.generateSysIdDynamic(SysIdRoutine.Direction.kReverse));
 
+        
         //isRingInIntake.onTrue(new IndexNote(intake, indexer));
     }
 

@@ -1,5 +1,7 @@
 package frc.robot.subsystems.climb;
 
+import org.littletonrobotics.junction.Logger;
+
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.CANSparkBase.IdleMode;
@@ -38,7 +40,7 @@ public class Climb extends SubsystemBase{
      * @param volts - A positive value will extend the left climb arm upwards
      */
     public void setLeftMotorVolts(double volts) {
-        volts = (leftEncoder.getPosition() == ClimbConstants.armMaxPosMeters) ? volts : 0;
+        //volts = (leftEncoder.getPosition() >= ClimbConstants.armMaxPosMeters) ? volts : 0;
 
         leftMotor.setVoltage(volts);
     }
@@ -47,7 +49,7 @@ public class Climb extends SubsystemBase{
      * @param volts - A positive value will extend the right climb arm upwards
      */
     public void setRightMotorVolts(double volts) {
-        volts = (rightEncoder.getPosition() == ClimbConstants.armMaxPosMeters) ? volts : 0;
+        //volts = (rightEncoder.getPosition() == ClimbConstants.armMaxPosMeters) ? volts : 0;
 
         rightMotor.setVoltage(volts);
     }
@@ -67,6 +69,9 @@ public class Climb extends SubsystemBase{
 
         leftMotor.setIdleMode(IdleMode.kBrake);
         rightMotor.setIdleMode(IdleMode.kBrake);
+
+        leftMotor.setSmartCurrentLimit(50);
+        rightMotor.setSmartCurrentLimit(50);
 
         leftMotor.burnFlash();
         rightMotor.burnFlash();
@@ -91,5 +96,11 @@ public class Climb extends SubsystemBase{
 
     public boolean climbArmsAreUp() {
         return (leftEncoder.getPosition() >= ClimbConstants.armMaxPosMeters) || (rightEncoder.getPosition() >= ClimbConstants.armMaxPosMeters);
+    }
+    
+    @Override
+    public void periodic() {
+        Logger.recordOutput("climb/leftArmPositionMeters", leftEncoder.getPosition());
+        Logger.recordOutput("climb/rightArmPositionMeters", rightEncoder.getPosition());
     }
 }

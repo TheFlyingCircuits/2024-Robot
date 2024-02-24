@@ -33,7 +33,7 @@ public final class Constants {
         public final static double kIFlywheelsVoltsPerRotation = 0.;
         public final static double kDFlywheelsVoltsSecondsSquaredPerRotation = 0.;
 
-        public final static double kSFlywheelsVolts = 1.0;
+        public final static double kSFlywheelsVolts = 0.;
         public final static double kVFlywheelsVoltsSecondsPerRotation = 0.;
         public final static double kAFlywheelsVoltsSecondsSquaredPerRotation = 0.;
 
@@ -48,11 +48,10 @@ public final class Constants {
     public final static class DrivetrainConstants {
         // KINEMATICS CONSTANTS
 
-        //TODO: update these for final robot
         /**
          * Distance between the center point of the left wheels and the center point of the right wheels.
          */
-        public static final double trackwidthMeters = Units.inchesToMeters(22.75);
+        public static final double trackwidthMeters = Units.inchesToMeters(23.75);
         /**
          * Distance between the center point of the front wheels and the center point of the back wheels.
          */
@@ -71,11 +70,12 @@ public final class Constants {
         /**
          * The maximum possible velocity of the robot in meters per second.
          * <br>
-         * This is a measure of how fast the robot will be able to drive in a straight line, based off of the empirical free speed of the drive NEOs.
+         * This is a measure of how fast the robot will be able to drive in a straight line, based off of the empirical free speed of the drive Krakens.
          */
-        public static final double maxAchievableVelocityMetersPerSecond = 5880.0 / 60.0 *
-            SwerveModuleConstants.driveGearReduction *
-            SwerveModuleConstants.wheelDiamaterMeters * Math.PI;
+        public static final double krakenFreeSpeedRPM = 5800;
+        public static final double krakenFreeSpeedRotationsPerSecond = krakenFreeSpeedRPM / 60.;
+        public static final double maxAchievableVelocityMetersPerSecond = krakenFreeSpeedRotationsPerSecond *
+            SwerveModuleConstants.driveGearReduction * SwerveModuleConstants.wheelCircumferenceMeters;
 
         /**
          * This is the max desired speed that will be achievable in teleop.
@@ -84,7 +84,7 @@ public final class Constants {
          * <br>
          * This value will be less than or equal to the maxAchievableVelocityMetersPerSecond, depending on driver preference.
          */
-        public static final double maxDesiredTeleopVelocityMetersPerSecond = 4.3;
+        public static final double maxDesiredTeleopVelocityMetersPerSecond = maxAchievableVelocityMetersPerSecond; // TODO: placeholder
 
         /**
          * The maximum achievable angular velocity of the robot in radians per second.
@@ -104,7 +104,7 @@ public final class Constants {
         public static final double maxDesiredTeleopAngularVelocityRadiansPerSecond = 5.4;
 
 
-        public static final double maxDesiredTeleopAccelMetersPerSecondSquared = 27.27;
+        public static final double maxDesiredTeleopAccelMetersPerSecondSquared = 100.0; // TODO: placeholder
 
 
     }
@@ -128,28 +128,30 @@ public final class Constants {
 
     public final static class SwerveModuleConstants {
         /** Rotations of the drive wheel per rotations of the drive motor. */
-        public static final double driveGearReduction = (14.0 / 50.0) * (27.0 / 17.0) * (15.0 / 45.0);
+        public static final double driveGearReduction = (18.0 / 50.0) * (27.0 / 17.0) * (15.0 / 45.0);
 
         /** Rotations of the steering column per rotations of the angle motor. */
         public static final double steerGearReduction = (14.0 / 50.0) * (10.0 / 60.0);
 
-        public static final double wheelDiamaterMeters = 0.10033;
-        public static final double wheelCircumferenceMeters = wheelDiamaterMeters * Math.PI;
+        // The wheels have a 2 inch radius, but sink into the capet about (1/8) of an inch
+        // for an effective radius of 2-(1/8).
+        public static final double wheelRadiusMeters = Units.inchesToMeters(2.-1./8.);
+        public static final double wheelCircumferenceMeters = 2 * Math.PI * wheelRadiusMeters;
 
         // PID + FEEDFORWARD CONSTANTS FOR MOTORS
         // PID for drive motors.
-        public static final double drivekPVoltsPerMeterPerSecond = 0.81027; //sysid says this should 0.27
+        public static final double drivekPVoltsPerMeterPerSecond = 0;
         public static final double drivekIVoltsPerMeter = 0.;
-        public static final double drivekDVoltsPerMeterPerSecondSquared = 0.00;
+        public static final double drivekDVoltsPerMeterPerSecondSquared = 0.;
 
         // PID for angle motors.
-        public static final double anglekPVoltsPerDegree = 0.08;//0.065;
+        public static final double anglekPVoltsPerDegree = 0.08;
         public static final double anglekIVoltsPerDegreeSeconds = 0.; // this might be the wrong unit idk 
         public static final double anglekDVoltsPerDegreePerSecond = 0.;
 
-        public static final double drivekSVolts = 0.1301;
-        public static final double drivekVVoltsSecondsPerMeter = 2.6931; // .8679
-        public static final double drivekAVoltsSecondsSquaredPerMeter = 0.43963;
+        public static final double drivekSVolts = 0.;
+        public static final double drivekVVoltsSecondsPerMeter = 12.0/DrivetrainConstants.maxAchievableVelocityMetersPerSecond; // TODO: this is a placeholder
+        public static final double drivekAVoltsSecondsSquaredPerMeter = 0.;
 
     }
 
@@ -187,11 +189,11 @@ public final class Constants {
         public final static double rightArmCANcoderOffset = -0.44482421875;
         public final static double leftArmCANcoderOffset = 0.08349609375;
 
-        public final static double kSArmVolts = 0.0;
-        public final static double kGArmVolts = 1.0/16.0; // no bigger than (1/2), no smaller than (1/16)
-        public final static double kVArmVoltsSecondsPerRadian = 0.;
+        public final static double kSArmVolts = 0;
+        public final static double kGArmVolts = 0.25; // no bigger than (1/2), no smaller than (1/16)
+        public final static double kVArmVoltsSecondsPerRadian = 0;
         public final static double kAArmVoltsSecondsSquaredPerRadian = 0;
-        public final static double kPArmVoltsPerDegree = 0.0;
+        public final static double kPArmVoltsPerDegree = 0;//0.001 * 2 * 2 * 2 * 2 * 2 * 2 * 2 * 2;
         public final static double kIArmVoltsPerDegreesSeconds = 0.;
         public final static double kDArmVoltsSecondsPerDegree = 0.;
 
@@ -222,7 +224,7 @@ public final class Constants {
          * A positive rotation will result in a positive extension.
          * This is plugged directly into the climb encoders' setPositionConversionFactor method.
          */
-        public final static double climberArmMetersPerMotorRotation = 0.; //TOOD: FIGURE THIS OUT!
+        public final static double climberArmMetersPerMotorRotation = 0.015;
 
         public final static double armMaxPosMeters = .79;
 
@@ -257,7 +259,7 @@ public final class Constants {
     }
 
     public final static class LEDConstants {
-        public final static int ledID = 0;
+        public final static int ledPWMPort = 0;
 
         //total number of leds
         public final static int ledLength = 60;

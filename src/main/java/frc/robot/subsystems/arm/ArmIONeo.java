@@ -45,8 +45,8 @@ public class ArmIONeo implements ArmIO {
         inputs.leftMotorAppliedVoltage = leftMotor.getAppliedOutput()*leftMotor.getBusVoltage();
         inputs.rightMotorAppliedVoltage = rightMotor.getAppliedOutput()*rightMotor.getBusVoltage();
 
-        if (inputs.armAngleDegrees <= ArmConstants.kArmMinAngleDegrees) inputs.atLowerLimit = true;
-        else if (inputs.armAngleDegrees >= ArmConstants.kArmMaxAngleDegrees) inputs.atUpperLimit = true;
+        if (inputs.armAngleDegrees <= ArmConstants.kArmMinAngleDegrees) {inputs.atLowerLimit = true;}
+        else if (inputs.armAngleDegrees >= ArmConstants.kArmMaxAngleDegrees) {inputs.atUpperLimit = true;}
         else {
             inputs.atLowerLimit = false;
             inputs.atUpperLimit = false;
@@ -61,13 +61,13 @@ public class ArmIONeo implements ArmIO {
 
     private void configMotors() {
         rightMotor.restoreFactoryDefaults();
-        rightMotor.setSmartCurrentLimit(MotorConstants.angleContinuousCurrentLimit);
+        rightMotor.setSmartCurrentLimit(80);
         rightMotor.setInverted(false);
         rightMotor.setIdleMode(IdleMode.kBrake);
         rightMotor.burnFlash();
 
         leftMotor.restoreFactoryDefaults();
-        leftMotor.setSmartCurrentLimit(MotorConstants.angleContinuousCurrentLimit);
+        leftMotor.setSmartCurrentLimit(80);
         leftMotor.setInverted(true);
         leftMotor.setIdleMode(IdleMode.kBrake);
         leftMotor.burnFlash();

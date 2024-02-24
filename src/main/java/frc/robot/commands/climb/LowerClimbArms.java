@@ -18,7 +18,7 @@ public class LowerClimbArms extends Command {
 
     @Override
     public void initialize() {
-        climb.setVolts(-2);
+        climb.setVolts(-10);
     }
 
     // Called every time the scheduler runs while the command is scheduled.
@@ -34,6 +34,7 @@ public class LowerClimbArms extends Command {
     // Returns true when the command should end.
     @Override
     public boolean isFinished() {
-        return climb.climbArmsAreDown();
+        return false;
+        //return climb.climbArmsAreDown();
     }
 }

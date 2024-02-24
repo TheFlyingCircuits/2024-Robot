@@ -63,7 +63,7 @@ public class Arm extends SubsystemBase {
             ArmConstants.kAArmVoltsSecondsSquaredPerRadian
         );
 
-        armPD = new ArmPDController(0, 0);
+        armPD = new ArmPDController(ArmConstants.kPArmVoltsPerDegree, ArmConstants.kDArmVoltsSecondsPerDegree);
 
         profile = new TrapezoidProfile(ArmConstants.constraints);
         timer = new Timer();
@@ -97,6 +97,7 @@ public class Arm extends SubsystemBase {
         
         //For continuous control
         if (Math.abs(this.targetAngleDegrees - targetAngleDegrees) < 0.5) {
+            // TODO: doesn't work if first angle requested is 0 degrees
             return;
         }
 
@@ -109,9 +110,6 @@ public class Arm extends SubsystemBase {
 
 
     private void followTrapezoidProfile() {
-
-
-
 
         //Hold the current position if there's no trapezoidal profile active. 
         //I think? that generating new trapezoidal profiles for an inactive arm causes some oscillations.
@@ -166,8 +164,9 @@ public class Arm extends SubsystemBase {
         io.setArmMotorVolts(totalOutputVolts);
 
         //profile.calculate() must be called before this line in order for isFinished() to function properly
-        if (profile.isFinished(timer.get()))
+        if (profile.isFinished(timer.get())) {
             isMovingToTarget = false;
+        }
     }
 
     private void motorSysIdLog(SysIdRoutineLog log) {
