@@ -77,7 +77,7 @@ public class Robot extends LoggedRobot {
     public void disabledPeriodic() {
 
         // leds.setLEDColor(LEDColor.ORANGE);
-        leds.chasePattern();
+        //leds.chasePattern();
 
         m_robotContainer.drivetrain.setPoseToVisionMeasurement();
     }
