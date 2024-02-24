@@ -4,6 +4,7 @@ import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
+import frc.robot.Constants.ArmConstants;
 import frc.robot.Constants.ShooterConstants;
 import frc.robot.VendorWrappers.Kraken;
 
@@ -26,8 +27,8 @@ public class ShooterIOKraken implements ShooterIO {
 
     @Override
     public void updateInputs(ShooterIOInputs inputs) {
-        inputs.leftFlywheelsRotationsPerSecond = leftMotor.getVelocity().getValueAsDouble();
-        inputs.rightFlywheelsRotationsPerSecond = rightMotor.getVelocity().getValueAsDouble();
+        inputs.leftFlywheelsMetersPerSecond = leftMotor.getVelocity().getValueAsDouble()*ShooterConstants.flywheelCircumferenceMeters;
+        inputs.rightFlywheelsMetersPerSecond = rightMotor.getVelocity().getValueAsDouble()*ShooterConstants.flywheelCircumferenceMeters;
     }
 
     private void configMotors() {

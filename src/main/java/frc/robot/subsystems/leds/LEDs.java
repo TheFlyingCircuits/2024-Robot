@@ -46,6 +46,14 @@ public class LEDs {
         leds.setData(buffer);
     }
 
+    public AddressableLED getLEDs() {
+        return leds;
+    }
+
+    public AddressableLEDBuffer getBuffer() {
+        return buffer;
+    }
+
     public void chasePattern() {
         double metersPerSecond = -1.0;
         double length = 0.1;

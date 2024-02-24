@@ -45,8 +45,8 @@ public class ArmIONeo implements ArmIO {
         inputs.leftMotorAppliedVoltage = leftMotor.getAppliedOutput()*leftMotor.getBusVoltage();
         inputs.rightMotorAppliedVoltage = rightMotor.getAppliedOutput()*rightMotor.getBusVoltage();
 
-        if (inputs.armAngleDegrees <= ArmConstants.kArmMinAngleDegrees) {inputs.atLowerLimit = true;}
-        else if (inputs.armAngleDegrees >= ArmConstants.kArmMaxAngleDegrees) {inputs.atUpperLimit = true;}
+        if (inputs.armAngleDegrees <= ArmConstants.armMinAngleDegrees) {inputs.atLowerLimit = true;}
+        else if (inputs.armAngleDegrees >= ArmConstants.armMaxAngleDegrees) {inputs.atUpperLimit = true;}
         else {
             inputs.atLowerLimit = false;
             inputs.atUpperLimit = false;

@@ -13,12 +13,12 @@ public class ShooterIOSim implements ShooterIO {
 
         leftSim = new FlywheelSim(
             DCMotor.getKrakenX60(1),
-            ShooterConstants.kFlywheelGearReduction,
+            ShooterConstants.flywheelGearReduction,
             0.000374);
 
         rightSim = new FlywheelSim(
             DCMotor.getKrakenX60(1),
-            ShooterConstants.kFlywheelGearReduction,
+            ShooterConstants.flywheelGearReduction,
             0.000374);
             
     }
@@ -28,8 +28,8 @@ public class ShooterIOSim implements ShooterIO {
         leftSim.update(0.02);
         rightSim.update(0.02);
 
-        inputs.leftFlywheelsRotationsPerSecond = leftSim.getAngularVelocityRPM()*60;
-        inputs.rightFlywheelsRotationsPerSecond = rightSim.getAngularVelocityRPM()*60;
+        inputs.leftFlywheelsMetersPerSecond = leftSim.getAngularVelocityRPM()/60.*ShooterConstants.flywheelCircumferenceMeters;
+        inputs.rightFlywheelsMetersPerSecond = rightSim.getAngularVelocityRPM()/60.*ShooterConstants.flywheelCircumferenceMeters;
     }
 
     @Override

@@ -89,7 +89,7 @@ public class RobotContainer {
             //     new VisionIOPhotonLib()
             // );
 
-            shooter = new Shooter(new ShooterIO() {});
+            shooter = new Shooter(new ShooterIOKraken());
 
             arm = new Arm(new ArmIONeo());
 
@@ -115,11 +115,11 @@ public class RobotContainer {
         climb = new Climb();
         
         
-        drivetrain.setDefaultCommand(new JoystickDrive(true, drivetrain));
+        //drivetrain.setDefaultCommand(new JoystickDrive(true, drivetrain));
 
         isRingInIntake = new Trigger(intake::isRingInIntake);
         
-        configureBindings();
+        testBindings();
     }
 
 
@@ -131,7 +131,7 @@ public class RobotContainer {
     /** Moves the arm back and spins up the flywheels to prepare for an amp shot. */
     ParallelCommandGroup prepAmpShot() {
         return new ParallelCommandGroup(
-            new SpinFlywheels(500, 500, shooter),
+            new SpinFlywheels(8, 8, shooter),
             new AimShooterAtAngle(100, arm));
     }
 
@@ -140,13 +140,13 @@ public class RobotContainer {
     ParallelCommandGroup resetShooter() {
         return new ParallelCommandGroup(
             new SpinFlywheels(0, 0, shooter),
-            new InstantCommand(() -> arm.setArmDesiredPosition(ArmConstants.kArmMinAngleDegrees)));
+            new AimShooterAtAngle(ArmConstants.armMinAngleDegrees+10, arm));
     }
 
     /** Spins the flywheels up to speed and aims arm when pressed against the subwoofer. */
     ParallelCommandGroup prepSubwooferShot() {
         return new ParallelCommandGroup(
-            new SpinFlywheels(500, 500, shooter),
+            new SpinFlywheels(8, 8, shooter),
             new AimShooterAtAngle(70, arm));
     }
 
@@ -156,41 +156,52 @@ public class RobotContainer {
     ParallelRaceGroup prepShotFromAnywhere() { 
         return new ParallelRaceGroup(
             new ParallelCommandGroup(
-                new SpinFlywheels(500, 500, shooter),
+                new SpinFlywheels(8, 8, shooter),
                 new AimShooterAtSpeaker(arm, drivetrain)),
             new AimAtSpeakerWhileJoystickDrive(drivetrain));
     }
 
-    // //aims and then shoots in one motion
-    // SequentialCommandGroup shootFromSubwoofer() { 
-    //     return new SequentialCommandGroup(
-    //         prepSubwooferShot(),
-    //         new FireNote(indexer),
-    //         resetShooter());
-    // }
+    //aims and then shoots in one motion
+    SequentialCommandGroup shootFromSubwoofer() { 
+        return new SequentialCommandGroup(
+            prepSubwooferShot(),
+            new FireNote(indexer),
+            resetShooter());
+    }
 
 
-    // //aims and then shoots in one motion
-    // SequentialCommandGroup shootFromAnywhere() {
-    //     return new SequentialCommandGroup(
-    //         prepShotFromAnywhere(),
-    //         new FireNote(indexer),
-    //         resetShooter());
-    // }
+    //aims and then shoots in one motion
+    SequentialCommandGroup shootFromAnywhere() {
+        return new SequentialCommandGroup(
+            prepShotFromAnywhere(),
+            new FireNote(indexer),
+            resetShooter());
+    }
 
-    /**
-     * Use this method to define your trigger->command mappings. Triggers can be created via the
-     * {@link Trigger#Trigger(java.util.function.BooleanSupplier)} constructor with an arbitrary
-     * predicate, or via the named factories in {@link
-     * edu.wpi.first.wpilibj2.command.button.CommandGenericHID}'s subclasses for {@link
-     * CommandXboxController Xbox}/{@link edu.wpi.first.wpilibj2.command.button.CommandPS4Controller
-     * PS4} controllers or {@link edu.wpi.first.wpilibj2.command.button.CommandJoystick Flight
-     * joysticks}.
-     */
-    private void configureBindings() {
+    private void realBindings() {
         controller.rightTrigger()
             .whileTrue(new IntakeNote(intake))
             .onFalse(new IndexNote(intake, indexer));
+    
+        controller.leftTrigger().whileTrue(new ReverseIntake(intake, indexer));
+        
+        controller.rightBumper().onTrue(shootFromSubwoofer());
+        controller.leftBumper()
+            .onTrue(prepAmpShot())
+            .onFalse(new FireNote(indexer));
+
+        
+        
+        controller.y().onTrue(new InstantCommand(() -> drivetrain.setRobotFacingForward()));
+
+
+    }
+
+    private void testBindings() {
+        controller.rightTrigger()
+            .whileTrue(new IntakeNote(intake))
+            .onFalse(new IndexNote(intake, indexer));
+    
             
         controller.leftTrigger().whileTrue(new ReverseIntake(intake, indexer));
 
@@ -198,8 +209,17 @@ public class RobotContainer {
         controller.leftBumper().whileTrue(new LowerClimbArms(climb));
         
         controller.y().onTrue(new InstantCommand(() -> drivetrain.setRobotFacingForward()));
-        // controller.b().onTrue(shootFromAnywhere());
-        // controller.rightBumper().onTrue(shootFromSubwoofer());
+
+        // controller.a().onTrue(new AimShooterAtAngle(0, arm));
+        // controller.b().onTrue(new AimShooterAtAngle(45, arm));
+        // controller.x().onTrue(new AimShooterAtAngle(90, arm));
+
+
+        controller.y().whileTrue(new SpinFlywheels(8, 8, shooter));
+        controller.x().onTrue(resetShooter());
+        controller.b().onTrue(new FireNote(indexer));
+        controller.a().onTrue(shootFromSubwoofer());
+        
 
         /** SYSID BINDINGS **/
         // controller.a().whileTrue(arm.generateSysIdQuasistatic(SysIdRoutine.Direction.kForward));
@@ -209,7 +229,8 @@ public class RobotContainer {
         // controller.y().whileTrue(arm.generateSysIdDynamic(SysIdRoutine.Direction.kReverse));
 
         
-        //isRingInIntake.onTrue(new IndexNote(intake, indexer));
+        //isRingInIntake.onTrue(new IndexNote(intake, indexer));    
+    
     }
 
     /**

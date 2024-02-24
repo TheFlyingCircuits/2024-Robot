@@ -5,8 +5,14 @@ import org.littletonrobotics.junction.AutoLog;
 public interface ShooterIO {
     @AutoLog
     public class ShooterIOInputs {
-        public double leftFlywheelsRotationsPerSecond = 0.0;
-        public double rightFlywheelsRotationsPerSecond = 0.0;
+        /**
+         * Linear surface speed of the left set of flywheels.
+         */
+        public double leftFlywheelsMetersPerSecond = 0.0;
+        /**
+         * Linear surface speed of the right set of flywheels.
+         */
+        public double rightFlywheelsMetersPerSecond = 0.0;
     }
 
     public default void updateInputs(ShooterIOInputs inputs) {};

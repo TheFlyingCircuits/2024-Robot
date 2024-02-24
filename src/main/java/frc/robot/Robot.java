@@ -80,6 +80,8 @@ public class Robot extends LoggedRobot {
         //leds.chasePattern();
 
         m_robotContainer.drivetrain.setPoseToVisionMeasurement();
+
+        m_robotContainer.arm.setDesiredPositionToCurrent();
     }
 
     /** This autonomous runs the autonomous command selected by your {@link RobotContainer} class. */
@@ -135,7 +137,7 @@ public class Robot extends LoggedRobot {
         // continue until interrupted by another command, remove
         // this line or comment it out.
         if (m_autonomousCommand != null) {
-        m_autonomousCommand.cancel();
+            m_autonomousCommand.cancel();
         }
     }
 

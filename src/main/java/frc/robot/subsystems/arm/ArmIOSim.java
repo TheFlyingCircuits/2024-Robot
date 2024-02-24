@@ -16,11 +16,11 @@ public class ArmIOSim implements ArmIO {
     public ArmIOSim() {
         armSim = new SingleJointedArmSim(
             DCMotor.getNEO(2), 
-            ArmConstants.kArmGearReduction,
-            0.468,
-            0.508, 
-            Math.toRadians(ArmConstants.kArmMinAngleDegrees), 
-            Math.toRadians(ArmConstants.kArmMaxAngleDegrees), 
+            ArmConstants.armGearReduction,
+            0.658,
+            0.483, 
+            Math.toRadians(ArmConstants.armMinAngleDegrees), 
+            Math.toRadians(ArmConstants.armMaxAngleDegrees), 
             true, 
             Math.toRadians(0));
     }

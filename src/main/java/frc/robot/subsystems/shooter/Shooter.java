@@ -37,71 +37,68 @@ public class Shooter extends SubsystemBase {
         inputs = new ShooterIOInputsAutoLogged();
         
         leftFlywheelsPID = new PIDController(
-            ShooterConstants.kPFlywheelsVoltsSecondsPerRotation, 
-            ShooterConstants.kIFlywheelsVoltsPerRotation, 
-            ShooterConstants.kDFlywheelsVoltsSecondsSquaredPerRotation);
+            ShooterConstants.kPFlywheelsVoltsSecondsPerMeter, 
+            ShooterConstants.kIFlywheelsVoltsPerMeter, 
+            ShooterConstants.kDFlywheelsVoltsSecondsSquaredPerMeter);
 
         rightFlywheelsPID = new PIDController(
-            ShooterConstants.kPFlywheelsVoltsSecondsPerRotation, 
-            ShooterConstants.kIFlywheelsVoltsPerRotation, 
-            ShooterConstants.kDFlywheelsVoltsSecondsSquaredPerRotation);
+            ShooterConstants.kPFlywheelsVoltsSecondsPerMeter, 
+            ShooterConstants.kIFlywheelsVoltsPerMeter, 
+            ShooterConstants.kDFlywheelsVoltsSecondsSquaredPerMeter);
 
 
 
         flywheelsFeedforward = new SimpleMotorFeedforward(
             ShooterConstants.kSFlywheelsVolts,
-            ShooterConstants.kVFlywheelsVoltsSecondsPerRotation,
-            ShooterConstants.kAFlywheelsVoltsSecondsSquaredPerRotation);
-    }
-
-    private void setLeftFlywheelsRotationsPerSecond(double rotationsPerSecond) {
-        double feedforwardOutput = flywheelsFeedforward.calculate(rotationsPerSecond);
-        double pidOutput = leftFlywheelsPID.calculate(inputs.leftFlywheelsRotationsPerSecond, rotationsPerSecond);
-        io.setLeftMotorVolts(feedforwardOutput + pidOutput);
-    }
-
-    private void setRightFlywheelsRotationsPerSecond(double rotationsPerSecond) {
-        double feedforwardOutput = flywheelsFeedforward.calculate(rotationsPerSecond);
-        double pidOutput = rightFlywheelsPID.calculate(inputs.rightFlywheelsRotationsPerSecond, rotationsPerSecond);
-        io.setRightMotorVolts(feedforwardOutput + pidOutput);
-    }
-
-    public void setLeftFlywheelsRPM(double rpm) {
-        setLeftFlywheelsRotationsPerSecond(rpm*60);
-    }
-
-    public void setRightFlywheelsRPM(double rpm) {
-        setRightFlywheelsRotationsPerSecond(rpm*60);
-    }
-
-    public double getLeftFlywheelsRPM() {
-        return inputs.leftFlywheelsRotationsPerSecond/60.;
-    }
-
-    public double getRightFlywheelsRPM() {
-        return inputs.rightFlywheelsRotationsPerSecond/60.;
+            ShooterConstants.kVFlywheelsVoltsSecondsPerMeter,
+            ShooterConstants.kAFlywheelsVoltsSecondsSquaredPerMeter);
     }
 
     /**
-     * Returns true if both flywheels are spinning within some threshold of their target speeds.
+     * Sets the surface speed of the left set of flywheels.
+     * This is theoretically the speed that this side of the note will have when exiting the shooter.
+     * @param metersPerSecond - Desired surface speed in meters per second.
      */
-    public boolean flywheelsAtSetpoints(double rpmThreshold) {
+    public void setLeftFlywheelsMetersPerSecond(double metersPerSecond) {
+        double feedforwardOutput = flywheelsFeedforward.calculate(metersPerSecond);
+        double pidOutput = leftFlywheelsPID.calculate(inputs.leftFlywheelsMetersPerSecond, metersPerSecond);
+        io.setLeftMotorVolts(feedforwardOutput + pidOutput);
+    }
 
-        
-        leftFlywheelsPID.setTolerance(rpmThreshold*60); //multiply by 60 to change rpm threshold to rps threshold
-        rightFlywheelsPID.setTolerance(rpmThreshold*60);
+    /**
+     * Sets the surface speed of the right set of flywheels.
+     * This is theoretically the speed that this side of the note will have when exiting the shooter.
+     * @param metersPerSecond - Desired surface speed in meters per second.
+     */
+    public void setRightFlywheelsMetersPerSecond(double metersPerSecond) {
+        double feedforwardOutput = flywheelsFeedforward.calculate(metersPerSecond);
+        double pidOutput = rightFlywheelsPID.calculate(inputs.rightFlywheelsMetersPerSecond, metersPerSecond);
+        io.setRightMotorVolts(feedforwardOutput + pidOutput);
+    }
 
-        return leftFlywheelsPID.atSetpoint() && rightFlywheelsPID.atSetpoint();
+
+    /**
+     * Returns true if both flywheels are spinning within some threshold of their target speeds.
+     * @param rpmThreshold - Max distance from the setpoint for this function to still return true, in meters per second.
+     */
+    public boolean flywheelsAtSetpoints(double leftSetpointMetersPerSecond, double rightSetpointMetersPerSecond, double thresholdMetersPerSecond) {
+
+        return 
+            Math.abs(leftSetpointMetersPerSecond - inputs.leftFlywheelsMetersPerSecond) < thresholdMetersPerSecond
+                && Math.abs(rightSetpointMetersPerSecond - inputs.rightFlywheelsMetersPerSecond) < thresholdMetersPerSecond;
     }
     
 
     @Override
     public void periodic() {
         io.updateInputs(inputs);
+        
+        Logger.processInputs("shooterInputs", inputs);
 
+        Logger.recordOutput("shooter/leftFlywheelsAtSetpoint", leftFlywheelsPID.atSetpoint());
+        Logger.recordOutput("shooter/rightFlywheelsAtSetpoint", rightFlywheelsPID.atSetpoint());
         Logger.recordOutput("shooter/leftFlywheelsSetpoint", leftFlywheelsPID.getSetpoint());
         Logger.recordOutput("shooter/rightFlywheelsSetpoint", rightFlywheelsPID.getSetpoint());
 
-        Logger.processInputs("shooterInputs", inputs);
     };
 }

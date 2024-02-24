@@ -6,22 +6,22 @@ import frc.robot.subsystems.shooter.Shooter;
 public class SpinFlywheels extends Command {
 
     private Shooter shooter; 
-    private double leftTargetFlywheelRPM;
-    private double rightTargetFlywheelRPM;   
+    private double leftFlywheelMetersPerSecond;
+    private double rightFlywheelMetersPerSecond;   
 
-    /** Spins the shooter flywheels up to a desired RPM. This does not launch the note. */
-    public SpinFlywheels(double leftFlywheelRPM, double rightFlywheelRPM, Shooter shooter) {
+    /** Spins the shooter flywheels up to a desired surface speed, in meters per second. This does not launch the note. */
+    public SpinFlywheels(double leftFlywheelMetersPerSecond, double rightFlywheelMetersPerSecond, Shooter shooter) {
         this.shooter = shooter;
-        this.leftTargetFlywheelRPM = leftFlywheelRPM;
-        this.rightTargetFlywheelRPM = rightFlywheelRPM;
+        this.leftFlywheelMetersPerSecond = leftFlywheelMetersPerSecond;
+        this.rightFlywheelMetersPerSecond = rightFlywheelMetersPerSecond;
 
         addRequirements(shooter);
     }
 
     @Override
     public void initialize() {
-        shooter.setLeftFlywheelsRPM(leftTargetFlywheelRPM);
-        shooter.setRightFlywheelsRPM(rightTargetFlywheelRPM);
+        shooter.setLeftFlywheelsMetersPerSecond(leftFlywheelMetersPerSecond);
+        shooter.setRightFlywheelsMetersPerSecond(rightFlywheelMetersPerSecond);
     };
 
     @Override
@@ -33,7 +33,7 @@ public class SpinFlywheels extends Command {
 
     @Override
     public boolean isFinished() {
-        return shooter.flywheelsAtSetpoints(20);
+        return shooter.flywheelsAtSetpoints(leftFlywheelMetersPerSecond, rightFlywheelMetersPerSecond, 0.25);
     }
     
 }

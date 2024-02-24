@@ -85,6 +85,9 @@ public class Arm extends SubsystemBase {
         sysIdRoutine = new SysIdRoutine(new Config(), sysIdMech);
     }
 
+    public void setDesiredPositionToCurrent() {
+        setArmDesiredPosition(inputs.armAngleDegrees);
+    };
 
     //This method is in here because future commands which want to move the arm will be more easily written.
     //Rather than having to motion profile within each command, it can be just one function call.
@@ -93,7 +96,7 @@ public class Arm extends SubsystemBase {
      * @param targetDegrees - Target angle in degrees for the arm.
      */
     public void setArmDesiredPosition(double targetAngleDegrees) {
-        targetAngleDegrees = MathUtil.clamp(targetAngleDegrees, ArmConstants.kArmMinAngleDegrees, ArmConstants.kArmMaxAngleDegrees);
+        targetAngleDegrees = MathUtil.clamp(targetAngleDegrees, ArmConstants.armMinAngleDegrees, ArmConstants.armMaxAngleDegrees);
         
         //For continuous control
         if (Math.abs(this.targetAngleDegrees - targetAngleDegrees) < 0.5) {
@@ -199,7 +202,7 @@ public class Arm extends SubsystemBase {
 
 
 
-        Logger.processInputs("Arm", inputs);
+        Logger.processInputs("armInputs", inputs);
         Logger.recordOutput("arm/mech2d", armMech2d);
         Logger.recordOutput("arm/isMovingToTarget", isMovingToTarget);
         Logger.recordOutput("arm/targetAngleDegrees", targetAngleDegrees);

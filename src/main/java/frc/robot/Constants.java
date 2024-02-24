@@ -27,15 +27,17 @@ import edu.wpi.first.math.util.Units;
 public final class Constants {
     public final static class ShooterConstants {
         /**Rotations of the wheel per rotations of the motor; a number greater than 1 represents a reduction. */
-        public final static double kFlywheelGearReduction = 1.;
+        public final static double flywheelGearReduction = 1.;
+
+        public static final double flywheelCircumferenceMeters = Units.inchesToMeters(3.875)*Math.PI;
     
-        public final static double kPFlywheelsVoltsSecondsPerRotation = 0.;
-        public final static double kIFlywheelsVoltsPerRotation = 0.;
-        public final static double kDFlywheelsVoltsSecondsSquaredPerRotation = 0.;
+        public final static double kPFlywheelsVoltsSecondsPerMeter = 0.;
+        public final static double kIFlywheelsVoltsPerMeter = 0.;
+        public final static double kDFlywheelsVoltsSecondsSquaredPerMeter = 0.;
 
         public final static double kSFlywheelsVolts = 0.;
-        public final static double kVFlywheelsVoltsSecondsPerRotation = 0.;
-        public final static double kAFlywheelsVoltsSecondsSquaredPerRotation = 0.;
+        public final static double kVFlywheelsVoltsSecondsPerMeter = 0.38;
+        public final static double kAFlywheelsVoltsSecondsSquaredPerMeter = 0.;
 
         public final static int leftMotorID = 6;
         public final static int rightMotorID = 5;
@@ -167,17 +169,17 @@ public final class Constants {
 
     public final static class ArmConstants {
         /**Rotations of the motor per rotations of the arm; a number greater than 1 represents a reduction. */
-        public final static double kArmGearReduction = 460./3.;
+        public final static double armGearReduction = 460./3.;
 
         /**Minimum angle of the arm, in degrees. This value should be negative, as it is below the horizontal.*/
-        public final static double kArmMinAngleDegrees = -24.;
+        public final static double armMinAngleDegrees = -24.;
 
         /**Maximum angle of the arm, in degrees. This value should be positive and greater than 90, as it is beyond the vertical. */
-        public final static double kArmMaxAngleDegrees = 145.;
+        public final static double armMaxAngleDegrees = 145.;
 
-        public final static double armMaxVelDegreesPerSecond = 30.;
+        public final static double armMaxVelDegreesPerSecond = 240.;
 
-        public final static double armMaxAccelDegreesPerSecondSquared = 30.;
+        public final static double armMaxAccelDegreesPerSecondSquared = 480.;
 
         /**temporary ids for motors and CANcoder of the shooting arm */
         public final static int leftMotorID = 7;
@@ -186,21 +188,21 @@ public final class Constants {
         public final static int rightArmCANcoderID = 8;
         
 
-        public final static double rightArmCANcoderOffset = -0.44482421875;
-        public final static double leftArmCANcoderOffset = 0.08349609375;
+        public final static double rightArmCANcoderOffset = -0.4560546875;
+        public final static double leftArmCANcoderOffset = 0.07275390625;
 
-        public final static double kSArmVolts = 0;
-        public final static double kGArmVolts = 0.25; // no bigger than (1/2), no smaller than (1/16)
-        public final static double kVArmVoltsSecondsPerRadian = 0;
+        /***** REAL CONSTANTS ******/
+        public final static double kSArmVolts = 0.0;
+        public final static double kGArmVolts = 0.30;
+        public final static double kVArmVoltsSecondsPerRadian = 3.2;
         public final static double kAArmVoltsSecondsSquaredPerRadian = 0;
-        public final static double kPArmVoltsPerDegree = 0;//0.001 * 2 * 2 * 2 * 2 * 2 * 2 * 2 * 2;
-        public final static double kIArmVoltsPerDegreesSeconds = 0.;
-        public final static double kDArmVoltsSecondsPerDegree = 0.;
+        public final static double kPArmVoltsPerDegree = 0.3;
+        public final static double kDArmVoltsSecondsPerDegree = 0.005;
 
         /**** SIM CONSTANTS  ******/
         // public final static double kSArmVolts = 0.0;
-        // public final static double kGArmVolts = 0.3;
-        // public final static double kVArmVoltsSecondsPerRadian = 2.5;
+        // public final static double kGArmVolts = 0.30;
+        // public final static double kVArmVoltsSecondsPerRadian = 3.5;
         // public final static double kAArmVoltsSecondsSquaredPerRadian = 0;
         // public final static double kPArmVoltsPerDegree = 0.3;
         // public final static double kIArmVoltsPerDegreesSeconds = 0.;

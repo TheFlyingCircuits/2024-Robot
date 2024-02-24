@@ -41,7 +41,7 @@ public class Indexer extends SubsystemBase {
         TalonFXConfiguration config = new TalonFXConfiguration();
         config.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
         config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
-        config.CurrentLimits.StatorCurrentLimit = 60;
+        config.CurrentLimits.StatorCurrentLimit = 120;
         config.CurrentLimits.StatorCurrentLimitEnable = true;
 
         indexerMotor.applyConfig(config);
