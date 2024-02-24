@@ -67,7 +67,14 @@ public class Robot extends LoggedRobot {
 
     /** This function is called once each time the robot enters Disabled mode. */
     @Override
-    public void disabledInit() {}
+    public void disabledInit() {
+        m_robotContainer.drivetrain.playOrchestra();
+    }
+
+    @Override
+    public void disabledExit() {
+        m_robotContainer.drivetrain.stopOrchestra();
+    }
 
     @Override
     public void disabledPeriodic() {

@@ -1,5 +1,6 @@
 package frc.robot.subsystems.drivetrain;
 
+import com.ctre.phoenix6.Orchestra;
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.hardware.CANcoder;
@@ -87,6 +88,7 @@ public class SwerveModuleIOKraken implements SwerveModuleIO {
         TalonFXConfiguration config = new TalonFXConfiguration();
         config.MotorOutput.Inverted = invertedValue;
         config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
+        config.Audio.AllowMusicDurDisable = true;
         driveMotor.getConfigurator().apply(config);
     }
 
@@ -100,6 +102,11 @@ public class SwerveModuleIOKraken implements SwerveModuleIO {
         //converts rpm of motor into deg/s of wheel
         angleEncoder.setVelocityConversionFactor(SwerveModuleConstants.steerGearReduction*360.0/60.0);
         angleMotor.burnFlash();
+    }
+
+    @Override
+    public void configOrchestra(Orchestra orchestra) {
+        orchestra.addInstrument(driveMotor);
     }
 
 }

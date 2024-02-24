@@ -1,12 +1,18 @@
 
 package frc.robot.subsystems.drivetrain;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 import org.littletonrobotics.junction.Logger;
+
+import com.ctre.phoenix6.Orchestra;
+import com.ctre.phoenix6.hardware.TalonFX;
 
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.Nat;
 import edu.wpi.first.math.VecBuilder;
-import edu.wpi.first.math.estimator.PoseEstimator;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -14,18 +20,15 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
-import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
-import edu.wpi.first.math.trajectory.constraint.SwerveDriveKinematicsConstraint;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.DrivetrainConstants;
 import frc.robot.Constants.FieldConstants;
-import frc.robot.Constants.SwerveModuleConstants;
 import frc.robot.subsystems.vision.VisionIO;
 import frc.robot.subsystems.vision.VisionIOInputsAutoLogged;
 
@@ -45,6 +48,14 @@ public class Drivetrain extends SubsystemBase {
     private SwerveDrivePoseEstimator poseEstimator;
 
     private Pose2d poseMeters;
+
+    private static Orchestra orchestra;
+    private String[] songs = {
+        "overworld.chrp",
+        "pokemon.chrp"
+    };
+
+
 
     public Drivetrain(
         GyroIO gyroIO, 
@@ -98,7 +109,34 @@ public class Drivetrain extends SubsystemBase {
 
         chassisSpeedsXSlewLimiter = new SlewRateLimiter(DrivetrainConstants.maxDesiredTeleopAccelMetersPerSecondSquared);
         chassisSpeedsYSlewLimiter = new SlewRateLimiter(DrivetrainConstants.maxDesiredTeleopAccelMetersPerSecondSquared);
+        orchestra = new Orchestra();
+
     }
+
+    public void addInstrument(TalonFX kraken) {
+        orchestra.addInstrument(kraken);
+    }
+    public static Orchestra getOrchestra() {
+        return orchestra;
+    }
+    
+    public void playOrchestra() {
+        List<String> shuffledMusicFiles = new ArrayList<String>(List.of(songs));
+        Collections.shuffle(shuffledMusicFiles);
+
+        orchestra.loadMusic(shuffledMusicFiles.get(0));
+        orchestra.play();
+    }
+
+    public void pauseOrchestra() {
+        orchestra.pause();
+    }
+
+    public void stopOrchestra() {
+        orchestra.stop();
+    }
+
+
 
     /**
      * Sets the robot pose's angle to the rotation passed into it.. This affects all subsequent uses of the robot's angle.
