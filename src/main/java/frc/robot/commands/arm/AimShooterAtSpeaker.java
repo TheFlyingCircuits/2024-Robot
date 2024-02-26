@@ -27,7 +27,9 @@ public class AimShooterAtSpeaker extends Command {
 
     @Override
     public void execute() {
-        double targetAngleRadians = Math.atan2(FieldConstants.speakerHeightMeters, drivetrain.distToSpeakerBaseMeters());
+        double targetAngleRadians = Math.atan2(
+            FieldConstants.speakerHeightMeters - FieldConstants.pivotHeightMeters,
+            drivetrain.distToSpeakerBaseMeters());
 
         arm.setArmDesiredPosition(Math.toDegrees(targetAngleRadians));
     }

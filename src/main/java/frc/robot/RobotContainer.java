@@ -14,6 +14,10 @@ import frc.robot.commands.drivetrain.JoystickDrive;
 import frc.robot.commands.intake.IndexNote;
 import frc.robot.commands.intake.IntakeNote;
 import frc.robot.commands.intake.ReverseIntake;
+import frc.robot.commands.leds.ChasePattern;
+import frc.robot.commands.leds.CheckerboardGreen;
+import frc.robot.commands.leds.SolidBlue;
+import frc.robot.commands.leds.SolidOrange;
 import frc.robot.commands.shooter.FireNote;
 import frc.robot.commands.shooter.SpinFlywheels;
 import frc.robot.subsystems.arm.Arm;
@@ -28,6 +32,7 @@ import frc.robot.subsystems.drivetrain.SwerveModuleIOKraken;
 import frc.robot.subsystems.drivetrain.SwerveModuleIONeo;
 import frc.robot.subsystems.drivetrain.SwerveModuleIOSim;
 import frc.robot.subsystems.intake.Intake;
+import frc.robot.subsystems.leds.LEDs;
 import frc.robot.subsystems.shooter.Indexer;
 import frc.robot.subsystems.shooter.Shooter;
 import frc.robot.subsystems.shooter.ShooterIO;
@@ -64,6 +69,7 @@ public class RobotContainer {
     public final Intake intake;
     public final Indexer indexer;
     public final Climb climb;
+    public final LEDs leds;
 
     private Trigger isRingInIntake;
     
@@ -113,9 +119,10 @@ public class RobotContainer {
         intake = new Intake();
         indexer = new Indexer();
         climb = new Climb();
+        leds = new LEDs();
         
         
-        //drivetrain.setDefaultCommand(new JoystickDrive(true, drivetrain));
+        drivetrain.setDefaultCommand(new JoystickDrive(true, drivetrain));
 
         isRingInIntake = new Trigger(intake::isRingInIntake);
         
@@ -127,45 +134,72 @@ public class RobotContainer {
     //since wpilib requires a new instance of a command to be used in each
     //composition (the same instance of a command cannot be used in multiple compositions).
 
+    Command intakeNote() {
+        return new ParallelRaceGroup(
+            new IntakeNote(intake),
+            new SolidOrange(leds)
+        );
+    }
+
+    Command indexNote() {
+        return new ParallelRaceGroup(
+            new IndexNote(intake, indexer),
+            new ChasePattern(leds)
+        );
+    }
+
+    Command aimShooterAtAngle(double angle) {
+        return new ParallelRaceGroup(
+            new AimShooterAtAngle(angle, arm),
+            new SolidBlue(leds));
+    }
 
     /** Moves the arm back and spins up the flywheels to prepare for an amp shot. */
-    ParallelCommandGroup prepAmpShot() {
+    Command prepAmpShot() {
         return new ParallelCommandGroup(
             new SpinFlywheels(8, 8, shooter),
-            new AimShooterAtAngle(100, arm));
+            aimShooterAtAngle(100));
     }
 
 
     /** Resets the angle and speed of the shooter back to its default idle position. */
-    ParallelCommandGroup resetShooter() {
+    Command resetShooter() {
         return new ParallelCommandGroup(
             new SpinFlywheels(0, 0, shooter),
-            new AimShooterAtAngle(ArmConstants.armMinAngleDegrees+10, arm));
+            aimShooterAtAngle(ArmConstants.armMinAngleDegrees+5));
     }
 
     /** Spins the flywheels up to speed and aims arm when pressed against the subwoofer. */
-    ParallelCommandGroup prepSubwooferShot() {
+    Command prepSubwooferShot() {
         return new ParallelCommandGroup(
-            new SpinFlywheels(8, 8, shooter),
-            new AimShooterAtAngle(70, arm));
+            new SpinFlywheels(12, 10, shooter),
+            aimShooterAtAngle(60));
     }
 
     
     /** Command to prepare for a shot. Finishes after the flywheels spin up to a desired
      *  speed, and the shooter reaches the correct angle. */
-    ParallelRaceGroup prepShotFromAnywhere() { 
+    Command prepShotFromAnywhere() { 
         return new ParallelRaceGroup(
             new ParallelCommandGroup(
-                new SpinFlywheels(8, 8, shooter),
+                new SpinFlywheels(24, 12, shooter),
                 new AimShooterAtSpeaker(arm, drivetrain)),
             new AimAtSpeakerWhileJoystickDrive(drivetrain));
     }
 
+
+    Command fireNote() {
+        return new ParallelRaceGroup(
+            new FireNote(indexer),
+            new CheckerboardGreen(leds)
+        );
+    }
+
     //aims and then shoots in one motion
-    SequentialCommandGroup shootFromSubwoofer() { 
+    Command shootFromSubwoofer() { 
         return new SequentialCommandGroup(
             prepSubwooferShot(),
-            new FireNote(indexer),
+            fireNote(),
             resetShooter());
     }
 
@@ -174,21 +208,21 @@ public class RobotContainer {
     SequentialCommandGroup shootFromAnywhere() {
         return new SequentialCommandGroup(
             prepShotFromAnywhere(),
-            new FireNote(indexer),
+            fireNote(),
             resetShooter());
     }
 
     private void realBindings() {
         controller.rightTrigger()
-            .whileTrue(new IntakeNote(intake))
-            .onFalse(new IndexNote(intake, indexer));
+            .whileTrue(intakeNote())
+            .onFalse(indexNote());
     
         controller.leftTrigger().whileTrue(new ReverseIntake(intake, indexer));
         
         controller.rightBumper().onTrue(shootFromSubwoofer());
         controller.leftBumper()
             .onTrue(prepAmpShot())
-            .onFalse(new FireNote(indexer));
+            .onFalse(fireNote());
 
         
         
@@ -199,8 +233,8 @@ public class RobotContainer {
 
     private void testBindings() {
         controller.rightTrigger()
-            .whileTrue(new IntakeNote(intake))
-            .onFalse(new IndexNote(intake, indexer));
+            .whileTrue(intakeNote())
+            .onFalse(indexNote());
     
             
         controller.leftTrigger().whileTrue(new ReverseIntake(intake, indexer));
@@ -211,13 +245,13 @@ public class RobotContainer {
         controller.y().onTrue(new InstantCommand(() -> drivetrain.setRobotFacingForward()));
 
         // controller.a().onTrue(new AimShooterAtAngle(0, arm));
-        // controller.b().onTrue(new AimShooterAtAngle(30, arm));
-        // controller.x().onTrue(new AimShooterAtAngle(90, arm));
+        // controller.b().onTrue(new AimShooterAtAngle(90, arm));
+        // controller.x().onTrue(new AimShooterAtAngle(ArmConstants.armMaxAngleDegrees, arm));
 
 
-        controller.y().whileTrue(new SpinFlywheels(8, 8, shooter));
+        //controller.y().whileTrue(new SpinFlywheels(8, 8, shooter));
         controller.x().onTrue(resetShooter());
-        controller.b().onTrue(new FireNote(indexer));
+        controller.b().onTrue(shootFromAnywhere());
         controller.a().onTrue(shootFromSubwoofer());
         
 

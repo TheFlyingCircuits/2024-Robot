@@ -18,7 +18,7 @@ public class LowerClimbArms extends Command {
 
     @Override
     public void initialize() {
-        climb.setVolts(-10);
+        climb.setVolts(-5);
     }
 
     // Called every time the scheduler runs while the command is scheduled.

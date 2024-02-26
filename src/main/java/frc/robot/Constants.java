@@ -31,12 +31,12 @@ public final class Constants {
 
         public static final double flywheelCircumferenceMeters = Units.inchesToMeters(3.875)*Math.PI;
     
-        public final static double kPFlywheelsVoltsSecondsPerMeter = .02;
+        public final static double kPFlywheelsVoltsSecondsPerMeter = .0;
         public final static double kIFlywheelsVoltsPerMeter = 0.;
         public final static double kDFlywheelsVoltsSecondsSquaredPerMeter = 0.;
 
-        public final static double kSFlywheelsVolts = 0.;
-        public final static double kVFlywheelsVoltsSecondsPerMeter = 0.45;
+        public final static double kSFlywheelsVolts = 0.0;
+        public final static double kVFlywheelsVoltsSecondsPerMeter = 0.4185;
         public final static double kAFlywheelsVoltsSecondsSquaredPerMeter = 0.;
 
         public final static int leftMotorID = 6;
@@ -180,7 +180,7 @@ public final class Constants {
         public final static double armGearReduction = 460./3.;
 
         /**Minimum angle of the arm, in degrees. This value should be negative, as it is below the horizontal.*/
-        public final static double armMinAngleDegrees = -24.;
+        public final static double armMinAngleDegrees = -25.8;
 
         /**Maximum angle of the arm, in degrees. This value should be positive and greater than 90, as it is beyond the vertical. */
         public final static double armMaxAngleDegrees = 145.;
@@ -196,7 +196,7 @@ public final class Constants {
         public final static int rightArmCANcoderID = 8;
         
 
-        public final static double rightArmCANcoderOffset = -0.4560546875;
+        public final static double rightArmCANcoderOffset = -0.446044921875;
         public final static double leftArmCANcoderOffset = 0.07275390625;
 
         /***** REAL CONSTANTS ******/
@@ -234,7 +234,7 @@ public final class Constants {
          * A positive rotation will result in a positive extension.
          * This is plugged directly into the climb encoders' setPositionConversionFactor method.
          */
-        public final static double climberArmMetersPerMotorRotation = 0.015;
+        public final static double climberArmMetersPerMotorRotation = Units.inchesToMeters(2.256*Math.PI/21.);
 
         public final static double armMaxPosMeters = .79;
 
@@ -245,7 +245,7 @@ public final class Constants {
         public final static AprilTagFieldLayout aprilTagFieldLayout = AprilTagFields.k2024Crescendo.loadAprilTagLayoutField();
     
         public final static Transform3d robotToCamera = new Transform3d(
-            new Translation3d(0.064, 0, 0.466),
+            new Translation3d(Units.inchesToMeters(8), 0, Units.inchesToMeters(11.5)),
             new Rotation3d(0, Math.toRadians(-28), 0)
         );
     }
@@ -255,11 +255,14 @@ public final class Constants {
         /** Distance from the front edge of the speaker structure to the carpet. */
         public final static double speakerHeightMeters = 2.09;
 
-        /** X-Y position of the center of the front edge of the red speaker.  */
-        public final static Translation2d blueSpeakerTranslation2d = new Translation2d(0.46, 5.55);
+        /** X-Y position of the center of 30 cm behind the front edge of the red speaker.  */
+        public final static Translation2d blueSpeakerTranslation2d = new Translation2d(0.46-0.3, 5.55);
 
-        /** X-Y position of the center of the front edge of the blue speaker. */
-        public final static Translation2d redSpeakerTranslation2d = new Translation2d(16.08, 5.55);
+        /** X-Y position of the center of 30 cm behind the front edge of the blue speaker. */
+        public final static Translation2d redSpeakerTranslation2d = new Translation2d(16.08+0.3, 5.55);
+
+        /** Distance from the floor to the center of the pivot. This is used for angle cal;culations for shoot from anywhere. */
+        public final static double pivotHeightMeters = Units.inchesToMeters(22);
     }
 
     public final static class IntakeConstants {
