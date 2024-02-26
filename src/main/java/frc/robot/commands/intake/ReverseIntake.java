@@ -22,8 +22,8 @@ public class ReverseIntake extends Command {
 
     @Override
     public void initialize() {
-        intake.setVolts(-5);
-        indexer.setVolts(-5);
+        intake.setVolts(-8);
+        indexer.setVolts(-8);
     }
 
     @Override

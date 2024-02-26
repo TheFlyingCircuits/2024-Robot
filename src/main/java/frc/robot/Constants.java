@@ -26,17 +26,17 @@ import edu.wpi.first.math.util.Units;
  */
 public final class Constants {
     public final static class ShooterConstants {
-        /**Rotations of the wheel per rotations of the motor; a number greater than 1 represents a reduction. */
+        /**Rotations of the motor per rotations of the wheel; a number greater than 1 represents a reduction. */
         public final static double flywheelGearReduction = 1.;
 
         public static final double flywheelCircumferenceMeters = Units.inchesToMeters(3.875)*Math.PI;
     
-        public final static double kPFlywheelsVoltsSecondsPerMeter = 0.;
+        public final static double kPFlywheelsVoltsSecondsPerMeter = .02;
         public final static double kIFlywheelsVoltsPerMeter = 0.;
         public final static double kDFlywheelsVoltsSecondsSquaredPerMeter = 0.;
 
         public final static double kSFlywheelsVolts = 0.;
-        public final static double kVFlywheelsVoltsSecondsPerMeter = 0.38;
+        public final static double kVFlywheelsVoltsSecondsPerMeter = 0.45;
         public final static double kAFlywheelsVoltsSecondsSquaredPerMeter = 0.;
 
         public final static int leftMotorID = 6;
@@ -45,6 +45,14 @@ public final class Constants {
         public final static int indexerMotorID = 4;
 
         public static final int indexerProximitySwitchID = 1;
+
+        public static final double kPIndexerVoltsPerRPM = 0.00005;
+
+        public static final double kSIndexerVolts = 0;
+        public static final double kVIndexerVoltsPerRPM = 0.0031;
+
+        /** Rotations of the motor per rotations of the indexer wheel; a number greater than 1 represents a reduction. */
+        public static final double indexerGearReduction = 24./18.;
     }
 
     public final static class DrivetrainConstants {
@@ -192,9 +200,9 @@ public final class Constants {
         public final static double leftArmCANcoderOffset = 0.07275390625;
 
         /***** REAL CONSTANTS ******/
-        public final static double kSArmVolts = 0.0;
+        public final static double kSArmVolts = 0.005;
         public final static double kGArmVolts = 0.30;
-        public final static double kVArmVoltsSecondsPerRadian = 3.2;
+        public final static double kVArmVoltsSecondsPerRadian = 3.1;
         public final static double kAArmVoltsSecondsSquaredPerRadian = 0;
         public final static double kPArmVoltsPerDegree = 0.3;
         public final static double kDArmVoltsSecondsPerDegree = 0.005;

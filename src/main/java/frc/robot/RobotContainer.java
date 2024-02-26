@@ -211,7 +211,7 @@ public class RobotContainer {
         controller.y().onTrue(new InstantCommand(() -> drivetrain.setRobotFacingForward()));
 
         // controller.a().onTrue(new AimShooterAtAngle(0, arm));
-        // controller.b().onTrue(new AimShooterAtAngle(45, arm));
+        // controller.b().onTrue(new AimShooterAtAngle(30, arm));
         // controller.x().onTrue(new AimShooterAtAngle(90, arm));
 
 

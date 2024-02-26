@@ -18,7 +18,7 @@ public class FireNote extends Command {
 
     @Override
     public void initialize() {
-        indexer.setVolts(1);
+        indexer.setIndexerRPM(1500);
         timer.restart();
     }
 
@@ -27,7 +27,7 @@ public class FireNote extends Command {
 
     @Override
     public void end(boolean isInterrupted) {
-        indexer.setVolts(0);
+        indexer.setIndexerRPM(0);
     }
     
     @Override
