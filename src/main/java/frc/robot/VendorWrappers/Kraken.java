@@ -42,7 +42,7 @@ public class Kraken extends TalonFX {
         }
 
         /** Print a warning if you're running a test and don't want a current limit to interfere. */
-        if (statorCurrentLimit >= 100) { // TODO: fill in with more reasonable value once actual current limits are determined.
+        if (statorCurrentLimit >= 100) { 
             System.out.println("Stator Current Limit for "+name+" seems a little high");
             System.out.println("Make sure to lower it after you're done testing whatever it is you're testing!");
         }

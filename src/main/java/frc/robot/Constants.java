@@ -138,7 +138,7 @@ public final class Constants {
 
     public final static class SwerveModuleConstants {
         /** Rotations of the drive wheel per rotations of the drive motor. */
-        public static final double driveGearReduction = (18.0 / 50.0) * (27.0 / 17.0) * (15.0 / 45.0);
+        public static final double driveGearReduction = (16.0 / 50.0) * (27.0 / 17.0) * (15.0 / 45.0);
 
         /** Rotations of the steering column per rotations of the angle motor. */
         public static final double steerGearReduction = (14.0 / 50.0) * (10.0 / 60.0);

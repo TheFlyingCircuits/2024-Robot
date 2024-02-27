@@ -21,7 +21,6 @@ import frc.robot.commands.leds.SolidOrange;
 import frc.robot.commands.shooter.FireNote;
 import frc.robot.commands.shooter.SpinFlywheels;
 import frc.robot.subsystems.arm.Arm;
-import frc.robot.subsystems.arm.ArmIO;
 import frc.robot.subsystems.arm.ArmIONeo;
 import frc.robot.subsystems.arm.ArmIOSim;
 import frc.robot.subsystems.climb.Climb;
@@ -29,7 +28,6 @@ import frc.robot.subsystems.drivetrain.Drivetrain;
 import frc.robot.subsystems.drivetrain.GyroIOPigeon;
 import frc.robot.subsystems.drivetrain.GyroIOSim;
 import frc.robot.subsystems.drivetrain.SwerveModuleIOKraken;
-import frc.robot.subsystems.drivetrain.SwerveModuleIONeo;
 import frc.robot.subsystems.drivetrain.SwerveModuleIOSim;
 import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.leds.LEDs;
@@ -221,14 +219,20 @@ public class RobotContainer {
         
         controller.rightBumper().onTrue(shootFromSubwoofer());
         controller.leftBumper()
-            .onTrue(prepAmpShot())
-            .onFalse(fireNote());
+            .whileTrue(prepAmpShot())
+            .onFalse(fireNote().andThen(resetShooter()));
+        controller.b().whileTrue(shootFromAnywhere());
+
+
+        //climb routine should be tilt shooter back, drive chain over shooter arm, raise arm to amp shot, climb, score trap
+        controller.pov(0).whileTrue(new RaiseClimbArms(climb));
+        controller.pov(180).whileTrue(new LowerClimbArms(climb));
+        controller.x().onTrue(aimShooterAtAngle(ArmConstants.armMaxAngleDegrees));
+        controller.a().onTrue(prepAmpShot());
 
         
         
         controller.y().onTrue(new InstantCommand(() -> drivetrain.setRobotFacingForward()));
-
-
     }
 
     private void testBindings() {
@@ -244,9 +248,11 @@ public class RobotContainer {
         
         controller.y().onTrue(new InstantCommand(() -> drivetrain.setRobotFacingForward()));
 
-        // controller.a().onTrue(new AimShooterAtAngle(0, arm));
-        // controller.b().onTrue(new AimShooterAtAngle(90, arm));
-        // controller.x().onTrue(new AimShooterAtAngle(ArmConstants.armMaxAngleDegrees, arm));
+        //povbutton angles are 0 pointing straight up and increase clockwise positive
+        controller.pov(180).onTrue(aimShooterAtAngle(ArmConstants.armMinAngleDegrees));
+        controller.pov(90).onTrue(aimShooterAtAngle(0));
+        controller.pov(0).onTrue(aimShooterAtAngle(90));
+        controller.pov(270).onTrue(aimShooterAtAngle(ArmConstants.armMaxAngleDegrees));
 
 
         //controller.y().whileTrue(new SpinFlywheels(8, 8, shooter));
@@ -261,9 +267,6 @@ public class RobotContainer {
         
         // controller.x().whileTrue(arm.generateSysIdDynamic(SysIdRoutine.Direction.kForward));
         // controller.y().whileTrue(arm.generateSysIdDynamic(SysIdRoutine.Direction.kReverse));
-
-        
-        //isRingInIntake.onTrue(new IndexNote(intake, indexer));    
     
     }
 

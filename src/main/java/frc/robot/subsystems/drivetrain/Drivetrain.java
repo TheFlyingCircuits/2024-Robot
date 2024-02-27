@@ -4,9 +4,7 @@ package frc.robot.subsystems.drivetrain;
 import org.littletonrobotics.junction.Logger;
 
 import edu.wpi.first.math.Matrix;
-import edu.wpi.first.math.Nat;
 import edu.wpi.first.math.VecBuilder;
-import edu.wpi.first.math.estimator.PoseEstimator;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -14,18 +12,15 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
-import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
-import edu.wpi.first.math.trajectory.constraint.SwerveDriveKinematicsConstraint;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.DrivetrainConstants;
 import frc.robot.Constants.FieldConstants;
-import frc.robot.Constants.SwerveModuleConstants;
 import frc.robot.subsystems.vision.VisionIO;
 import frc.robot.subsystems.vision.VisionIOInputsAutoLogged;
 
@@ -72,20 +67,13 @@ public class Drivetrain extends SubsystemBase {
 
         poseMeters = new Pose2d(new Translation2d(0, 0), new Rotation2d(0));
 
-
-        // TODO: Change these to vec builders to clean up a bit.
-        Matrix<N3, N1> stateStdDevs = new Matrix(Nat.N3(), Nat.N1());
         //corresponds to x, y, and rotation standard deviations (meters and radians)
-        stateStdDevs.set(0, 0, 0.1);
-        stateStdDevs.set(1, 0, 0.1);
-        stateStdDevs.set(2, 0, 0.005);
+        Matrix<N3, N1> stateStdDevs = VecBuilder.fill(0.1, 0.1, 0.005);
 
-        Matrix<N3, N1> visionStdDevs = new Matrix(Nat.N3(), Nat.N1());
+        
         //corresponds to x, y, and rotation standard deviations (meters and radians)
         //these values are automatically recalculated periodically depending on distance
-        visionStdDevs.set(0, 0, 0.0);
-        visionStdDevs.set(1, 0, 0.0);
-        visionStdDevs.set(2, 0, 0.);
+        Matrix<N3, N1> visionStdDevs = VecBuilder.fill(0., 0., 0.);
 
         poseEstimator = new SwerveDrivePoseEstimator(
             DrivetrainConstants.swerveKinematics, 
@@ -170,6 +158,7 @@ public class Drivetrain extends SubsystemBase {
         return swerveStates;
     }
 
+    /** Gets robot relative chassis speeds. */
     public ChassisSpeeds getChassisSpeeds() {
         return DrivetrainConstants.swerveKinematics.toChassisSpeeds(getModuleStates());
     }

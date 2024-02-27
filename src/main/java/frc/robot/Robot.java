@@ -96,8 +96,7 @@ public class Robot extends LoggedRobot {
                     new PIDConstants(5.0, 0.0, 0.0), // Translation PID constants
                     new PIDConstants(5.0, 0.0, 0.0), // Rotation PID constants
                     DrivetrainConstants.maxAchievableVelocityMetersPerSecond, // Max module speed, in m/s
-                    //TODO: get a better way of defining this value below
-                    DrivetrainConstants.trackwidthMeters/Math.sqrt(2), // Drive base radius in meters. Distance from robot center to furthest module.
+                    Math.sqrt(2)*DrivetrainConstants.trackwidthMeters, // Drive base radius in meters. Distance from robot center to furthest module.
                     new ReplanningConfig() // Default path replanning config. See the API for the options here
             ),
             () -> {

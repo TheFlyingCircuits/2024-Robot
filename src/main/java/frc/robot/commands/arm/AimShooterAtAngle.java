@@ -5,9 +5,7 @@
 package frc.robot.commands.arm;
 
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.Constants.FieldConstants;
 import frc.robot.subsystems.arm.Arm;
-import frc.robot.subsystems.drivetrain.Drivetrain;
 
 public class AimShooterAtAngle extends Command {
 
