@@ -66,6 +66,13 @@ public class Shooter extends SubsystemBase {
     }
 
     /**
+     * @return - The shooter's left flywheel surface speed in meters per second
+     */
+    public double getLeftFlywheelsMetersPerSecond() {
+        return inputs.leftFlywheelsMetersPerSecond;
+    }
+
+    /**
      * Sets the surface speed of the right set of flywheels.
      * This is theoretically the speed that this side of the note will have when exiting the shooter.
      * @param metersPerSecond - Desired surface speed in meters per second.
