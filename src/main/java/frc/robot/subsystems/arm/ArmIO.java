@@ -37,4 +37,5 @@ public interface ArmIO {
     */
     public default void setArmMotorVolts(double volts) {};
 
+    public default void setArmEncoderPosition(double degrees) {};
 }

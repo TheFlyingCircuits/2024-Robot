@@ -49,6 +49,8 @@ public class SwerveModule {
 
     public void periodic() {
         io.updateInputs(inputs);
+
+        Logger.processInputs("module" + Integer.toString(moduleIndex), inputs);
     }
 
 

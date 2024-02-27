@@ -55,6 +55,9 @@ public class SwerveModuleIOKraken implements SwerveModuleIO {
         inputs.drivePositionMeters = driveMotor.getPosition().getValueAsDouble() * (SwerveModuleConstants.driveGearReduction * SwerveModuleConstants.wheelCircumferenceMeters);
         inputs.driveVelocityMetersPerSecond = driveMotor.getVelocity().getValueAsDouble() * (SwerveModuleConstants.driveGearReduction * SwerveModuleConstants.wheelCircumferenceMeters);
         inputs.angleAbsolutePositionDegrees = absoluteEncoder.getAbsolutePosition().getValueAsDouble()*360;
+
+        inputs.driveAppliedVoltage = driveMotor.getMotorVoltage().getValueAsDouble();
+        inputs.driveCurrent = driveMotor.getTorqueCurrent().getValueAsDouble();
     }
 
     @Override
@@ -80,7 +83,7 @@ public class SwerveModuleIOKraken implements SwerveModuleIO {
         TalonFXConfiguration config = new TalonFXConfiguration();
         config.MotorOutput.Inverted = invertedValue;
         config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
-        config.CurrentLimits.StatorCurrentLimit = 120;
+        config.CurrentLimits.StatorCurrentLimit = 60; // slip at 70
         config.CurrentLimits.StatorCurrentLimitEnable = true;
         driveMotor.applyConfig(config);
     }

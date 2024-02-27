@@ -10,6 +10,9 @@ public interface SwerveModuleIO {
         public double driveVelocityMetersPerSecond = 0.0;
         
         public double angleAbsolutePositionDegrees = 0.0;
+
+        public double driveAppliedVoltage = 0.0;
+        public double driveCurrent = 0.0;
     }
     
     /** Updates the set of loggable inputs. */

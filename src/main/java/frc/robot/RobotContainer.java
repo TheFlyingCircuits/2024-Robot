@@ -43,6 +43,8 @@ import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
 
 import edu.wpi.first.wpilibj.RobotBase;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
@@ -60,7 +62,7 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
  */
 public class RobotContainer {
 
-    public static final CommandXboxController controller = new CommandXboxController(0);
+    public final static CommandXboxController controller = new CommandXboxController(0);
     public final Shooter shooter;
     public final Drivetrain drivetrain;
     public final Arm arm;
@@ -70,6 +72,7 @@ public class RobotContainer {
     public final LEDs leds;
 
     private Trigger isRingInIntake;
+    
     
     public RobotContainer() {
 
@@ -124,6 +127,12 @@ public class RobotContainer {
 
         isRingInIntake = new Trigger(intake::isRingInIntake);
         
+        
+        NamedCommands.registerCommand("shootFromSubwoofer", shootFromSubwoofer());
+        NamedCommands.registerCommand("shootFromAnywhere", shootFromAnywhere());
+        NamedCommands.registerCommand("indexNote", indexNote());
+
+
         testBindings();
     }
 
@@ -170,8 +179,8 @@ public class RobotContainer {
     /** Spins the flywheels up to speed and aims arm when pressed against the subwoofer. */
     Command prepSubwooferShot() {
         return new ParallelCommandGroup(
-            new SpinFlywheels(12, 10, shooter),
-            aimShooterAtAngle(60));
+            new SpinFlywheels(27, 15, shooter),
+            aimShooterAtAngle(45));
     }
 
     
@@ -180,7 +189,7 @@ public class RobotContainer {
     Command prepShotFromAnywhere() { 
         return new ParallelRaceGroup(
             new ParallelCommandGroup(
-                new SpinFlywheels(27, 15, shooter),
+                new SpinFlywheels(27, 27, shooter),
                 new AimShooterAtSpeaker(arm, drivetrain)),
             new AimAtSpeakerWhileJoystickDrive(drivetrain));
     }
@@ -259,6 +268,8 @@ public class RobotContainer {
         controller.x().onTrue(resetShooter());
         controller.b().onTrue(shootFromAnywhere());
         controller.a().onTrue(shootFromSubwoofer());
+
+        controller.leftStick().onTrue(new InstantCommand(() -> arm.setArmDesiredPosition(ArmConstants.armMinAngleDegrees)));
         
 
         /** SYSID BINDINGS **/
@@ -268,19 +279,5 @@ public class RobotContainer {
         // controller.x().whileTrue(arm.generateSysIdDynamic(SysIdRoutine.Direction.kForward));
         // controller.y().whileTrue(arm.generateSysIdDynamic(SysIdRoutine.Direction.kReverse));
     
-    }
-
-    /**
-     * Use this to pass the autonomous command to the main {@link Robot} class.
-     *
-     * @return the command to run in autonomous
-     */
-    public Command getAutonomousCommand() {
-
-        // NamedCommands.registerCommand("shootFromSubwoofer", shootFromSubwoofer());
-        // NamedCommands.registerCommand("shootFromAnywhere", shootFromAnywhere());
-        // NamedCommands.registerCommand("indexNote", new IndexNote(intake, indexer));
-
-        return AutoBuilder.buildAuto("3 Piece Amp Side");
     }
 }

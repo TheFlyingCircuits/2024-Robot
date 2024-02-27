@@ -18,6 +18,8 @@ public class ReverseIntake extends Command {
     public ReverseIntake(Intake intake, Indexer indexer) {
         this.intake = intake;
         this.indexer = indexer;
+
+        addRequirements(intake, indexer);
     }
 
     @Override

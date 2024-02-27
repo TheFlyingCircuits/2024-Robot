@@ -18,17 +18,19 @@ public class IndexNote extends Command {
     public IndexNote(Intake intake, Indexer indexer) {
         this.intake = intake;
         this.indexer = indexer;
+        
         addRequirements(intake, indexer);
     }
 
     @Override
     public void initialize() {
-        intake.setVolts(5);
-        indexer.setIndexerRPM(1500);
     }
 
     @Override
-    public void execute() {}
+    public void execute() {
+        intake.setVolts(5);
+        indexer.setIndexerRPM(1500);
+    }
 
     @Override
     public void end(boolean interrupted) {

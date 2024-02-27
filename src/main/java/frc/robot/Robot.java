@@ -15,8 +15,11 @@ import com.pathplanner.lib.util.ReplanningConfig;
 
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import frc.robot.Constants.ArmConstants;
 import frc.robot.Constants.DrivetrainConstants;
 import frc.robot.Constants.LEDConstants.LEDColor;
 import frc.robot.subsystems.drivetrain.Drivetrain;
@@ -34,6 +37,9 @@ public class Robot extends LoggedRobot {
     private RobotContainer m_robotContainer;
     private Drivetrain drivetrain;
 
+    private SendableChooser<Command> autoChooser;
+    public Command chosenAuto;
+
     /**
      * This function is run when the robot is first started up and should be used for any
      * initialization code.
@@ -45,6 +51,37 @@ public class Robot extends LoggedRobot {
         m_robotContainer = new RobotContainer();
         drivetrain = m_robotContainer.drivetrain;
         
+
+        //TODO: FIGURE OUT CORRECT ALLIANCE COLOR
+        AutoBuilder.configureHolonomic(
+            drivetrain::getPoseMeters, // Robot pose supplier
+            drivetrain::setPoseMeters, // Method to reset odometry (will be called if your auto has a starting pose)
+            drivetrain::getChassisSpeeds, // ChassisSpeeds supplier. MUST BE ROBOT RELATIVE
+            (ChassisSpeeds speeds) -> drivetrain.drive(speeds, true), // Method that will drive the robot given ROBOT RELATIVE ChassisSpeeds
+            new HolonomicPathFollowerConfig( // HolonomicPathFollowerConfig, this should likely live in your Constants class
+                    new PIDConstants(5.0, 0.0, 0.0), // Translation PID constants
+                    new PIDConstants(5.0, 0.0, 0.0), // Rotation PID constants
+                    DrivetrainConstants.maxAchievableVelocityMetersPerSecond, // Max module speed, in m/s
+                    Math.sqrt(2)*DrivetrainConstants.trackwidthMeters, // Drive base radius in meters. Distance from robot center to furthest module.
+                    new ReplanningConfig() // Default path replanning config. See the API for the options here
+            ),
+            () -> {
+              // Boolean supplier that controls when the path will be mirrored
+              // We by default draw the paths on the red side of the field, mirroring them if we are on the blue alliance.
+              // THE ORIGIN WILL REMAIN ON THE BLUE SIDE
+
+              var alliance = DriverStation.getAlliance();
+              if (alliance.isPresent()) {
+                return alliance.get() == DriverStation.Alliance.Blue;
+              }
+              return false;
+            },
+            drivetrain // Reference to this subsystem to set requirements
+        );
+
+        // autoChooser = AutoBuilder.buildAutoChooser();
+        // SmartDashboard.putData("Auto Chooser", autoChooser);
+
         Logger.recordMetadata("projectName", "2023Robot");    
         Logger.addDataReceiver(new NT4Publisher());
 
@@ -80,6 +117,10 @@ public class Robot extends LoggedRobot {
         m_robotContainer.drivetrain.setPoseToVisionMeasurement();
 
         m_robotContainer.arm.setDesiredPositionToCurrent();
+        
+        if (m_robotContainer.controller.leftStick().getAsBoolean()) {
+            m_robotContainer.arm.setArmEncoderPosition(ArmConstants.armMinAngleDegrees);
+        }
     }
 
     /** This autonomous runs the autonomous command selected by your {@link RobotContainer} class. */
@@ -87,38 +128,15 @@ public class Robot extends LoggedRobot {
     public void autonomousInit() {
 
 
-        AutoBuilder.configureHolonomic(
-            drivetrain::getPoseMeters, // Robot pose supplier
-            drivetrain::setPoseMeters, // Method to reset odometry (will be called if your auto has a starting pose)
-            drivetrain::getChassisSpeeds, // ChassisSpeeds supplier. MUST BE ROBOT RELATIVE
-            (ChassisSpeeds speeds) -> drivetrain.drive(speeds, true), // Method that will drive the robot given ROBOT RELATIVE ChassisSpeeds
-            new HolonomicPathFollowerConfig( // HolonomicPathFollowerConfig, this should likely live in your Constants class
-                    new PIDConstants(5.0, 0.0, 0.0), // Translation PID constants
-                    new PIDConstants(5.0, 0.0, 0.0), // Rotation PID constants
-                    DrivetrainConstants.maxAchievableVelocityMetersPerSecond, // Max module speed, in m/s
-                    Math.sqrt(2)*DrivetrainConstants.trackwidthMeters, // Drive base radius in meters. Distance from robot center to furthest module.
-                    new ReplanningConfig() // Default path replanning config. See the API for the options here
-            ),
-            () -> {
-              // Boolean supplier that controls when the path will be mirrored
-              // We by default draw the paths on the red side of the field, mirroring them if we are on the blue alliance.
-              // THE ORIGIN WILL REMAIN ON THE BLUE SIDE
 
-              var alliance = DriverStation.getAlliance();
-              if (alliance.isPresent()) {
-                return alliance.get() == DriverStation.Alliance.Blue;
-              }
-              return false;
-            },
-            drivetrain // Reference to this subsystem to set requirements
-        );
+        
 
-
-        m_autonomousCommand = m_robotContainer.getAutonomousCommand();
+        
+        m_autonomousCommand = AutoBuilder.buildAuto("(8, 3) 3 Piece Source Side"); //autoChooser.getSelected();
 
         // schedule the autonomous command (example)
         if (m_autonomousCommand != null) {
-        m_autonomousCommand.schedule();
+            m_autonomousCommand.schedule();
         }
 
     }

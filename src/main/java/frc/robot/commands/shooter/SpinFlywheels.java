@@ -34,7 +34,7 @@ public class SpinFlywheels extends Command {
 
     @Override
     public boolean isFinished() {
-        return shooter.flywheelsAtSetpoints(leftFlywheelMetersPerSecond, rightFlywheelMetersPerSecond, 0.25);
+        return shooter.flywheelsAtSetpoints(leftFlywheelMetersPerSecond, rightFlywheelMetersPerSecond, 0.5);
     }
     
 }
