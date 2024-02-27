@@ -7,7 +7,7 @@ import frc.robot.subsystems.leds.LEDs;
 
 public class CheckerboardGreen extends Command {
     
-    int space = 5;
+    int space = 10;
     AddressableLED leds;
     AddressableLEDBuffer buffer;
     boolean isActive = true;
