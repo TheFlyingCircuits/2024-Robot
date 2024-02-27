@@ -31,7 +31,7 @@ public final class Constants {
 
         public static final double flywheelCircumferenceMeters = Units.inchesToMeters(3.875)*Math.PI;
     
-        public final static double kPFlywheelsVoltsSecondsPerMeter = .0;
+        public final static double kPFlywheelsVoltsSecondsPerMeter = .1;
         public final static double kIFlywheelsVoltsPerMeter = 0.;
         public final static double kDFlywheelsVoltsSecondsSquaredPerMeter = 0.;
 
@@ -253,7 +253,7 @@ public final class Constants {
     public final static class FieldConstants {
 
         /** Distance from the front edge of the speaker structure to the carpet. */
-        public final static double speakerHeightMeters = 2.09;
+        public final static double speakerHeightMeters = 1.98; //2.09;
 
         /** X-Y position of the center of 30 cm behind the front edge of the red speaker.  */
         public final static Translation2d blueSpeakerTranslation2d = new Translation2d(0.46-0.3, 5.55);

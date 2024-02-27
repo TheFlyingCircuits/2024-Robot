@@ -182,7 +182,7 @@ public class RobotContainer {
     Command prepShotFromAnywhere() { 
         return new ParallelRaceGroup(
             new ParallelCommandGroup(
-                new SpinFlywheels(24, 12, shooter),
+                new SpinFlywheels(27, 15, shooter),
                 new AimShooterAtSpeaker(arm, drivetrain)),
             new AimAtSpeakerWhileJoystickDrive(drivetrain));
     }

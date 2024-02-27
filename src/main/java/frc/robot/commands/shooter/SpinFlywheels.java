@@ -20,12 +20,13 @@ public class SpinFlywheels extends Command {
 
     @Override
     public void initialize() {
-        shooter.setLeftFlywheelsMetersPerSecond(leftFlywheelMetersPerSecond);
-        shooter.setRightFlywheelsMetersPerSecond(rightFlywheelMetersPerSecond);
-    };
+    }
 
     @Override
-    public void execute() {};
+    public void execute() {
+        shooter.setLeftFlywheelsMetersPerSecond(leftFlywheelMetersPerSecond);
+        shooter.setRightFlywheelsMetersPerSecond(rightFlywheelMetersPerSecond);
+    }
 
     @Override
     public void end(boolean isInterrupted) {
