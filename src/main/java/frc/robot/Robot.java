@@ -4,9 +4,13 @@
 
 package frc.robot;
 
+import java.lang.constant.DirectMethodHandleDesc;
+import java.sql.Driver;
+
 import org.littletonrobotics.junction.LoggedRobot;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.NT4Publisher;
+import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.util.HolonomicPathFollowerConfig;
@@ -38,21 +42,8 @@ public class Robot extends LoggedRobot {
     private Drivetrain drivetrain;
 
     private SendableChooser<Command> autoChooser;
-    public Command chosenAuto;
 
-    /**
-     * This function is run when the robot is first started up and should be used for any
-     * initialization code.
-     */
-    @Override
-    public void robotInit() {
-        // Instantiate our RobotContainer.  This will perform all our button bindings, and put our
-        // autonomous chooser on the dashboard.
-        m_robotContainer = new RobotContainer();
-        drivetrain = m_robotContainer.drivetrain;
-        
-
-        //TODO: FIGURE OUT CORRECT ALLIANCE COLOR
+    private void configAutoBuilder() {
         AutoBuilder.configureHolonomic(
             drivetrain::getPoseMeters, // Robot pose supplier
             drivetrain::setPoseMeters, // Method to reset odometry (will be called if your auto has a starting pose)
@@ -78,14 +69,26 @@ public class Robot extends LoggedRobot {
             },
             drivetrain // Reference to this subsystem to set requirements
         );
+    }
 
-        // autoChooser = AutoBuilder.buildAutoChooser();
-        // SmartDashboard.putData("Auto Chooser", autoChooser);
+    /**
+     * This function is run when the robot is first started up and should be used for any
+     * initialization code.
+     */
+    @Override
+    public void robotInit() {
+        // Instantiate our RobotContainer.  This will perform all our button bindings, and put our
+        // autonomous chooser on the dashboard.
+        m_robotContainer = new RobotContainer();
+        drivetrain = m_robotContainer.drivetrain;
+        
+        configAutoBuilder();
+        
 
-        Logger.recordMetadata("projectName", "2023Robot");    
-        Logger.addDataReceiver(new NT4Publisher());
+        autoChooser = AutoBuilder.buildAutoChooser();
+        SmartDashboard.putData("Auto Chooser", autoChooser);
 
-        Logger.start();
+
     }
 
     /**
@@ -126,12 +129,6 @@ public class Robot extends LoggedRobot {
     /** This autonomous runs the autonomous command selected by your {@link RobotContainer} class. */
     @Override
     public void autonomousInit() {
-
-
-
-        
-
-        
         m_autonomousCommand = AutoBuilder.buildAuto("(8, 3) 3 Piece Source Side"); //autoChooser.getSelected();
 
         // schedule the autonomous command (example)

@@ -39,12 +39,15 @@ import frc.robot.subsystems.shooter.ShooterIOSim;
 import frc.robot.subsystems.vision.VisionIO;
 import frc.robot.subsystems.vision.VisionIOPhotonLib;
 
-import com.pathplanner.lib.auto.AutoBuilder;
+import org.littletonrobotics.junction.Logger;
+import org.littletonrobotics.junction.networktables.NT4Publisher;
+import org.littletonrobotics.junction.wpilog.WPILOGWriter;
+
 import com.pathplanner.lib.auto.NamedCommands;
 
 import edu.wpi.first.wpilibj.RobotBase;
-import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
@@ -53,7 +56,6 @@ import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -77,6 +79,7 @@ public class RobotContainer {
     
     public RobotContainer() {
 
+        /**** INITIALIZE SUBSYSTEMS ****/
         if (RobotBase.isReal()) {
             drivetrain = new Drivetrain(
                 new GyroIOPigeon(),
@@ -124,6 +127,23 @@ public class RobotContainer {
         leds = new LEDs();
         
         
+        /**** ADVANTAGE KIT LOGGER  *****/
+        Logger.recordMetadata("projectName", "2024Robot"); 
+
+        if (DriverStation.isFMSAttached()) {
+            Logger.recordMetadata("matchType", DriverStation.getMatchType().toString());
+            Logger.recordMetadata("matchNumber", Integer.toString(DriverStation.getMatchNumber()));
+            Logger.recordMetadata("alliance", DriverStation.getAlliance().get().toString());
+
+            Logger.addDataReceiver(new WPILOGWriter("/home/lvuser/deploy/logs")); 
+        }
+   
+        Logger.addDataReceiver(new NT4Publisher());
+        Logger.start();
+
+
+        
+        
         drivetrain.setDefaultCommand(new JoystickDrive(true, drivetrain));
 
         isRingInIntake = new Trigger(intake::isRingInIntake);
@@ -132,9 +152,20 @@ public class RobotContainer {
         NamedCommands.registerCommand("shootFromSubwoofer", shootFromSubwoofer());
         NamedCommands.registerCommand("shootFromAnywhere", shootFromAnywhere());
         NamedCommands.registerCommand("indexNote", indexNote());
+        NamedCommands.registerCommand("indexWithTimeout", indexWithTimeout(0.5));
 
 
         testBindings();
+    }
+
+    /** Generates a command to rumble the controller for a given duration and strength.
+     * @param seconds - Time to rumble the controller for, in seconds.
+     * @param strength - Strength to rumble the controller at, from 0 to 1.
+     */
+    Command rumbleController(double seconds, double strength) {
+        return new InstantCommand(() -> controller.getHID().setRumble(RumbleType.kBothRumble, strength))
+            .andThen(new WaitCommand(seconds))
+            .andThen(new InstantCommand(() -> controller.getHID().setRumble(RumbleType.kBothRumble, 0)));
     }
 
 
@@ -156,6 +187,12 @@ public class RobotContainer {
         );
     }
 
+    //has a timeout after a set time indexing, is used during auto
+    //so that we keep moving if we miss a note
+    Command indexWithTimeout(double seconds) {
+        return new IndexNote(intake, indexer).withTimeout(seconds);
+    }
+
     Command aimShooterAtAngle(double angle) {
         return new ParallelRaceGroup(
             new AimShooterAtAngle(angle, arm),
@@ -168,8 +205,6 @@ public class RobotContainer {
             new SpinFlywheels(15, 15, shooter),
             aimShooterAtAngle(110));
     }
-
-    
 
 
     /** Resets the angle and speed of the shooter back to its default idle position. */
@@ -222,29 +257,40 @@ public class RobotContainer {
             resetShooter());
     }
 
+
     private void realBindings() {
+        /** INTAKE **/
         controller.rightTrigger()
             .whileTrue(intakeNote())
             .onFalse(indexNote());
     
         controller.leftTrigger().whileTrue(new ReverseIntake(intake, indexer));
         
+
+        /** SCORING **/
         controller.rightBumper().onTrue(shootFromSubwoofer());
+
         controller.leftBumper()
             .whileTrue(prepAmpShot())
             .onFalse(fireNote().andThen(resetShooter()));
+
         controller.b().whileTrue(shootFromAnywhere());
 
 
+        /** CLIMB **/
         //climb routine should be tilt shooter back, drive chain over shooter arm, raise arm to amp shot, climb, score trap
-        controller.pov(0).whileTrue(new RaiseClimbArms(climb));
-        controller.pov(180).whileTrue(new LowerClimbArms(climb));
-        controller.x().onTrue(aimShooterAtAngle(ArmConstants.armMaxAngleDegrees));
-        controller.a().onTrue(prepAmpShot());
+        //in other words, press up then left then right then down and then LB
+        controller.povUp().whileTrue(new RaiseClimbArms(climb));
+        controller.povDown().whileTrue(new LowerClimbArms(climb));
+        controller.povLeft().onTrue(aimShooterAtAngle(ArmConstants.armMaxAngleDegrees));
+        controller.povRight().onTrue(prepAmpShot());
 
-        
-        
+        /** MISC **/
         controller.y().onTrue(new InstantCommand(() -> drivetrain.setRobotFacingForward()));
+
+        controller.x().onTrue(resetShooter());
+
+        isRingInIntake.onTrue(rumbleController(0.25, 0.5));
     }
 
     private void testBindings() {
@@ -265,10 +311,10 @@ public class RobotContainer {
         controller.y().onTrue(new InstantCommand(() -> drivetrain.setRobotFacingForward()));
 
         //povbutton angles are 0 pointing straight up and increase clockwise positive
-        controller.pov(180).onTrue(aimShooterAtAngle(ArmConstants.armMinAngleDegrees));
-        controller.pov(90).onTrue(aimShooterAtAngle(0));
-        controller.pov(0).onTrue(aimShooterAtAngle(90));
-        controller.pov(270).onTrue(aimShooterAtAngle(ArmConstants.armMaxAngleDegrees));
+        controller.povDown().onTrue(aimShooterAtAngle(ArmConstants.armMinAngleDegrees));
+        controller.povRight().onTrue(aimShooterAtAngle(0));
+        controller.povUp().onTrue(aimShooterAtAngle(90));
+        controller.povLeft().onTrue(aimShooterAtAngle(ArmConstants.armMaxAngleDegrees));
 
 
         //controller.y().whileTrue(new SpinFlywheels(8, 8, shooter));
@@ -278,6 +324,8 @@ public class RobotContainer {
 
         controller.leftStick().onTrue(new InstantCommand(() -> arm.setArmDesiredPosition(ArmConstants.armMinAngleDegrees)));
         
+        
+        isRingInIntake.onTrue(rumbleController(0.25, 0.5));
 
         /** SYSID BINDINGS **/
         // controller.a().whileTrue(arm.generateSysIdQuasistatic(SysIdRoutine.Direction.kForward));

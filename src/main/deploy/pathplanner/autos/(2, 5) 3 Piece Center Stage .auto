@@ -12,7 +12,7 @@
           }
         },
         {
-          "type": "parallel",
+          "type": "race",
           "data": {
             "commands": [
               {
@@ -33,11 +33,17 @@
         {
           "type": "named",
           "data": {
+            "name": "indexWithTimeout"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
             "name": "shootFromAnywhere"
           }
         },
         {
-          "type": "parallel",
+          "type": "race",
           "data": {
             "commands": [
               {
@@ -56,6 +62,12 @@
           }
         },
         {
+          "type": "named",
+          "data": {
+            "name": "indexWithTimeout"
+          }
+        },
+        {
           "type": "path",
           "data": {
             "pathName": "Ring 5 to Starting Line"
@@ -64,7 +76,7 @@
         {
           "type": "named",
           "data": {
-            "name": "shootFromSubwoofer"
+            "name": "shootFromAnywhere"
           }
         }
       ]

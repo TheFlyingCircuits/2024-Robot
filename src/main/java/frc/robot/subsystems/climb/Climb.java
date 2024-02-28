@@ -88,8 +88,6 @@ public class Climb extends SubsystemBase{
         leftMotor.burnFlash();
         rightMotor.burnFlash();
     }
-
-    //TODO: add limit switches and zero encoders when hit
     public boolean climbArmsAreDown() {
         return (leftEncoder.getPosition() <= 0) || (rightEncoder.getPosition() <= 0);
     }
