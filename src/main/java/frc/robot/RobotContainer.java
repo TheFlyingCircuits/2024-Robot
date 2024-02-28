@@ -50,6 +50,7 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.ParallelRaceGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
@@ -164,9 +165,11 @@ public class RobotContainer {
     /** Moves the arm back and spins up the flywheels to prepare for an amp shot. */
     Command prepAmpShot() {
         return new ParallelCommandGroup(
-            new SpinFlywheels(8, 8, shooter),
-            aimShooterAtAngle(100));
+            new SpinFlywheels(15, 15, shooter),
+            aimShooterAtAngle(110));
     }
+
+    
 
 
     /** Resets the angle and speed of the shooter back to its default idle position. */
@@ -189,7 +192,7 @@ public class RobotContainer {
     Command prepShotFromAnywhere() { 
         return new ParallelRaceGroup(
             new ParallelCommandGroup(
-                new SpinFlywheels(27, 27, shooter),
+                new SpinFlywheels(25, 25, shooter),
                 new AimShooterAtSpeaker(arm, drivetrain)),
             new AimAtSpeakerWhileJoystickDrive(drivetrain));
     }
@@ -252,8 +255,12 @@ public class RobotContainer {
             
         controller.leftTrigger().whileTrue(new ReverseIntake(intake, indexer));
 
-        controller.rightBumper().whileTrue(new RaiseClimbArms(climb));
-        controller.leftBumper().whileTrue(new LowerClimbArms(climb));
+        // controller.rightBumper().whileTrue(new RaiseClimbArms(climb));
+        // controller.leftBumper().whileTrue(new LowerClimbArms(climb));
+
+        controller.leftBumper()
+            .whileTrue(prepAmpShot())
+            .onFalse(fireNote().andThen(new WaitCommand(1)).andThen(resetShooter()));
         
         controller.y().onTrue(new InstantCommand(() -> drivetrain.setRobotFacingForward()));
 

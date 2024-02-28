@@ -29,7 +29,8 @@ public class AimShooterAtSpeaker extends Command {
     public void execute() {
         double targetAngleRadians = Math.atan2(
             FieldConstants.speakerHeightMeters - FieldConstants.pivotHeightMeters,
-            drivetrain.distToSpeakerBaseMeters());
+                                              // 0.22 is meter distance from center of robot to the pivot point
+            drivetrain.distToSpeakerBaseMeters()+0.22);
 
         arm.setArmDesiredPosition(Math.toDegrees(targetAngleRadians));
     }
