@@ -29,7 +29,7 @@ public class IndexNote extends Command {
     @Override
     public void execute() {
         intake.setVolts(5);
-        indexer.setIndexerRPM(1500);
+        indexer.setIndexerRPM(800);
     }
 
     @Override
