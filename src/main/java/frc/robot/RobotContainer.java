@@ -129,20 +129,11 @@ public class RobotContainer {
 
         
         /**** ADVANTAGE KIT LOGGER  *****/
-        Logger.recordMetadata("projectName", "2024Robot"); 
+        Logger.recordMetadata("projectName", "2024Robot");
 
-        if (DriverStation.isFMSAttached()) {
-            Logger.recordMetadata("matchType", DriverStation.getMatchType().toString());
-            Logger.recordMetadata("matchNumber", Integer.toString(DriverStation.getMatchNumber()));
-            Logger.recordMetadata("alliance", DriverStation.getAlliance().get().toString());
-
-            Logger.addDataReceiver(new WPILOGWriter("/home/lvuser/deploy/logs")); 
-        }
-   
+        Logger.addDataReceiver(new WPILOGWriter());
         Logger.addDataReceiver(new NT4Publisher());
         Logger.start();
-
-
         
         
         drivetrain.setDefaultCommand(new JoystickDrive(true, drivetrain));
@@ -156,7 +147,7 @@ public class RobotContainer {
         NamedCommands.registerCommand("indexWithTimeout", indexWithTimeout(1.0));
 
 
-        testBindings();
+        realBindings();
     }
 
     /** Generates a command to rumble the controller for a given duration and strength.
@@ -308,7 +299,7 @@ public class RobotContainer {
         /** CLIMB **/
         //climb routine should be tilt shooter back, drive chain over shooter arm, raise arm to amp shot, climb, score trap
         //in other words, press up then left then right then down and then LB
-        controller.povUp().whileTrue(new RaiseClimbArms(climb).alongWith(aimShooterAtAngle(ArmConstants.armMaxAngleDegrees)));
+        controller.povUp().onTrue(new RaiseClimbArms(climb).alongWith(aimShooterAtAngle(ArmConstants.armMaxAngleDegrees)));
         controller.povRight().onTrue(aimShooterAtAngle(90));
         controller.povDown().whileTrue(new LowerClimbArms(climb).alongWith(prepTrapShot()));
         controller.povLeft().onTrue(fireNote().andThen(new InstantCommand(() -> spinFlywheels(0, 0))));
@@ -331,12 +322,11 @@ public class RobotContainer {
         
         
         /** SCORING **/
-        controller.rightBumper().onTrue(shootFromAnywhere());
-        controller.leftBumper()
-            .whileTrue(prepAmpShot())
-            .onFalse(fireNote().andThen(resetShooter()));
-        controller.b().whileTrue(shart());
-
+        // controller.rightBumper().onTrue(shootFromAnywhere());
+        // controller.leftBumper()
+        //     .whileTrue(prepAmpShot())
+        //     .onFalse(fireNote().andThen(resetShooter()));
+        // controller.b().whileTrue(shart());
 
         controller.povUp().whileTrue(new RaiseClimbArms(climb));
         controller.povDown().whileTrue(new LowerClimbArms(climb));

@@ -22,14 +22,13 @@ public class Neo extends CANSparkMax {
 
     public Neo(int canID) {
         this("Neo #"+canID, canID);
-
-        int encoderCountsPerMotorRev = 42; // comes from Neo Docs
-        encoder = super.getEncoder(Type.kHallSensor, encoderCountsPerMotorRev);
     }
 
     public Neo(String name, int canID) {
         super(canID, MotorType.kBrushless);
         this.name = name;
+        int encoderCountsPerMotorRev = 42; // comes from Neo Docs
+        encoder = super.getEncoder(Type.kHallSensor, encoderCountsPerMotorRev);
         this.restoreFactoryDefaults();
     }
 

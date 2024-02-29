@@ -28,7 +28,8 @@ public class Climb extends SubsystemBase{
      * @param volts - A positive value will extend the left climb arm upwards
      */
     public void setLeftMotorVolts(double volts) {
-        //volts = (leftEncoder.getPosition() >= ClimbConstants.armMaxPosMeters) ? volts : 0;
+        volts = (climbArmsAreUp() && (volts > 0)) ? 0 : volts;
+        volts = (climbArmsAreDown() && (volts < 0)) ? 0 : volts;
 
         leftMotor.setVoltage(volts);
     }
@@ -37,7 +38,8 @@ public class Climb extends SubsystemBase{
      * @param volts - A positive value will extend the right climb arm upwards
      */
     public void setRightMotorVolts(double volts) {
-        //volts = (rightEncoder.getPosition() == ClimbConstants.armMaxPosMeters) ? volts : 0;
+        volts = (climbArmsAreUp() && (volts > 0)) ? 0 : volts;
+        volts = (climbArmsAreDown() && (volts < 0)) ? 0 : volts;
 
         rightMotor.setVoltage(volts);
     }
@@ -58,8 +60,8 @@ public class Climb extends SubsystemBase{
         leftMotor.setIdleMode(IdleMode.kBrake);
         rightMotor.setIdleMode(IdleMode.kBrake);
 
-        leftMotor.setSmartCurrentLimit(50);
-        rightMotor.setSmartCurrentLimit(50);
+        leftMotor.setSmartCurrentLimit(45);
+        rightMotor.setSmartCurrentLimit(45);
 
         leftMotor.setPosition(0);
         rightMotor.setPosition(0);
@@ -73,16 +75,19 @@ public class Climb extends SubsystemBase{
     }
 
     public boolean climbArmsAreDown() {
-        return (leftMotor.getPosition() <= 0) || (rightMotor.getPosition() <= 0);
+        return (leftMotor.getPosition() <= ClimbConstants.climbMinPoseMeters) || (rightMotor.getPosition() <= ClimbConstants.climbMinPoseMeters);
     }
 
     public boolean climbArmsAreUp() {
-        return (leftMotor.getPosition() >= ClimbConstants.armMaxPosMeters) || (rightMotor.getPosition() >= ClimbConstants.armMaxPosMeters);
+        return (leftMotor.getPosition() >= ClimbConstants.climbMaxPosMeters) || (rightMotor.getPosition() >= ClimbConstants.climbMaxPosMeters);
     }
     
     @Override
     public void periodic() {
         Logger.recordOutput("climb/leftArmPositionMeters", leftMotor.getPosition());
         Logger.recordOutput("climb/rightArmPositionMeters", rightMotor.getPosition());
+        Logger.recordOutput("climb/leftArmOutputCurrentAmps", leftMotor.getOutputCurrent());
+        Logger.recordOutput("climb/rightArmOutputCurrentAmps", rightMotor.getOutputCurrent());
     }
+
 }

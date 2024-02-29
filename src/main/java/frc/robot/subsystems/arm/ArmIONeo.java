@@ -37,9 +37,12 @@ public class ArmIONeo implements ArmIO {
 
     @Override
     public void updateInputs(ArmIOInputs inputs) {
-        //TODO: fuse both cancoder measurements
-        inputs.armVelocityDegreesPerSecond = rightAbsoluteEncoder.getVelocity().getValueAsDouble() * 360;
-        inputs.armAngleDegrees = rightAbsoluteEncoder.getPosition().getValueAsDouble()*360;
+        
+        inputs.armVelocityDegreesPerSecond = rightAbsoluteEncoder.getVelocity().getValueAsDouble()*360;
+
+        inputs.leftEncoderReadingDegrees = leftAbsoluteEncoder.getAbsolutePosition().getValueAsDouble()*360;
+        inputs.rightEncoderReadingDegrees = rightAbsoluteEncoder.getAbsolutePosition().getValueAsDouble()*360;
+        inputs.armAngleDegrees = inputs.rightEncoderReadingDegrees;
 
         //getBusVoltage() gets voltage fed into motor controller, getAppliedOutput() gets a percent the motor is running at.
         //found this solution on chiefdelphi
@@ -62,6 +65,7 @@ public class ArmIONeo implements ArmIO {
     
     @Override
     public void setArmEncoderPosition(double degrees) {
+        leftAbsoluteEncoder.setPosition(degrees/360.);
         rightAbsoluteEncoder.setPosition(degrees/360.);
     }
 

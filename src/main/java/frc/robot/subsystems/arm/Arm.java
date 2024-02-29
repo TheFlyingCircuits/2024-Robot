@@ -191,10 +191,6 @@ public class Arm extends SubsystemBase {
     public Command generateSysIdDynamic(SysIdRoutine.Direction direction) {
         return sysIdRoutine.dynamic(direction);
     }
-
-    public void setArmEncoderPosition(double degrees) {
-        io.setArmEncoderPosition(degrees);
-    }
     
     @Override
     public void periodic() {

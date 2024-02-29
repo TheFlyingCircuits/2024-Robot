@@ -11,6 +11,8 @@ import com.revrobotics.RelativeEncoder;
 import com.revrobotics.CANSparkBase.IdleMode;
 import com.revrobotics.CANSparkLowLevel.MotorType;
 
+import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.IntakeConstants;
@@ -32,11 +34,31 @@ public class Intake extends SubsystemBase {
      */
     private Neo backIntakeMotor;
 
+    private SimpleMotorFeedforward frontFeedforward;
+    private SimpleMotorFeedforward backFeedforward;
+    
+    private PIDController frontController;
+    private PIDController backController;
+
     public Intake() {
         intakeProximitySwitch = new DigitalInput(IntakeConstants.intakeProximitySwitchID);
 
         frontIntakeMotor = new Neo("frontIntake", IntakeConstants.frontIntakeMotorID);
         backIntakeMotor = new Neo("backIntake", IntakeConstants.backIntakeMotorID);
+
+        frontFeedforward = new SimpleMotorFeedforward(
+            IntakeConstants.kSFrontIntakeVolts,
+            IntakeConstants.kVFrontIntakeVoltsPerRPM);
+
+        backFeedforward = new SimpleMotorFeedforward(
+            IntakeConstants.kSBackIntakeVolts, 
+            IntakeConstants.kVBackIntakeVoltsPerRPM);
+
+        frontController = new PIDController(
+            IntakeConstants.kPFrontIntakeVoltsPerRPM, 0, 0);
+
+        backController = new PIDController(
+            IntakeConstants.kPBackIntakeVoltsPerRPM, 0, 0);
         
         configMotors();
     }
@@ -46,12 +68,35 @@ public class Intake extends SubsystemBase {
     }
 
     /**
+     * Sets the RPM of the intake axles, using closed loop control.
+     * @param rpm - RPM to have the motors spin at. A positive value will intake the note.
+     */
+    public void setRPM(double rpm) {
+        double frontFeedforwardOutputVolts = frontFeedforward.calculate(rpm);
+        double frontPIDOutputVolts = frontController.calculate(getFrontRPM(), rpm);
+        frontIntakeMotor.setVoltage(frontFeedforwardOutputVolts + frontPIDOutputVolts);
+
+        double backFeedforwardOutputVolts = backFeedforward.calculate(rpm);
+        double backPIDOutputVolts = backController.calculate(getBackRPM(), rpm);
+        backIntakeMotor.setVoltage(backFeedforwardOutputVolts + backPIDOutputVolts);
+
+    }
+
+    /**
      * Sets the voltage of both intake motors.
      * @param volts - Voltage to feed the intake motors. A positive value will intake a note.
      */
     public void setVolts(double volts) {
         frontIntakeMotor.setVoltage(volts);
         backIntakeMotor.setVoltage(volts);
+    }
+
+    public double getFrontRPM() {
+        return frontIntakeMotor.getVelocity();
+    }
+
+    public double getBackRPM() {
+        return backIntakeMotor.getVelocity();
     }
 
     private void configMotors() {

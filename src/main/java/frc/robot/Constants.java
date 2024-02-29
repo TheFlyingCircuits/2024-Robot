@@ -46,7 +46,7 @@ public final class Constants {
 
         public static final int indexerProximitySwitchID = 1;
 
-        public static final double kPIndexerVoltsPerRPM = 0.00005;
+        public static final double kPIndexerVoltsPerRPM = 0.0001;
 
         public static final double kSIndexerVolts = 0;
         public static final double kVIndexerVoltsPerRPM = 0.0031;
@@ -196,8 +196,8 @@ public final class Constants {
         public final static int rightArmCANcoderID = 8;
         
 
-        public final static double rightArmCANcoderOffset = -0.446044921875;
-        public final static double leftArmCANcoderOffset = 0.07275390625;
+        public final static double rightArmCANcoderOffset = -0.431;
+        public final static double leftArmCANcoderOffset = 0.100;
 
         /***** REAL CONSTANTS ******/
         public final static double kSArmVolts = 0.005;
@@ -236,7 +236,8 @@ public final class Constants {
          */
         public final static double climberArmMetersPerMotorRotation = Units.inchesToMeters(2.256*Math.PI/21.);
 
-        public final static double armMaxPosMeters = .79;
+        public final static double climbMaxPosMeters = .51;
+        public final static double climbMinPoseMeters = -0.14;
 
     }
 
@@ -269,6 +270,17 @@ public final class Constants {
         public final static int frontIntakeMotorID = 4;
         public final static int backIntakeMotorID = 3;
         public static final int intakeProximitySwitchID = 0;
+
+        
+
+        public static final double kSFrontIntakeVolts = 0;
+        public static final double kVFrontIntakeVoltsPerRPM = 0;
+        
+        public static final double kSBackIntakeVolts = 0;
+        public static final double kVBackIntakeVoltsPerRPM = 0;
+
+        public static final double kPBackIntakeVoltsPerRPM = 0;
+        public static final double kPFrontIntakeVoltsPerRPM = 0;
     }
 
     public final static class LEDConstants {

@@ -20,7 +20,7 @@ public class IntakeNote extends Command {
     // Called when the command is initially scheduled.
     @Override
     public void initialize() {
-        intake.setVolts(7);
+        intake.setVolts(8);
     }
 
     // Called every time the scheduler runs while the command is scheduled.

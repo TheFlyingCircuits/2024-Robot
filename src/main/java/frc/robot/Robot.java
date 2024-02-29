@@ -120,10 +120,6 @@ public class Robot extends LoggedRobot {
         m_robotContainer.drivetrain.setPoseToVisionMeasurement();
 
         m_robotContainer.arm.setDesiredPositionToCurrent();
-        
-        if (m_robotContainer.controller.leftStick().getAsBoolean()) {
-            m_robotContainer.arm.setArmEncoderPosition(ArmConstants.armMinAngleDegrees);
-        }
     }
 
     /** This autonomous runs the autonomous command selected by your {@link RobotContainer} class. */

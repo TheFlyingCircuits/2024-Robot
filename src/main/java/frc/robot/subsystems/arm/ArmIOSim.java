@@ -30,6 +30,8 @@ public class ArmIOSim implements ArmIO {
         armSim.update(0.02);
 
         inputs.armAngleDegrees = Math.toDegrees(armSim.getAngleRads());
+        inputs.leftEncoderReadingDegrees = Math.toDegrees(armSim.getAngleRads());
+        inputs.rightEncoderReadingDegrees = Math.toDegrees(armSim.getAngleRads());
         inputs.armVelocityDegreesPerSecond = Math.toDegrees(armSim.getVelocityRadPerSec());
 
         inputs.atLowerLimit = armSim.hasHitLowerLimit();

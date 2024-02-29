@@ -16,6 +16,18 @@ public interface ArmIO {
         public double armAngleDegrees = 0.0;
 
         /**
+         * Angle that the left encoder is reading, in degrees.
+         * If nothing is broken, this should be very similar to armAngleDegrees.
+         */
+        public double leftEncoderReadingDegrees = 0.0;
+
+        /**
+         * Angle that the right encoder is reading, in degrees.
+         * If nothing is broken, this should be very similar to armAngleDegrees.
+         */
+        public double rightEncoderReadingDegrees = 0.0;
+
+        /**
          * Velocity of the arm in degrees per second.
          * Follows the same direction as armAngleDegrees.
          */
