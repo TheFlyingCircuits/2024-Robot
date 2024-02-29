@@ -13,10 +13,11 @@ import com.revrobotics.CANSparkMax;
 import frc.robot.Constants.MotorConstants;
 import frc.robot.Constants.SwerveModuleConstants;
 import frc.robot.VendorWrappers.Kraken;
+import frc.robot.VendorWrappers.Neo;
 
 public class SwerveModuleIOKraken implements SwerveModuleIO {
     private CANcoder absoluteEncoder;
-    private CANSparkMax angleMotor;
+    private Neo angleMotor;
     private Kraken driveMotor;
     /**
      * 
@@ -34,7 +35,7 @@ public class SwerveModuleIOKraken implements SwerveModuleIO {
         configCANCoder(angleOffsetDegrees);
 
         /* Angle Motor Config */
-        angleMotor = new CANSparkMax(angleMotorID, MotorType.kBrushless);
+        angleMotor = new Neo(angleMotorID);
         if(isAngleMotorOnTop) {
             configAngleMotor(false);
         } else {

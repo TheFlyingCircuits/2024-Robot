@@ -10,12 +10,13 @@ import com.revrobotics.CANSparkLowLevel.MotorType;
 
 import frc.robot.Constants.ArmConstants;
 import frc.robot.Constants.MotorConstants;
+import frc.robot.VendorWrappers.Neo;
 import frc.robot.subsystems.arm.ArmIO.ArmIOInputs;
 
 public class ArmIONeo implements ArmIO {
     
-    private CANSparkMax leftMotor;
-    private CANSparkMax rightMotor;
+    private Neo leftMotor;
+    private Neo rightMotor;
     private CANcoder leftAbsoluteEncoder;
     private CANcoder rightAbsoluteEncoder;
 
@@ -27,8 +28,8 @@ public class ArmIONeo implements ArmIO {
         configCANCoders();
 
         /** Motor config */
-        leftMotor = new CANSparkMax(ArmConstants.leftMotorID, MotorType.kBrushless);
-        rightMotor = new CANSparkMax(ArmConstants.rightMotorID, MotorType.kBrushless);
+        leftMotor = new Neo("leftPivot", ArmConstants.leftMotorID);
+        rightMotor = new Neo("rightPivot", ArmConstants.rightMotorID);
         
         configMotors();
 

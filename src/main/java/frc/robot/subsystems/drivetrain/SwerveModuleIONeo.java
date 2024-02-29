@@ -11,6 +11,7 @@ import com.revrobotics.CANSparkLowLevel.MotorType;
 
 import frc.robot.Constants.MotorConstants;
 import frc.robot.Constants.SwerveModuleConstants;
+import frc.robot.VendorWrappers.Neo;
 import frc.robot.subsystems.drivetrain.SwerveModuleIO.SwerveModuleIOInputs;
 
 public class SwerveModuleIONeo implements SwerveModuleIO{
@@ -20,10 +21,8 @@ public class SwerveModuleIONeo implements SwerveModuleIO{
      */
     private double angleOffset;
     private CANcoder absoluteEncoder;
-    private CANSparkMax angleMotor;
-    private CANSparkMax driveMotor;
-    private RelativeEncoder angleEncoder;
-    private RelativeEncoder driveEncoder;
+    private Neo angleMotor;
+    private Neo driveMotor;
 
 
     /**
@@ -41,21 +40,19 @@ public class SwerveModuleIONeo implements SwerveModuleIO{
         configCANCoder();
 
         /** Angle motor config */
-        angleMotor = new CANSparkMax(angleMotorID, MotorType.kBrushless);
-        angleEncoder = angleMotor.getEncoder();
+        angleMotor = new Neo(angleMotorID);
         configAngleMotor();
 
         /** Drive motor config */
-        driveMotor = new CANSparkMax(driveMotorID, MotorType.kBrushless);
-        driveEncoder = driveMotor.getEncoder();
+        driveMotor = new Neo(driveMotorID);
         configDriveMotor();
 
     }
 
     @Override
     public void updateInputs(SwerveModuleIOInputs inputs) {
-        inputs.drivePositionMeters = driveEncoder.getPosition();
-        inputs.driveVelocityMetersPerSecond = driveEncoder.getVelocity();
+        inputs.drivePositionMeters = driveMotor.getPosition();
+        inputs.driveVelocityMetersPerSecond = driveMotor.getVelocity();
         inputs.angleAbsolutePositionDegrees = absoluteEncoder.getAbsolutePosition().getValueAsDouble()*360;
     }
 
@@ -84,9 +81,9 @@ public class SwerveModuleIONeo implements SwerveModuleIO{
         angleMotor.setInverted(MotorConstants.angleInvert);
         angleMotor.setIdleMode(MotorConstants.angleNeutralMode);
         //converts rotations of motor into deg of wheel
-        angleEncoder.setPositionConversionFactor(SwerveModuleConstants.steerGearReduction*360.0);
+        angleMotor.setPositionConversionFactor(SwerveModuleConstants.steerGearReduction*360.0);
         //converts rpm of motor into deg/s of wheel
-        angleEncoder.setVelocityConversionFactor(SwerveModuleConstants.steerGearReduction*360.0/60.0);
+        angleMotor.setVelocityConversionFactor(SwerveModuleConstants.steerGearReduction*360.0/60.0);
         angleMotor.burnFlash();
     }
 
@@ -96,29 +93,29 @@ public class SwerveModuleIONeo implements SwerveModuleIO{
         driveMotor.setInverted(MotorConstants.driveInvert);
         driveMotor.setIdleMode(MotorConstants.driveNeutralMode);
         
-        driveEncoder.setPosition(0.0);
+        driveMotor.setPosition(0.0);
 
         // Converts rotations of motor to meters traveled of wheel.
-        driveEncoder.setPositionConversionFactor(
+        driveMotor.setPositionConversionFactor(
             SwerveModuleConstants.driveGearReduction
             * SwerveModuleConstants.wheelCircumferenceMeters
         );
 
         // Converts rpm of motor to m/s of wheel.
-        driveEncoder.setVelocityConversionFactor(
+        driveMotor.setVelocityConversionFactor(
             1./60. * SwerveModuleConstants.driveGearReduction
             * SwerveModuleConstants.wheelCircumferenceMeters
         );
 
-        REVLibError err = driveEncoder.setMeasurementPeriod(10);
-        if (err == REVLibError.kOk) {
-            System.out.println("successfully set drive encoder measurement period");
-        }
+        // REVLibError err = driveMotor.setMeasurementPeriod(10);
+        // if (err == REVLibError.kOk) {
+        //     System.out.println("successfully set drive encoder measurement period");
+        // }
         
-        err = driveEncoder.setAverageDepth(2);
-        if (err == REVLibError.kOk) {
-            System.out.println("successfully set drive encoder window size");
-        }
+        // err = driveMotor.setAverageDepth(2);
+        // if (err == REVLibError.kOk) {
+        //     System.out.println("successfully set drive encoder window size");
+        // }
 
         driveMotor.burnFlash();
     }

@@ -9,31 +9,19 @@ import com.revrobotics.CANSparkLowLevel.MotorType;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.ClimbConstants;
+import frc.robot.VendorWrappers.Neo;
 
 public class Climb extends SubsystemBase{
     
-    private CANSparkMax leftMotor;
-    private CANSparkMax rightMotor;
-    /**
-     * Encoder object to get the position of the left encoder, in meters. A positive position means the arm is extended above its resting position of 0.
-     */
-    private RelativeEncoder leftEncoder;
-    /**
-     * Encoder object to get the position of the right encoder, in meters. A positive position means the arm is extended above its resting position of 0.
-     */
-    private RelativeEncoder rightEncoder;
+    private Neo leftMotor;
+    private Neo rightMotor;
 
     public Climb() {
 
-        leftMotor = new CANSparkMax(ClimbConstants.leftMotorID, MotorType.kBrushless);
-        rightMotor = new CANSparkMax(ClimbConstants.rightMotorID, MotorType.kBrushless);
+        leftMotor = new Neo("leftClimb", ClimbConstants.leftMotorID);
+        rightMotor = new Neo("rightClimb", ClimbConstants.rightMotorID);
 
         configMotors();
-
-        leftEncoder = leftMotor.getEncoder();
-        rightEncoder = rightMotor.getEncoder();
-
-        configEncoders();
     }
 
     /**
@@ -73,32 +61,28 @@ public class Climb extends SubsystemBase{
         leftMotor.setSmartCurrentLimit(50);
         rightMotor.setSmartCurrentLimit(50);
 
+        leftMotor.setPosition(0);
+        rightMotor.setPosition(0);
+
+        leftMotor.setPositionConversionFactor(ClimbConstants.climberArmMetersPerMotorRotation);
+        rightMotor.setPositionConversionFactor(ClimbConstants.climberArmMetersPerMotorRotation);
+
         leftMotor.burnFlash();
         rightMotor.burnFlash();
 
     }
 
-    private void configEncoders() {
-        leftEncoder.setPosition(0);
-        rightEncoder.setPosition(0);
-
-        leftEncoder.setPositionConversionFactor(ClimbConstants.climberArmMetersPerMotorRotation);
-        rightEncoder.setPositionConversionFactor(ClimbConstants.climberArmMetersPerMotorRotation);
-
-        leftMotor.burnFlash();
-        rightMotor.burnFlash();
-    }
     public boolean climbArmsAreDown() {
-        return (leftEncoder.getPosition() <= 0) || (rightEncoder.getPosition() <= 0);
+        return (leftMotor.getPosition() <= 0) || (rightMotor.getPosition() <= 0);
     }
 
     public boolean climbArmsAreUp() {
-        return (leftEncoder.getPosition() >= ClimbConstants.armMaxPosMeters) || (rightEncoder.getPosition() >= ClimbConstants.armMaxPosMeters);
+        return (leftMotor.getPosition() >= ClimbConstants.armMaxPosMeters) || (rightMotor.getPosition() >= ClimbConstants.armMaxPosMeters);
     }
     
     @Override
     public void periodic() {
-        Logger.recordOutput("climb/leftArmPositionMeters", leftEncoder.getPosition());
-        Logger.recordOutput("climb/rightArmPositionMeters", rightEncoder.getPosition());
+        Logger.recordOutput("climb/leftArmPositionMeters", leftMotor.getPosition());
+        Logger.recordOutput("climb/rightArmPositionMeters", rightMotor.getPosition());
     }
 }

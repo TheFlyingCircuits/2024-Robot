@@ -15,6 +15,7 @@ import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.IntakeConstants;
 import frc.robot.Constants.MotorConstants;
+import frc.robot.VendorWrappers.Neo;
 
 /** Add your docs here. */
 public class Intake extends SubsystemBase {
@@ -24,36 +25,20 @@ public class Intake extends SubsystemBase {
      * Motor object that controls the four axles on the front of the intake. 
      * A positive voltage spins the axles to suck a note into the robot.
      */
-    private CANSparkMax frontIntakeMotor;
+    private Neo frontIntakeMotor;
     /**
      * Motor object that controls the two axles on the back of the intake.
      * A positive voltage spins the axles to suck a note into the robot.
      */
-    private CANSparkMax backIntakeMotor;
-
-    /**
-     * Motor object that gets the RPM of the four axles on the front of the intake.
-     * A positive RPM means the wheels are spinning to suck a note into the robot.
-     */
-    private RelativeEncoder frontEncoder;
-
-    /**
-     * Motor object that gets the RPM of the two axles on the back of the intake.
-     * A positive RPM means the wheels are spinning to suck a note into the robot.
-     */
-    private RelativeEncoder backEncoder;
+    private Neo backIntakeMotor;
 
     public Intake() {
         intakeProximitySwitch = new DigitalInput(IntakeConstants.intakeProximitySwitchID);
 
-        frontIntakeMotor = new CANSparkMax(IntakeConstants.frontIntakeMotorID, MotorType.kBrushless);
-        backIntakeMotor = new CANSparkMax(IntakeConstants.backIntakeMotorID, MotorType.kBrushless);
-
-        frontEncoder = frontIntakeMotor.getEncoder();
-        backEncoder = backIntakeMotor.getEncoder();
+        frontIntakeMotor = new Neo("frontIntake", IntakeConstants.frontIntakeMotorID);
+        backIntakeMotor = new Neo("backIntake", IntakeConstants.backIntakeMotorID);
         
         configMotors();
-        configEncoders();
     }
 
     public boolean isRingInIntake() {
@@ -79,22 +64,18 @@ public class Intake extends SubsystemBase {
         frontIntakeMotor.setIdleMode(IdleMode.kBrake);
         backIntakeMotor.setIdleMode(IdleMode.kBrake);
 
-        frontIntakeMotor.burnFlash();
-        backIntakeMotor.burnFlash();
-    }
-
-    private void configEncoders() {
-        frontEncoder.setVelocityConversionFactor(1);
-        backEncoder.setVelocityConversionFactor(1);
+        frontIntakeMotor.setVelocityConversionFactor(1);
+        backIntakeMotor.setVelocityConversionFactor(1);
 
         frontIntakeMotor.burnFlash();
         backIntakeMotor.burnFlash();
     }
+
 
     @Override
     public void periodic() {
-        Logger.recordOutput("intake/frontIntakeMotorRPM", frontEncoder.getVelocity());
-        Logger.recordOutput("intake/backIntakeMotorRPM", backEncoder.getVelocity());
+        Logger.recordOutput("intake/frontIntakeMotorRPM", frontIntakeMotor.getVelocity());
+        Logger.recordOutput("intake/backIntakeMotorRPM", backIntakeMotor.getVelocity());
         Logger.recordOutput("intake/isRingInIntake", isRingInIntake());
     }
 
