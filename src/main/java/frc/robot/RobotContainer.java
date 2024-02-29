@@ -80,7 +80,7 @@ public class RobotContainer {
     
     public RobotContainer() {
 
-        /**** INITIALIZE SUBSYSTEMS ****/
+/**** INITIALIZE SUBSYSTEMS ****/
         if (RobotBase.isReal()) {
             drivetrain = new Drivetrain(
                 new GyroIOPigeon(),
@@ -126,7 +126,7 @@ public class RobotContainer {
         indexer = new Indexer();
         climb = new Climb();
         leds = new LEDs();
-        
+
         
         /**** ADVANTAGE KIT LOGGER  *****/
         Logger.recordMetadata("projectName", "2024Robot"); 
@@ -207,6 +207,15 @@ public class RobotContainer {
         );
     }
 
+
+
+    /** Resets the angle and speed of the shooter back to its default idle position. */
+    Command resetShooter() {
+        return new ParallelCommandGroup(
+            spinFlywheels(0, 0),
+            aimShooterAtAngle(ArmConstants.armMinAngleDegrees+5));
+    }
+
     /** Moves the arm back and spins up the flywheels to prepare for an amp shot. */
     Command prepAmpShot() {
         return new ParallelCommandGroup(
@@ -221,19 +230,17 @@ public class RobotContainer {
             aimShooterAtAngle(90));
     }
 
-
-    /** Resets the angle and speed of the shooter back to its default idle position. */
-    Command resetShooter() {
-        return new ParallelCommandGroup(
-            spinFlywheels(0, 0),
-            aimShooterAtAngle(ArmConstants.armMinAngleDegrees+5));
-    }
-
     /** Spins the flywheels up to speed and aims arm when pressed against the subwoofer. */
     Command prepSubwooferShot() {
         return new ParallelCommandGroup(
             spinFlywheels(27, 15),
             aimShooterAtAngle(45));
+    }
+
+    Command prepShart() { 
+        return new ParallelCommandGroup(
+            spinFlywheels(25, 25),
+            aimShooterAtAngle(-15));
     }
 
     
@@ -272,6 +279,14 @@ public class RobotContainer {
             resetShooter());
     }
 
+    
+    Command shart() {
+        return new SequentialCommandGroup(
+            prepShart(),
+            fireNote(),
+            resetShooter()
+        );
+    }
 
     private void realBindings() {
         /** INTAKE **/
@@ -281,15 +296,13 @@ public class RobotContainer {
     
         controller.leftTrigger().whileTrue(new ReverseIntake(intake, indexer));
         
-
+        
         /** SCORING **/
-        controller.rightBumper().onTrue(shootFromSubwoofer());
-
+        controller.rightBumper().onTrue(shootFromAnywhere());
         controller.leftBumper()
             .whileTrue(prepAmpShot())
             .onFalse(fireNote().andThen(resetShooter()));
-
-        controller.b().whileTrue(shootFromAnywhere());
+        controller.b().whileTrue(shart());
 
 
         /** CLIMB **/
@@ -340,7 +353,7 @@ public class RobotContainer {
 
         controller.leftStick().onTrue(new InstantCommand(() -> arm.setArmDesiredPosition(ArmConstants.armMinAngleDegrees)));
         
-        
+
         isRingInIntake.onTrue(rumbleController(0.25, 0.5));
 
         /** SYSID BINDINGS **/
