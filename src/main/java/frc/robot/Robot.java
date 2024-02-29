@@ -51,7 +51,7 @@ public class Robot extends LoggedRobot {
             (ChassisSpeeds speeds) -> drivetrain.drive(speeds, true), // Method that will drive the robot given ROBOT RELATIVE ChassisSpeeds
             new HolonomicPathFollowerConfig( // HolonomicPathFollowerConfig, this should likely live in your Constants class
                     new PIDConstants(5.0, 0.0, 0.0), // Translation PID constants
-                    new PIDConstants(5.0, 0.0, 0.0), // Rotation PID constants
+                    new PIDConstants(4.0, 0.0, 0.0), // Rotation PID constants
                     DrivetrainConstants.maxAchievableVelocityMetersPerSecond, // Max module speed, in m/s
                     Math.sqrt(2)*DrivetrainConstants.trackwidthMeters, // Drive base radius in meters. Distance from robot center to furthest module.
                     new ReplanningConfig() // Default path replanning config. See the API for the options here
@@ -129,7 +129,7 @@ public class Robot extends LoggedRobot {
     /** This autonomous runs the autonomous command selected by your {@link RobotContainer} class. */
     @Override
     public void autonomousInit() {
-        m_autonomousCommand = AutoBuilder.buildAuto("(8, 3) 3 Piece Source Side"); //autoChooser.getSelected();
+        m_autonomousCommand = autoChooser.getSelected();
 
         // schedule the autonomous command (example)
         if (m_autonomousCommand != null) {

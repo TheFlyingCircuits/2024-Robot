@@ -16,6 +16,7 @@ import frc.robot.commands.intake.IntakeNote;
 import frc.robot.commands.intake.ReverseIntake;
 import frc.robot.commands.leds.ChasePattern;
 import frc.robot.commands.leds.CheckerboardGreen;
+import frc.robot.commands.leds.ShooterChargeUp;
 import frc.robot.commands.leds.SolidBlue;
 import frc.robot.commands.leds.SolidOrange;
 import frc.robot.commands.shooter.FireNote;
@@ -152,10 +153,10 @@ public class RobotContainer {
         NamedCommands.registerCommand("shootFromSubwoofer", shootFromSubwoofer());
         NamedCommands.registerCommand("shootFromAnywhere", shootFromAnywhere());
         NamedCommands.registerCommand("indexNote", indexNote());
-        NamedCommands.registerCommand("indexWithTimeout", indexWithTimeout(0.5));
+        NamedCommands.registerCommand("indexWithTimeout", indexWithTimeout(1.0));
 
 
-        testBindings();
+        realBindings();
     }
 
     /** Generates a command to rumble the controller for a given duration and strength.
@@ -199,25 +200,39 @@ public class RobotContainer {
             new SolidBlue(leds));
     }
 
+    Command spinFlywheels(double leftFlywheelMetersPerSecond, double rightFlywheelsMetersPerSecond) {
+        return new ParallelRaceGroup(
+            new SpinFlywheels(leftFlywheelMetersPerSecond, leftFlywheelMetersPerSecond, shooter),
+            new ShooterChargeUp(leds, shooter, leftFlywheelMetersPerSecond)
+        );
+    }
+
     /** Moves the arm back and spins up the flywheels to prepare for an amp shot. */
     Command prepAmpShot() {
         return new ParallelCommandGroup(
-            new SpinFlywheels(15, 15, shooter),
+            spinFlywheels(15, 15),
             aimShooterAtAngle(110));
+    }
+
+    /** Moves the arm back and spins up the flywheels to prepare for a trap shot. */
+    Command prepTrapShot() {
+        return new ParallelCommandGroup(
+            spinFlywheels(15, 15),
+            aimShooterAtAngle(90));
     }
 
 
     /** Resets the angle and speed of the shooter back to its default idle position. */
     Command resetShooter() {
         return new ParallelCommandGroup(
-            new SpinFlywheels(0, 0, shooter),
+            spinFlywheels(0, 0),
             aimShooterAtAngle(ArmConstants.armMinAngleDegrees+5));
     }
 
     /** Spins the flywheels up to speed and aims arm when pressed against the subwoofer. */
     Command prepSubwooferShot() {
         return new ParallelCommandGroup(
-            new SpinFlywheels(27, 15, shooter),
+            spinFlywheels(27, 15),
             aimShooterAtAngle(45));
     }
 
@@ -227,7 +242,7 @@ public class RobotContainer {
     Command prepShotFromAnywhere() { 
         return new ParallelRaceGroup(
             new ParallelCommandGroup(
-                new SpinFlywheels(25, 25, shooter),
+                spinFlywheels(27, 15),
                 new AimShooterAtSpeaker(arm, drivetrain)),
             new AimAtSpeakerWhileJoystickDrive(drivetrain));
     }
@@ -283,7 +298,8 @@ public class RobotContainer {
         controller.povUp().whileTrue(new RaiseClimbArms(climb));
         controller.povDown().whileTrue(new LowerClimbArms(climb));
         controller.povLeft().onTrue(aimShooterAtAngle(ArmConstants.armMaxAngleDegrees));
-        controller.povRight().onTrue(prepAmpShot());
+        controller.povRight().onTrue(prepTrapShot());
+        controller.a().onTrue(fireNote().andThen(new InstantCommand(() -> spinFlywheels(0, 0))));
 
         /** MISC **/
         controller.y().onTrue(new InstantCommand(() -> drivetrain.setRobotFacingForward()));

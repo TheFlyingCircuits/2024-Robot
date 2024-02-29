@@ -11,17 +11,19 @@ public class ShooterChargeUp extends Command {
     AddressableLED leds;
     AddressableLEDBuffer buffer;
     Shooter shooter;
+    double desiredMaxLeftFlywheelSpeed;
 
-    public ShooterChargeUp(LEDs led, Shooter shooter) {
+    public ShooterChargeUp(LEDs led, Shooter shooter, double desiredMaxLeftFlywheelSpeed) {
         this.leds = led.getLEDs();
         this.buffer = led.getBuffer();
         this.shooter = shooter;
+        this.desiredMaxLeftFlywheelSpeed = desiredMaxLeftFlywheelSpeed;
     }
 
     @Override
     public void initialize() {
         for(int i = 0; i < buffer.getLength(); i++) {
-            buffer.setRGB(i, 255, 0, 0);
+            buffer.setRGB(i, 0, 0, 0);
         }
         leds.setData(buffer);
     }
@@ -30,11 +32,11 @@ public class ShooterChargeUp extends Command {
     public void execute() {
         double leftFlywheelMetersPerSecond = shooter.getLeftFlywheelsMetersPerSecond();
         leftFlywheelMetersPerSecond = MathUtil.clamp(leftFlywheelMetersPerSecond, 0., 27.);
-        int expectedColor = (int)(510 * Math.sin(((2*Math.PI)/108) * leftFlywheelMetersPerSecond));
+        int expectedColor = (int)(510 * Math.sin(((2*Math.PI)/(desiredMaxLeftFlywheelSpeed*4)) * leftFlywheelMetersPerSecond));
         for(int i = 0; i < buffer.getLength(); i++) {
-            if(expectedColor <= 255) {
+            if(expectedColor <= 255 && expectedColor >= 0) {
                 buffer.setRGB(i, 255, expectedColor, 0);
-            } else if(expectedColor <= 510) {
+            } else if(expectedColor <= 510 && expectedColor >= 0) {
                 buffer.setRGB(i, 510 - expectedColor, 255, 0);
             }
         }
