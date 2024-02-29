@@ -7,6 +7,7 @@ package frc.robot.subsystems.intake;
 import org.littletonrobotics.junction.Logger;
 
 import com.revrobotics.CANSparkMax;
+import com.revrobotics.RelativeEncoder;
 import com.revrobotics.CANSparkBase.IdleMode;
 import com.revrobotics.CANSparkLowLevel.MotorType;
 
@@ -30,12 +31,29 @@ public class Intake extends SubsystemBase {
      */
     private CANSparkMax backIntakeMotor;
 
+    /**
+     * Motor object that gets the RPM of the four axles on the front of the intake.
+     * A positive RPM means the wheels are spinning to suck a note into the robot.
+     */
+    private RelativeEncoder frontEncoder;
+
+    /**
+     * Motor object that gets the RPM of the two axles on the back of the intake.
+     * A positive RPM means the wheels are spinning to suck a note into the robot.
+     */
+    private RelativeEncoder backEncoder;
+
     public Intake() {
         intakeProximitySwitch = new DigitalInput(IntakeConstants.intakeProximitySwitchID);
 
         frontIntakeMotor = new CANSparkMax(IntakeConstants.frontIntakeMotorID, MotorType.kBrushless);
         backIntakeMotor = new CANSparkMax(IntakeConstants.backIntakeMotorID, MotorType.kBrushless);
+
+        frontEncoder = frontIntakeMotor.getEncoder();
+        backEncoder = backIntakeMotor.getEncoder();
+        
         configMotors();
+        configEncoders();
     }
 
     public boolean isRingInIntake() {
@@ -65,8 +83,18 @@ public class Intake extends SubsystemBase {
         backIntakeMotor.burnFlash();
     }
 
+    private void configEncoders() {
+        frontEncoder.setVelocityConversionFactor(1);
+        backEncoder.setVelocityConversionFactor(1);
+
+        frontIntakeMotor.burnFlash();
+        backIntakeMotor.burnFlash();
+    }
+
     @Override
     public void periodic() {
+        Logger.recordOutput("intake/frontIntakeMotorRPM", frontEncoder.getVelocity());
+        Logger.recordOutput("intake/backIntakeMotorRPM", backEncoder.getVelocity());
         Logger.recordOutput("intake/isRingInIntake", isRingInIntake());
     }
 

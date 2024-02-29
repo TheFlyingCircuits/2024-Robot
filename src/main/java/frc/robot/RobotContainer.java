@@ -156,7 +156,7 @@ public class RobotContainer {
         NamedCommands.registerCommand("indexWithTimeout", indexWithTimeout(1.0));
 
 
-        realBindings();
+        testBindings();
     }
 
     /** Generates a command to rumble the controller for a given duration and strength.
@@ -308,11 +308,10 @@ public class RobotContainer {
         /** CLIMB **/
         //climb routine should be tilt shooter back, drive chain over shooter arm, raise arm to amp shot, climb, score trap
         //in other words, press up then left then right then down and then LB
-        controller.povUp().whileTrue(new RaiseClimbArms(climb));
-        controller.povDown().whileTrue(new LowerClimbArms(climb));
-        controller.povLeft().onTrue(aimShooterAtAngle(ArmConstants.armMaxAngleDegrees));
-        controller.povRight().onTrue(prepTrapShot());
-        controller.a().onTrue(fireNote().andThen(new InstantCommand(() -> spinFlywheels(0, 0))));
+        controller.povUp().whileTrue(new RaiseClimbArms(climb).alongWith(aimShooterAtAngle(ArmConstants.armMaxAngleDegrees)));
+        controller.povRight().onTrue(aimShooterAtAngle(90));
+        controller.povDown().whileTrue(new LowerClimbArms(climb).alongWith(prepTrapShot()));
+        controller.povLeft().onTrue(fireNote().andThen(new InstantCommand(() -> spinFlywheels(0, 0))));
 
         /** MISC **/
         controller.y().onTrue(new InstantCommand(() -> drivetrain.setRobotFacingForward()));
@@ -323,36 +322,34 @@ public class RobotContainer {
     }
 
     private void testBindings() {
+        /** INTAKE **/
         controller.rightTrigger()
             .whileTrue(intakeNote())
             .onFalse(indexNote());
     
-            
         controller.leftTrigger().whileTrue(new ReverseIntake(intake, indexer));
-
-        // controller.rightBumper().whileTrue(new RaiseClimbArms(climb));
-        // controller.leftBumper().whileTrue(new LowerClimbArms(climb));
-
+        
+        
+        /** SCORING **/
+        controller.rightBumper().onTrue(shootFromAnywhere());
         controller.leftBumper()
             .whileTrue(prepAmpShot())
-            .onFalse(fireNote().andThen(new WaitCommand(1)).andThen(resetShooter()));
-        
+            .onFalse(fireNote().andThen(resetShooter()));
+        controller.b().whileTrue(shart());
+
+
+        controller.povUp().whileTrue(new RaiseClimbArms(climb));
+        controller.povDown().whileTrue(new LowerClimbArms(climb));
+        controller.povLeft().onTrue(aimShooterAtAngle(ArmConstants.armMaxAngleDegrees));
+        controller.povRight().onTrue(prepTrapShot());
+        controller.a().onTrue(fireNote().andThen(new InstantCommand(() -> spinFlywheels(0, 0))));
+
+        /** MISC **/
         controller.y().onTrue(new InstantCommand(() -> drivetrain.setRobotFacingForward()));
 
-        //povbutton angles are 0 pointing straight up and increase clockwise positive
-        controller.povDown().onTrue(aimShooterAtAngle(ArmConstants.armMinAngleDegrees));
-        controller.povRight().onTrue(aimShooterAtAngle(0));
-        controller.povUp().onTrue(aimShooterAtAngle(90));
-        controller.povLeft().onTrue(aimShooterAtAngle(ArmConstants.armMaxAngleDegrees));
-
-
-        //controller.y().whileTrue(new SpinFlywheels(8, 8, shooter));
         controller.x().onTrue(resetShooter());
-        controller.b().onTrue(shootFromAnywhere());
-        controller.a().onTrue(shootFromSubwoofer());
-
-        controller.leftStick().onTrue(new InstantCommand(() -> arm.setArmDesiredPosition(ArmConstants.armMinAngleDegrees)));
         
+        controller.leftStick().onTrue(new InstantCommand(() -> arm.setArmDesiredPosition(ArmConstants.armMinAngleDegrees)));
 
         isRingInIntake.onTrue(rumbleController(0.25, 0.5));
 

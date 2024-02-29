@@ -18,7 +18,7 @@ public class RaiseClimbArms extends Command {
 
     @Override
     public void initialize() {
-        climb.setVolts(2);
+        climb.setVolts(4);
     }
 
     // Called every time the scheduler runs while the command is scheduled.
