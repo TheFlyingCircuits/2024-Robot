@@ -117,7 +117,6 @@ public class Robot extends LoggedRobot {
         // leds.setLEDColor(LEDColor.ORANGE);
         //leds.chasePattern();
 
-        m_robotContainer.drivetrain.setPoseToVisionMeasurement();
 
         m_robotContainer.arm.setDesiredPositionToCurrent();
     }
@@ -125,6 +124,8 @@ public class Robot extends LoggedRobot {
     /** This autonomous runs the autonomous command selected by your {@link RobotContainer} class. */
     @Override
     public void autonomousInit() {
+        m_robotContainer.drivetrain.setPoseToVisionMeasurement();
+
         m_autonomousCommand = autoChooser.getSelected();
 
         // schedule the autonomous command (example)

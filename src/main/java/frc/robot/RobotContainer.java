@@ -210,7 +210,7 @@ public class RobotContainer {
     /** Moves the arm back and spins up the flywheels to prepare for an amp shot. */
     Command prepAmpShot() {
         return new ParallelCommandGroup(
-            spinFlywheels(15, 15),
+            spinFlywheels(20, 20),
             aimShooterAtAngle(110));
     }
 
@@ -225,7 +225,7 @@ public class RobotContainer {
     Command prepSubwooferShot() {
         return new ParallelCommandGroup(
             spinFlywheels(27, 15),
-            aimShooterAtAngle(45));
+            aimShooterAtAngle(42));
     }
 
     Command prepShart() { 
@@ -282,8 +282,7 @@ public class RobotContainer {
     private void realBindings() {
         /** INTAKE **/
         controller.rightTrigger()
-            .whileTrue(intakeNote())
-            .onFalse(indexNote());
+            .whileTrue(indexNote());
     
         controller.leftTrigger().whileTrue(new ReverseIntake(intake, indexer));
         
@@ -294,13 +293,14 @@ public class RobotContainer {
             .whileTrue(prepAmpShot())
             .onFalse(fireNote().andThen(resetShooter()));
         controller.b().whileTrue(shart());
+        controller.a().onTrue(shootFromSubwoofer());
 
 
         /** CLIMB **/
         //climb routine should be tilt shooter back, drive chain over shooter arm, raise arm to amp shot, climb, score trap
         //in other words, press up then left then right then down and then LB
         controller.povUp().onTrue(new RaiseClimbArms(climb).alongWith(aimShooterAtAngle(ArmConstants.armMaxAngleDegrees)));
-        controller.povRight().onTrue(aimShooterAtAngle(90));
+        controller.povRight().onTrue(aimShooterAtAngle(75));
         controller.povDown().whileTrue(new LowerClimbArms(climb).alongWith(prepTrapShot()));
         controller.povLeft().onTrue(fireNote().andThen(new InstantCommand(() -> spinFlywheels(0, 0))));
 
