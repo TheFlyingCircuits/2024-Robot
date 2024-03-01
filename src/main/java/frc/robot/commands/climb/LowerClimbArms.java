@@ -23,7 +23,7 @@ public class LowerClimbArms extends Command {
     // Called every time the scheduler runs while the command is scheduled.
     @Override
     public void execute() {
-        climb.setVolts(-7);
+        climb.setVoltsClosedLoop(-7);
     }
 
     // Called once the command ends or is interrupted.

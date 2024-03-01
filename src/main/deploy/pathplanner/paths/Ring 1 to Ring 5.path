@@ -3,29 +3,29 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 8.284824945869945,
-        "y": 5.798225332031854
+        "x": 13.69237386120992,
+        "y": 7.003080254377342
       },
       "prevControl": null,
       "nextControl": {
-        "x": 10.73231704582309,
-        "y": 7.240497462361385
+        "x": 10.097147041654996,
+        "y": 7.307562004567661
       },
       "isLocked": false,
-      "linkedName": "Ring 5"
+      "linkedName": "Ring 1"
     },
     {
       "anchor": {
-        "x": 14.652662457964,
-        "y": 6.124767513443729
+        "x": 8.284824945869945,
+        "y": 5.798225332031854
       },
       "prevControl": {
-        "x": 11.678109975335497,
-        "y": 6.464381773271391
+        "x": 10.952038109497046,
+        "y": 5.808574926707628
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "Amp Side Starting Line"
+      "linkedName": "Ring 5"
     }
   ],
   "rotationTargets": [],

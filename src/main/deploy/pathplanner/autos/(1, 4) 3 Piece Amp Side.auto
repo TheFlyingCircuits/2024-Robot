@@ -12,7 +12,7 @@
           }
         },
         {
-          "type": "race",
+          "type": "parallel",
           "data": {
             "commands": [
               {
@@ -33,17 +33,11 @@
         {
           "type": "named",
           "data": {
-            "name": "indexNote"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
             "name": "shootFromAnywhere"
           }
         },
         {
-          "type": "race",
+          "type": "parallel",
           "data": {
             "commands": [
               {
@@ -59,12 +53,6 @@
                 }
               }
             ]
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "indexNote"
           }
         },
         {

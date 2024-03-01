@@ -12,13 +12,13 @@
           }
         },
         {
-          "type": "race",
+          "type": "parallel",
           "data": {
             "commands": [
               {
                 "type": "path",
                 "data": {
-                  "pathName": "Source Side Speaker to Ring 8"
+                  "pathName": "Amp Side Speaker to Ring 1"
                 }
               },
               {
@@ -28,18 +28,6 @@
                 }
               }
             ]
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "indexNote"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "Ring 8 to Starting Line"
           }
         },
         {
@@ -49,13 +37,13 @@
           }
         },
         {
-          "type": "race",
+          "type": "parallel",
           "data": {
             "commands": [
               {
                 "type": "path",
                 "data": {
-                  "pathName": "Source Side Speaker to Ring 3"
+                  "pathName": "Center Speaker to Ring 4"
                 }
               },
               {
@@ -68,9 +56,40 @@
           }
         },
         {
+          "type": "path",
+          "data": {
+            "pathName": "Ring 4 to Ring 1"
+          }
+        },
+        {
           "type": "named",
           "data": {
-            "name": "indexNote"
+            "name": "shootFromAnywhere"
+          }
+        },
+        {
+          "type": "parallel",
+          "data": {
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "Ring 1 to Ring 5"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "indexNote"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Ring 5 to Starting Line"
           }
         },
         {

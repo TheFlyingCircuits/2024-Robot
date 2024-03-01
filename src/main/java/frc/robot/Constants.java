@@ -237,7 +237,7 @@ public final class Constants {
         public final static double climberArmMetersPerMotorRotation = Units.inchesToMeters(2.256*Math.PI/21.);
 
         public final static double climbMaxPosMeters = .53;
-        public final static double climbMinPoseMeters = -0.14;
+        public final static double climbMinPosMeters = -0.14;
 
     }
 

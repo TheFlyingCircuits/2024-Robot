@@ -141,10 +141,8 @@ public class RobotContainer {
         isRingInIntake = new Trigger(intake::isRingInIntake);
         
         
-        NamedCommands.registerCommand("shootFromSubwoofer", shootFromSubwoofer());
-        NamedCommands.registerCommand("shootFromAnywhere", shootFromAnywhere());
-        NamedCommands.registerCommand("indexNote", indexNote());
-        NamedCommands.registerCommand("indexWithTimeout", indexWithTimeout(1.0));
+        NamedCommands.registerCommand("shootFromAnywhere", shootFromAnywhereNoReset());
+        NamedCommands.registerCommand("indexNote", indexNote().alongWith(resetShooter()));
 
 
         realBindings();
@@ -262,12 +260,19 @@ public class RobotContainer {
     }
 
 
-    //aims and then shoots in one motion
+    /** Aims and shoots in one motion, and then resets the shooter back to idle mode. */
     SequentialCommandGroup shootFromAnywhere() {
         return new SequentialCommandGroup(
             prepShotFromAnywhere(),
             fireNote(),
             resetShooter());
+    }
+
+    /** Aims and shoots in one motion, but arm remains up and spinning at the end. */
+    SequentialCommandGroup shootFromAnywhereNoReset() {
+        return new SequentialCommandGroup(
+            prepShotFromAnywhere(),
+            fireNote());
     }
 
     
@@ -282,7 +287,7 @@ public class RobotContainer {
     private void realBindings() {
         /** INTAKE **/
         controller.rightTrigger()
-            .onTrue(indexNote().alongWith(aimShooterAtAngle(ArmConstants.armMinAngleDegrees+5)));
+            .onTrue(indexNote().alongWith(resetShooter()));
     
         controller.leftTrigger().whileTrue(new ReverseIntake(intake, indexer));
         
@@ -302,7 +307,7 @@ public class RobotContainer {
         controller.povUp().onTrue(new RaiseClimbArms(climb).alongWith(aimShooterAtAngle(ArmConstants.armMaxAngleDegrees)));
         controller.povRight().onTrue(aimShooterAtAngle(82));
         controller.povDown().whileTrue(new LowerClimbArms(climb).alongWith(prepTrapShot()));
-        controller.povLeft().onTrue(fireNote().andThen(new InstantCommand(() -> spinFlywheels(0, 0))));
+        controller.start().onTrue(fireNote().andThen(new InstantCommand(() -> spinFlywheels(0, 0))));
 
         /** MISC **/
         controller.y().onTrue(new InstantCommand(() -> drivetrain.setRobotFacingForward()));

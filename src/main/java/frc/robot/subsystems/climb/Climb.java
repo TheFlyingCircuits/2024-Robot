@@ -44,6 +44,27 @@ public class Climb extends SubsystemBase{
         rightMotor.setVoltage(volts);
     }
 
+    /** 
+     * Attempts to match position of the two climb arms using the error between them.
+     * @param volts - A positive value will extend the climb arms upwards
+     */
+    public void setVoltsClosedLoop(double volts) {
+        if (volts == 0) {
+            // Secial case for safety. Don't attempt to sync
+            // the arm positions if you're just asking them to both stop.
+            setLeftMotorVolts(volts);
+            setRightMotorVolts(volts);
+            return;
+        }
+
+        double positionSyncKpVoltsPerMeter = 0.04;
+        double leftError = rightMotor.getPosition() - leftMotor.getPosition();
+        double rightError = -leftError;
+
+        setLeftMotorVolts(volts + (positionSyncKpVoltsPerMeter * leftError));
+        setRightMotorVolts(volts + (positionSyncKpVoltsPerMeter * rightError));
+    }
+
     /**
      * @param volts - A positive value will extend the climb arms upwards
      */
@@ -60,8 +81,8 @@ public class Climb extends SubsystemBase{
         leftMotor.setIdleMode(IdleMode.kBrake);
         rightMotor.setIdleMode(IdleMode.kBrake);
 
-        leftMotor.setSmartCurrentLimit(45);
-        rightMotor.setSmartCurrentLimit(45);
+        leftMotor.setSmartCurrentLimit(60);
+        rightMotor.setSmartCurrentLimit(60);
 
         leftMotor.setPosition(0);
         rightMotor.setPosition(0);
@@ -75,11 +96,11 @@ public class Climb extends SubsystemBase{
     }
 
     public boolean leftArmDown() {
-        return leftMotor.getPosition() <= ClimbConstants.climbMinPoseMeters;
+        return leftMotor.getPosition() <= ClimbConstants.climbMinPosMeters;
     }
 
     public boolean rightArmDown() {
-        return rightMotor.getPosition() <= ClimbConstants.climbMinPoseMeters;
+        return rightMotor.getPosition() <= ClimbConstants.climbMinPosMeters;
     }
 
     public boolean leftArmUp() {
