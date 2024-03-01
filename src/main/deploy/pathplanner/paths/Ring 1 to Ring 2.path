@@ -8,24 +8,24 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 13.575265495752104,
-        "y": 5.58606903233778
+        "x": 13.680663024664138,
+        "y": 7.284140331476098
       },
       "isLocked": false,
       "linkedName": "Ring 1"
     },
     {
       "anchor": {
-        "x": 15.039120063974792,
+        "x": 13.645530515026794,
         "y": 5.562647359246215
       },
       "prevControl": {
-        "x": 14.219361505770086,
-        "y": 5.644623215066686
+        "x": 13.63381967848101,
+        "y": 6.206743369264199
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "Center Speaker"
+      "linkedName": "Ring 2"
     }
   ],
   "rotationTargets": [],
@@ -39,11 +39,14 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 0,
-    "rotateFast": false
+    "rotation": 90.0,
+    "rotateFast": true
   },
   "reversed": false,
   "folder": "Starts at Ring",
-  "previewStartingState": null,
+  "previewStartingState": {
+    "rotation": 0,
+    "velocity": 0
+  },
   "useDefaultConstraints": true
 }

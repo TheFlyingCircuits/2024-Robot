@@ -3,13 +3,13 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 15.8603957314392,
-        "y": 6.672329653443691
+        "x": 15.730059420175902,
+        "y": 6.862550215827963
       },
       "prevControl": null,
       "nextControl": {
-        "x": 15.343217341270527,
-        "y": 7.145802827541769
+        "x": 15.21288103000723,
+        "y": 7.336023389926042
       },
       "isLocked": false,
       "linkedName": "Amp Side Speaker"
@@ -31,7 +31,7 @@
   "rotationTargets": [
     {
       "waypointRelativePos": 0.0,
-      "rotationDegrees": -60.0,
+      "rotationDegrees": -59.9186802542158,
       "rotateFast": false
     }
   ],

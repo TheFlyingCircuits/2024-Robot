@@ -1,0 +1,112 @@
+{
+  "version": 1.0,
+  "startingPose": null,
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "named",
+          "data": {
+            "name": "shootFromAnywhere"
+          }
+        },
+        {
+          "type": "race",
+          "data": {
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "Amp Side Speaker to Ring 1"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "indexNote"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "indexNote"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "shootFromAnywhere"
+          }
+        },
+        {
+          "type": "race",
+          "data": {
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "Ring 1 to Ring 2"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "indexNote"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "indexNote"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "shootFromAnywhere"
+          }
+        },
+        {
+          "type": "race",
+          "data": {
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "Ring 2 to Ring 3"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "indexNote"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "indexNote"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "shootFromAnywhere"
+          }
+        }
+      ]
+    }
+  },
+  "folder": null,
+  "choreoAuto": false
+}

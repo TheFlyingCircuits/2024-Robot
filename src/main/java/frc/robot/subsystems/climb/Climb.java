@@ -28,8 +28,8 @@ public class Climb extends SubsystemBase{
      * @param volts - A positive value will extend the left climb arm upwards
      */
     public void setLeftMotorVolts(double volts) {
-        volts = (climbArmsAreUp() && (volts > 0)) ? 0 : volts;
-        volts = (climbArmsAreDown() && (volts < 0)) ? 0 : volts;
+        volts = (leftArmUp() && (volts > 0)) ? 0 : volts;
+        volts = (leftArmDown() && (volts < 0)) ? 0 : volts;
 
         leftMotor.setVoltage(volts);
     }
@@ -38,8 +38,8 @@ public class Climb extends SubsystemBase{
      * @param volts - A positive value will extend the right climb arm upwards
      */
     public void setRightMotorVolts(double volts) {
-        volts = (climbArmsAreUp() && (volts > 0)) ? 0 : volts;
-        volts = (climbArmsAreDown() && (volts < 0)) ? 0 : volts;
+        volts = (rightArmUp() && (volts > 0)) ? 0 : volts;
+        volts = (rightArmDown() && (volts < 0)) ? 0 : volts;
 
         rightMotor.setVoltage(volts);
     }
@@ -74,12 +74,20 @@ public class Climb extends SubsystemBase{
 
     }
 
-    public boolean climbArmsAreDown() {
-        return (leftMotor.getPosition() <= ClimbConstants.climbMinPoseMeters) || (rightMotor.getPosition() <= ClimbConstants.climbMinPoseMeters);
+    public boolean leftArmDown() {
+        return leftMotor.getPosition() <= ClimbConstants.climbMinPoseMeters;
     }
 
-    public boolean climbArmsAreUp() {
-        return (leftMotor.getPosition() >= ClimbConstants.climbMaxPosMeters) || (rightMotor.getPosition() >= ClimbConstants.climbMaxPosMeters);
+    public boolean rightArmDown() {
+        return rightMotor.getPosition() <= ClimbConstants.climbMinPoseMeters;
+    }
+
+    public boolean leftArmUp() {
+        return leftMotor.getPosition() >= ClimbConstants.climbMaxPosMeters;
+    }
+
+    public boolean rightArmUp() {
+        return rightMotor.getPosition() >= ClimbConstants.climbMaxPosMeters;
     }
     
     @Override

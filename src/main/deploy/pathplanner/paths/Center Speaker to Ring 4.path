@@ -3,13 +3,13 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 15.24991512179886,
+        "x": 15.039120063974792,
         "y": 5.562647359246215
       },
       "prevControl": null,
       "nextControl": {
-        "x": 15.114508574238261,
-        "y": 6.407854466098484
+        "x": 13.762638880484609,
+        "y": 6.45267093672561
       },
       "isLocked": false,
       "linkedName": "Center Speaker"
@@ -40,7 +40,7 @@
   "goalEndState": {
     "velocity": 0,
     "rotation": 0.0,
-    "rotateFast": false
+    "rotateFast": true
   },
   "reversed": false,
   "folder": "Starts at Speaker",

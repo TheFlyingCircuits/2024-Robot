@@ -3,13 +3,13 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 15.882248339474495,
-        "y": 4.406942620451345
+        "x": 15.765191929813247,
+        "y": 4.215901156481343
       },
       "prevControl": null,
       "nextControl": {
-        "x": 15.248522706450911,
-        "y": 1.689935021396219
+        "x": 15.131466296789663,
+        "y": 1.4988935574262168
       },
       "isLocked": false,
       "linkedName": "Source Side Speaker"
@@ -46,7 +46,7 @@
   "goalEndState": {
     "velocity": 0,
     "rotation": 15.0,
-    "rotateFast": false
+    "rotateFast": true
   },
   "reversed": false,
   "folder": "Starts at Speaker",
