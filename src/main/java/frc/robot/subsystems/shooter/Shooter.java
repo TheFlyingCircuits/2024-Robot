@@ -47,7 +47,6 @@ public class Shooter extends SubsystemBase {
             ShooterConstants.kDFlywheelsVoltsSecondsSquaredPerMeter);
 
 
-
         flywheelsFeedforward = new SimpleMotorFeedforward(
             ShooterConstants.kSFlywheelsVolts,
             ShooterConstants.kVFlywheelsVoltsSecondsPerMeter,
@@ -102,8 +101,6 @@ public class Shooter extends SubsystemBase {
         
         Logger.processInputs("shooterInputs", inputs);
 
-        Logger.recordOutput("shooter/leftFlywheelsAtSetpoint", leftFlywheelsPID.atSetpoint());
-        Logger.recordOutput("shooter/rightFlywheelsAtSetpoint", rightFlywheelsPID.atSetpoint());
         Logger.recordOutput("shooter/leftFlywheelsSetpoint", leftFlywheelsPID.getSetpoint());
         Logger.recordOutput("shooter/rightFlywheelsSetpoint", rightFlywheelsPID.getSetpoint());
 

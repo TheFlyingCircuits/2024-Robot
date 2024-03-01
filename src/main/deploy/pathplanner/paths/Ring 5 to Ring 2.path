@@ -1,0 +1,52 @@
+{
+  "version": 1.0,
+  "waypoints": [
+    {
+      "anchor": {
+        "x": 8.284824945869945,
+        "y": 5.798225332031854
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 10.694399705489852,
+        "y": 6.944526071648434
+      },
+      "isLocked": false,
+      "linkedName": "Ring 5"
+    },
+    {
+      "anchor": {
+        "x": 13.645530515026794,
+        "y": 5.562647359246215
+      },
+      "prevControl": {
+        "x": 12.21680845644145,
+        "y": 6.347273407813577
+      },
+      "nextControl": null,
+      "isLocked": false,
+      "linkedName": "Ring 2"
+    }
+  ],
+  "rotationTargets": [],
+  "constraintZones": [],
+  "eventMarkers": [],
+  "globalConstraints": {
+    "maxVelocity": 4.0,
+    "maxAcceleration": 3.0,
+    "maxAngularVelocity": 540.0,
+    "maxAngularAcceleration": 720.0
+  },
+  "goalEndState": {
+    "velocity": 0,
+    "rotation": 0,
+    "rotateFast": false
+  },
+  "reversed": false,
+  "folder": "Starts at Ring",
+  "previewStartingState": {
+    "rotation": 0,
+    "velocity": 0
+  },
+  "useDefaultConstraints": true
+}

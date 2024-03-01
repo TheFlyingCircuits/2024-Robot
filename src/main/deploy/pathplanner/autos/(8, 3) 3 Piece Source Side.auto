@@ -18,31 +18,6 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "Source Side Speaker to Ring 3"
-                }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "indexNote"
-                }
-              }
-            ]
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "shootFromAnywhere"
-          }
-        },
-        {
-          "type": "parallel",
-          "data": {
-            "commands": [
-              {
-                "type": "path",
-                "data": {
                   "pathName": "Source Side Speaker to Ring 8"
                 }
               },
@@ -69,6 +44,31 @@
                 "type": "named",
                 "data": {
                   "name": "continuousPrepShotFromAnywhere"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "shootFromAnywhere"
+          }
+        },
+        {
+          "type": "parallel",
+          "data": {
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "Source Side Speaker to Ring 3"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "indexNote"
                 }
               }
             ]

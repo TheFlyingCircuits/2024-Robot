@@ -1,0 +1,52 @@
+{
+  "version": 1.0,
+  "waypoints": [
+    {
+      "anchor": {
+        "x": 15.765191929813247,
+        "y": 4.215901156481343
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 11.830350850430982,
+        "y": 1.0188427794890647
+      },
+      "isLocked": false,
+      "linkedName": "Source Side Speaker"
+    },
+    {
+      "anchor": {
+        "x": 8.281967377058862,
+        "y": 2.435854001522554
+      },
+      "prevControl": {
+        "x": 11.455604080965974,
+        "y": 0.7729152120276535
+      },
+      "nextControl": null,
+      "isLocked": false,
+      "linkedName": "Ring 7"
+    }
+  ],
+  "rotationTargets": [],
+  "constraintZones": [],
+  "eventMarkers": [],
+  "globalConstraints": {
+    "maxVelocity": 4.0,
+    "maxAcceleration": 3.0,
+    "maxAngularVelocity": 540.0,
+    "maxAngularAcceleration": 720.0
+  },
+  "goalEndState": {
+    "velocity": 0,
+    "rotation": -30.0,
+    "rotateFast": true
+  },
+  "reversed": false,
+  "folder": "Starts at Speaker",
+  "previewStartingState": {
+    "rotation": 0,
+    "velocity": 0
+  },
+  "useDefaultConstraints": true
+}

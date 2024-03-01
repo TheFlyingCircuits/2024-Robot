@@ -1,0 +1,52 @@
+{
+  "version": 1.0,
+  "waypoints": [
+    {
+      "anchor": {
+        "x": 8.281967377058862,
+        "y": 2.435854001522554
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 12.017724235163163,
+        "y": 0.3747467694650074
+      },
+      "isLocked": false,
+      "linkedName": "Ring 7"
+    },
+    {
+      "anchor": {
+        "x": 14.673070694854786,
+        "y": 3.124922949047318
+      },
+      "prevControl": {
+        "x": 13.46986796684007,
+        "y": 2.0376855589659812
+      },
+      "nextControl": null,
+      "isLocked": false,
+      "linkedName": "Source Side Starting Line"
+    }
+  ],
+  "rotationTargets": [],
+  "constraintZones": [],
+  "eventMarkers": [],
+  "globalConstraints": {
+    "maxVelocity": 4.0,
+    "maxAcceleration": 3.0,
+    "maxAngularVelocity": 540.0,
+    "maxAngularAcceleration": 720.0
+  },
+  "goalEndState": {
+    "velocity": 0,
+    "rotation": 45.0,
+    "rotateFast": true
+  },
+  "reversed": false,
+  "folder": "Starts at Ring",
+  "previewStartingState": {
+    "rotation": 0,
+    "velocity": 0
+  },
+  "useDefaultConstraints": true
+}

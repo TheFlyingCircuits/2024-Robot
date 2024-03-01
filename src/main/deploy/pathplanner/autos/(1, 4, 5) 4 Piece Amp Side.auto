@@ -56,9 +56,22 @@
           }
         },
         {
-          "type": "path",
+          "type": "parallel",
           "data": {
-            "pathName": "Ring 4 to Ring 1"
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "Ring 4 to Ring 1"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "continuousPrepShotFromAnywhere"
+                }
+              }
+            ]
           }
         },
         {
@@ -87,9 +100,22 @@
           }
         },
         {
-          "type": "path",
+          "type": "parallel",
           "data": {
-            "pathName": "Ring 5 to Starting Line"
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "Ring 5 to Ring 2"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "continuousPrepShotFromAnywhere"
+                }
+              }
+            ]
           }
         },
         {
