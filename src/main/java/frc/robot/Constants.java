@@ -289,13 +289,14 @@ public final class Constants {
         public final static int ledPWMPort = 0;
 
         //total number of leds
-        public final static int ledLength = 60;
+        public final static int ledsPerStrip = 60;
+        
 
-        public static enum LEDColor {
-            RED,
-            GREEN,
-            ORANGE
-        }
+        public final static double stripLengthMeters = 1.0;
+
+        public final static double ledsPerMeter = (1.0 * ledsPerStrip) / stripLengthMeters;
+
+        public final static double metersPerLed = 1/ledsPerMeter;
     }
 
 }

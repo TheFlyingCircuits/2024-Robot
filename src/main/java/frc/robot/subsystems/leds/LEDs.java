@@ -11,39 +11,24 @@ public class LEDs {
     private AddressableLEDBuffer buffer;
 
     public LEDs() {
-
-        
-
         leds = new AddressableLED(LEDConstants.ledPWMPort);
-        buffer = new AddressableLEDBuffer(LEDConstants.ledLength);
+        buffer = new AddressableLEDBuffer(LEDConstants.ledsPerStrip);
 
         leds.setLength(buffer.getLength());
         
         leds.setData(buffer);
         leds.start();
-    };
+    }
 
-    public void setLEDColor(LEDConstants.LEDColor color) {
-        int r = 0;
-        int g = 0;
-        int b = 0;
-        switch(color) {
-            case RED:
-                r=255;
-                break;
-            case GREEN:
-                g=255;
-                break;
-            case ORANGE:
-                r=255;
-                g=140;
-                break;
+    public void solidColorRGB(int r, int g, int b) {
+        for (int i = 0; i < buffer.getLength(); i += 1) {
+            buffer.setRGB(i, r, g, b);
         }
-        for(int i = 0; i < buffer.getLength(); i++){
-            buffer.setRGB(i, r,g,b);
-        }
-
         leds.setData(buffer);
+    }
+
+    public void turnOff() {
+        this.solidColorRGB(0, 0, 0);
     }
 
     public AddressableLED getLEDs() {

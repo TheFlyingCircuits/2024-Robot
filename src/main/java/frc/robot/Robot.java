@@ -25,7 +25,6 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.Constants.ArmConstants;
 import frc.robot.Constants.DrivetrainConstants;
-import frc.robot.Constants.LEDConstants.LEDColor;
 import frc.robot.commands.leds.RedBlueChasePattern;
 import frc.robot.subsystems.drivetrain.Drivetrain;
 import frc.robot.subsystems.leds.LEDs;
