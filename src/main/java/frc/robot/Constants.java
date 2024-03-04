@@ -15,6 +15,7 @@ import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.util.Color;
 
 /**
  * The Constants class provides a convenient place for teams to hold robot-wide numerical or boolean
@@ -68,6 +69,10 @@ public final class Constants {
          * Distance between the center point of the front wheels and the center point of the back wheels.
          */
         public static final double wheelbaseMeters = Units.inchesToMeters(22.75);
+        /**
+         * Distance from the center of the robot to each swerve module.
+         */
+        public static final double drivetrainRadiusMeters = Math.hypot(wheelbaseMeters / 2.0, trackwidthMeters / 2.0);
 
 
         public static final SwerveDriveKinematics swerveKinematics = new SwerveDriveKinematics(
@@ -297,6 +302,11 @@ public final class Constants {
         public final static double ledsPerMeter = (1.0 * ledsPerStrip) / stripLengthMeters;
 
         public final static double metersPerLed = 1/ledsPerMeter;
+
+        public final static int rslOrangeHue = 4;
+        public final static int bumperBlueHue = 120;
+        public final static int bumperRedHue = 0;
+        public final static int trafficLightGreenHue = 60;
     }
 
 }

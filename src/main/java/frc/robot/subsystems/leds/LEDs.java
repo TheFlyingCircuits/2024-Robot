@@ -27,6 +27,13 @@ public class LEDs {
         leds.setData(buffer);
     }
 
+    public void solidColorHSV(int h, int s, int v) {
+        for (int i = 0; i < buffer.getLength(); i += 1) {
+            buffer.setHSV(i, h, s, v);
+        }
+        leds.setData(buffer);
+    }
+
     public void turnOff() {
         this.solidColorRGB(0, 0, 0);
     }
