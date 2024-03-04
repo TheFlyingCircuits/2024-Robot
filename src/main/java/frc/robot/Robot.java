@@ -13,6 +13,7 @@ import org.littletonrobotics.junction.networktables.NT4Publisher;
 import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 
 import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 import com.pathplanner.lib.util.HolonomicPathFollowerConfig;
 import com.pathplanner.lib.util.PIDConstants;
 import com.pathplanner.lib.util.ReplanningConfig;
@@ -70,6 +71,9 @@ public class Robot extends LoggedRobot {
             },
             drivetrain // Reference to this subsystem to set requirements
         );
+
+        //TODO: set override when prep shot is active
+        PPHolonomicDriveController.setRotationTargetOverride(null);
     }
 
     /**

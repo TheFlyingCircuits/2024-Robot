@@ -83,7 +83,7 @@ public class RobotContainer {
     
     public RobotContainer() {
 
-/**** INITIALIZE SUBSYSTEMS ****/
+        /**** INITIALIZE SUBSYSTEMS ****/
         if (RobotBase.isReal()) {
             drivetrain = new Drivetrain(
                 new GyroIOPigeon(),
@@ -134,7 +134,6 @@ public class RobotContainer {
         /**** ADVANTAGE KIT LOGGER  *****/
         Logger.recordMetadata("projectName", "2024Robot");
 
-        Logger.addDataReceiver(new WPILOGWriter());
         Logger.addDataReceiver(new NT4Publisher());
         Logger.start();
         
@@ -143,11 +142,9 @@ public class RobotContainer {
 
         isRingInIntake = new Trigger(intake::isRingInIntake);
         
-        
         NamedCommands.registerCommand("shootFromAnywhere", shootFromAnywhereNoReset());
-        NamedCommands.registerCommand("shootFromAnywhereWaitForDrivetrain", shootFromAnywhereWaitForDrivetrain());
         NamedCommands.registerCommand("indexNote", indexNote().alongWith(resetShooter()));
-        NamedCommands.registerCommand("continuousPrepShotFromAnywhere", continuousPrepShotFromAnywhere());
+        NamedCommands.registerCommand("continuousPrepShotFromAnywhere", continuousPrepShotFromAnywhereWithDrivetrain());
 
 
         realBindings();
@@ -236,35 +233,37 @@ public class RobotContainer {
             spinFlywheels(25, 25),
             aimShooterAtAngle(-15));
     }
-
-    /** Same as prepShotFromAnywhere() except it doesn't finish until drivetrain reaches the correct angle. */
-    Command prepShotFromAnywhereWaitForDrivetrain() {
+    
+    /** Command to prepare for a shot. Finishes after the flywheels spin up to a desired
+     *  speed, the shooter reaches the correct angle, and the drivetrain aims at the right
+     *  angle.*/
+    Command prepShotFromAnywhere() { 
         return new ParallelCommandGroup(
             spinFlywheels(27, 27),
             new AimShooterAtSpeaker(arm, drivetrain),
             new AimDriveAtSpeaker(drivetrain));
     }
-    
-    /** Command to prepare for a shot. Finishes after the flywheels spin up to a desired
-     *  speed, and the shooter reaches the correct angle. Also aims the drivetrain at the
-     *  speaker at the same time.*/
-    Command prepShotFromAnywhere() { 
-        return new ParallelRaceGroup(
-            new ParallelCommandGroup(
-                spinFlywheels(27, 27),
-                new AimShooterAtSpeaker(arm, drivetrain)),
-            new AimAtSpeakerWhileJoystickDrive(drivetrain));
-    }
 
     /** Command to prepare for a shot. Same as prepShotFromAnywhere(), but never finishes
      *  until interrupted. This allows us to prepare our shot while we're still moving.
+     *  This command also doesn't rotate the drivetrain at all.
      */
-    Command continuousPrepShotFromAnywhere() {
+    Command continuousPrepShotFromAnywhereNoDrivetrain() {
         return new ParallelCommandGroup(
             spinFlywheels(27, 27),
             new ContinuousAimShooterAtSpeaker(arm, drivetrain));
     }
 
+    /**
+     * Command to prepare for a shot. Same as prepShotFromAnywhere(), but never finishes until
+     * interrupted. This allows us to prepare our shot while we're still moving.
+     */
+    Command continuousPrepShotFromAnywhereWithDrivetrain() {
+        return new ParallelCommandGroup(
+            continuousPrepShotFromAnywhereNoDrivetrain(),
+            new AimAtSpeakerWhileJoystickDrive(drivetrain)
+        );
+    }
 
     Command fireNote() {
         return new ParallelRaceGroup(
@@ -282,19 +281,10 @@ public class RobotContainer {
     }
 
 
-    //TODO: add timeout for prepShotFromAnywhere() so motors don't overheat?
     /** Aims and shoots in one motion, and then resets the shooter back to idle mode. */
     SequentialCommandGroup shootFromAnywhere() {
         return new SequentialCommandGroup(
             prepShotFromAnywhere(),
-            fireNote(),
-            resetShooter());
-    }
-
-    //TODO: this command should just replace shootFromAnywhere(). They are only different right now because we are scared to change shootFromAnywhere()
-    SequentialCommandGroup shootFromAnywhereWaitForDrivetrain() {
-        return new SequentialCommandGroup(
-            prepShotFromAnywhereWaitForDrivetrain(),
             fireNote(),
             resetShooter());
     }
@@ -325,12 +315,15 @@ public class RobotContainer {
         
         
         /** SCORING **/
-        controller.rightBumper().onTrue(shootFromAnywhere());
+        //control scheme is rb/lb toggle preps a shot, and then a is fire
+        controller.rightBumper()
+            .onTrue(continuousPrepShotFromAnywhereWithDrivetrain())
+            .onFalse(resetShooter());
         controller.leftBumper()
-            .whileTrue(prepAmpShot())
-            .onFalse(fireNote().andThen(resetShooter()));
+            .onTrue(prepAmpShot())
+            .onFalse(resetShooter());
         controller.b().whileTrue(shart());
-        controller.a().onTrue(shootFromSubwoofer());
+        controller.a().onTrue(fireNote());
 
 
         /** CLIMB **/
