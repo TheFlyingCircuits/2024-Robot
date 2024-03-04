@@ -53,6 +53,8 @@ public final class Constants {
 
         /** Rotations of the motor per rotations of the indexer wheel; a number greater than 1 represents a reduction. */
         public static final double indexerGearReduction = 24./18.;
+
+        public static final double motorMaxTempCelsius = 70;
     }
 
     public final static class DrivetrainConstants {

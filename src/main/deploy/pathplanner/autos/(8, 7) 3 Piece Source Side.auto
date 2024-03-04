@@ -31,22 +31,9 @@
           }
         },
         {
-          "type": "parallel",
+          "type": "path",
           "data": {
-            "commands": [
-              {
-                "type": "path",
-                "data": {
-                  "pathName": "Ring 8 to Starting Line"
-                }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "continuousPrepShotFromAnywhere"
-                }
-              }
-            ]
+            "pathName": "Ring 8 to Starting Line"
           }
         },
         {
@@ -75,22 +62,9 @@
           }
         },
         {
-          "type": "parallel",
+          "type": "path",
           "data": {
-            "commands": [
-              {
-                "type": "path",
-                "data": {
-                  "pathName": "Ring 7 to Starting Line"
-                }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "continuousPrepShotFromAnywhere"
-                }
-              }
-            ]
+            "pathName": "Ring 7 to Starting Line"
           }
         },
         {

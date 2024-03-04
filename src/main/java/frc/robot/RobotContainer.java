@@ -11,6 +11,7 @@ import frc.robot.commands.arm.ContinuousAimShooterAtSpeaker;
 import frc.robot.commands.climb.LowerClimbArms;
 import frc.robot.commands.climb.RaiseClimbArms;
 import frc.robot.commands.drivetrain.AimAtSpeakerWhileJoystickDrive;
+import frc.robot.commands.drivetrain.AimDriveAtSpeaker;
 import frc.robot.commands.drivetrain.JoystickDrive;
 import frc.robot.commands.intake.IndexNote;
 import frc.robot.commands.intake.IntakeNote;
@@ -144,6 +145,7 @@ public class RobotContainer {
         
         
         NamedCommands.registerCommand("shootFromAnywhere", shootFromAnywhereNoReset());
+        NamedCommands.registerCommand("shootFromAnywhereWaitForDrivetrain", shootFromAnywhereWaitForDrivetrain());
         NamedCommands.registerCommand("indexNote", indexNote().alongWith(resetShooter()));
         NamedCommands.registerCommand("continuousPrepShotFromAnywhere", continuousPrepShotFromAnywhere());
 
@@ -235,6 +237,13 @@ public class RobotContainer {
             aimShooterAtAngle(-15));
     }
 
+    /** Same as prepShotFromAnywhere() except it doesn't finish until drivetrain reaches the correct angle. */
+    Command prepShotFromAnywhereWaitForDrivetrain() {
+        return new ParallelCommandGroup(
+            spinFlywheels(27, 27),
+            new AimShooterAtSpeaker(arm, drivetrain),
+            new AimDriveAtSpeaker(drivetrain));
+    }
     
     /** Command to prepare for a shot. Finishes after the flywheels spin up to a desired
      *  speed, and the shooter reaches the correct angle. Also aims the drivetrain at the
@@ -273,10 +282,19 @@ public class RobotContainer {
     }
 
 
+    //TODO: add timeout for prepShotFromAnywhere() so motors don't overheat?
     /** Aims and shoots in one motion, and then resets the shooter back to idle mode. */
     SequentialCommandGroup shootFromAnywhere() {
         return new SequentialCommandGroup(
             prepShotFromAnywhere(),
+            fireNote(),
+            resetShooter());
+    }
+
+    //TODO: this command should just replace shootFromAnywhere(). They are only different right now because we are scared to change shootFromAnywhere()
+    SequentialCommandGroup shootFromAnywhereWaitForDrivetrain() {
+        return new SequentialCommandGroup(
+            prepShotFromAnywhereWaitForDrivetrain(),
             fireNote(),
             resetShooter());
     }
@@ -288,6 +306,7 @@ public class RobotContainer {
             fireNote());
     }
 
+    
     
     Command shart() {
         return new SequentialCommandGroup(

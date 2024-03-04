@@ -50,11 +50,20 @@ public class ShooterIOKraken implements ShooterIO {
 
     @Override
     public void setLeftMotorVolts(double volts) {
+        if (leftMotor.getDeviceTemp().getValueAsDouble() > ShooterConstants.motorMaxTempCelsius) {
+            volts = 0;
+        }
+
         leftMotor.setVoltage(volts);
     }
 
     @Override
     public void setRightMotorVolts(double volts) {
+        if (rightMotor.getDeviceTemp().getValueAsDouble() > ShooterConstants.motorMaxTempCelsius) {
+            volts = 0;
+        }
+
+
         rightMotor.setVoltage(volts);
     }
 }

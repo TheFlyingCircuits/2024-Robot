@@ -56,22 +56,9 @@
           }
         },
         {
-          "type": "parallel",
+          "type": "path",
           "data": {
-            "commands": [
-              {
-                "type": "path",
-                "data": {
-                  "pathName": "Ring 4 to Ring 1"
-                }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "continuousPrepShotFromAnywhere"
-                }
-              }
-            ]
+            "pathName": "Ring 4 to Ring 1"
           }
         },
         {
@@ -100,22 +87,9 @@
           }
         },
         {
-          "type": "parallel",
+          "type": "path",
           "data": {
-            "commands": [
-              {
-                "type": "path",
-                "data": {
-                  "pathName": "Ring 5 to Ring 2"
-                }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "continuousPrepShotFromAnywhere"
-                }
-              }
-            ]
+            "pathName": "Ring 5 to Ring 1"
           }
         },
         {
