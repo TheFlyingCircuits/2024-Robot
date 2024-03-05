@@ -190,11 +190,11 @@ public final class Constants {
         public final static double armMinAngleDegrees = -25.8;
 
         /**Maximum angle of the arm, in degrees. This value should be positive and greater than 90, as it is beyond the vertical. */
-        public final static double armMaxAngleDegrees = 145.;
+        public final static double armMaxAngleDegrees = 143.;
 
-        public final static double armMaxVelDegreesPerSecond = 240.;
+        public final static double armMaxVelDegreesPerSecond = 360.;
 
-        public final static double armMaxAccelDegreesPerSecondSquared = 480.;
+        public final static double armMaxAccelDegreesPerSecondSquared = 660.;
 
         /**temporary ids for motors and CANcoder of the shooting arm */
         public final static int leftMotorID = 7;
@@ -208,9 +208,10 @@ public final class Constants {
 
         /***** REAL CONSTANTS ******/
         public final static double kSArmVolts = 0.005;
-        public final static double kGArmVolts = 0.30;
+        public final static double kGArmVolts = 0.32;
         public final static double kVArmVoltsSecondsPerRadian = 3.1;
         public final static double kAArmVoltsSecondsSquaredPerRadian = 0;
+
         public final static double kPArmVoltsPerDegree = 0.3;
         public final static double kDArmVoltsSecondsPerDegree = 0.005;
 

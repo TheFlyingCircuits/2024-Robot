@@ -144,10 +144,10 @@ public class RobotContainer {
         
         NamedCommands.registerCommand("shootFromAnywhere", shootFromAnywhereNoReset());
         NamedCommands.registerCommand("indexNote", indexNote().alongWith(resetShooter()));
-        NamedCommands.registerCommand("continuousPrepShotFromAnywhere", continuousPrepShotFromAnywhereWithDrivetrain());
+        NamedCommands.registerCommand("continuousPrepShotFromAnywhere", continuousPrepShotFromAnywhereNoDrivetrain());
 
 
-        realBindings();
+        testBindings();
     }
 
     /** Generates a command to rumble the controller for a given duration and strength.
@@ -343,6 +343,14 @@ public class RobotContainer {
     }
 
     private void testBindings() {
+
+        controller.rightTrigger().whileTrue(indexNote());
+        controller.leftTrigger().whileTrue(new ReverseIntake(intake, indexer));
+
+        controller.povRight().onTrue(aimShooterAtAngle(0));
+        controller.povUp().onTrue(aimShooterAtAngle(20));
+        controller.povLeft().onTrue(aimShooterAtAngle(30));
+        controller.povDown().onTrue(aimShooterAtAngle(45));
 
         /** SYSID BINDINGS **/
         // controller.a().whileTrue(arm.generateSysIdQuasistatic(SysIdRoutine.Direction.kForward));
