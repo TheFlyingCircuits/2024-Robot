@@ -26,7 +26,6 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.Constants.ArmConstants;
 import frc.robot.Constants.DrivetrainConstants;
-import frc.robot.Constants.LEDConstants.LEDColor;
 import frc.robot.commands.leds.RedBlueChasePattern;
 import frc.robot.subsystems.drivetrain.Drivetrain;
 import frc.robot.subsystems.leds.LEDs;
@@ -55,7 +54,7 @@ public class Robot extends LoggedRobot {
                     new PIDConstants(5.0, 0.0, 0.0), // Translation PID constants
                     new PIDConstants(4.0, 0.0, 0.0), // Rotation PID constants
                     DrivetrainConstants.maxAchievableVelocityMetersPerSecond, // Max module speed, in m/s
-                    Math.sqrt(2)*DrivetrainConstants.trackwidthMeters, // Drive base radius in meters. Distance from robot center to furthest module.
+                    DrivetrainConstants.drivetrainRadiusMeters, // Drive base radius in meters. Distance from robot center to furthest module.
                     new ReplanningConfig() // Default path replanning config. See the API for the options here
             ),
             () -> {
@@ -92,8 +91,6 @@ public class Robot extends LoggedRobot {
 
         autoChooser = AutoBuilder.buildAutoChooser();
         SmartDashboard.putData("Auto Chooser", autoChooser);
-
-
     }
 
     /**
@@ -162,6 +159,7 @@ public class Robot extends LoggedRobot {
     @Override
     public void testInit() {
         // Cancels all running commands at the start of test mode.
+        // TODO: should we put this in disabledInit() too?
         CommandScheduler.getInstance().cancelAll();
     }
 
