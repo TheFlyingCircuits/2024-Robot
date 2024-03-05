@@ -304,10 +304,20 @@ public final class Constants {
 
         public final static double metersPerLed = 1/ledsPerMeter;
 
-        public final static int rslOrangeHue = 4;
-        public final static int bumperBlueHue = 120;
-        public final static int bumperRedHue = 0;
-        public final static int trafficLightGreenHue = 60;
+        /**
+         * Hues for specific colors
+         * Values use the openCV convention where hue ranges from [0, 180)
+         */
+        public final static class Hues {
+
+            public final static int orangeSignalLight = 4;
+            public final static int blueBumpers = 120;
+            public final static int redBumpers = 0;
+            public final static int redTrafficLight = 0;
+            public final static int greenTrafficLight = 0;
+            public final static int betweenBlueAndRed = 150; // a purple/pink that's between blue and red.
+
+        }
     }
 
 }
