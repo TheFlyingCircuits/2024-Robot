@@ -46,7 +46,7 @@ public class AimDriveAtSpeaker extends Command {
             0,
             Math.toRadians(angleController.calculate(
                 drivetrain.getRobotRotation2d().getDegrees(),
-                drivetrain.getAngleToSpeaker().getDegrees()
+                drivetrain.getDriveAngleToSpeaker().getDegrees()
                 )),
             drivetrain.getRobotRotation2d()    
             );
@@ -64,6 +64,6 @@ public class AimDriveAtSpeaker extends Command {
     // Returns true when the command should end.
     @Override
     public boolean isFinished() {
-        return Math.abs(drivetrain.getRobotRotation2d().minus(drivetrain.getAngleToSpeaker()).getDegrees()) < 5;
+        return Math.abs(drivetrain.getRobotRotation2d().minus(drivetrain.getDriveAngleToSpeaker()).getDegrees()) < 5;
     }
 }

@@ -92,7 +92,7 @@ public class AimAtSpeakerWhileJoystickDrive extends Command {
             finalControllerX*DrivetrainConstants.maxDesiredTeleopVelocityMetersPerSecond,
             Math.toRadians(angleController.calculate(
                 drivetrain.getRobotRotation2d().getDegrees(),
-                drivetrain.getAngleToSpeaker().getDegrees()
+                drivetrain.getDriveAngleToSpeaker().getDegrees()
                 )),
             drivetrain.getRobotRotation2d()    
             );

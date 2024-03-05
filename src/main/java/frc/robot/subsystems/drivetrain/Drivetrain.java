@@ -199,12 +199,35 @@ public class Drivetrain extends SubsystemBase {
         );
     }
 
+    /**
+     * Gets the angle that the shooter needs to aim at in order to point at the speaker target.
+     * This accounts for distance and gravity.
+     * @return - Angle in degrees, with 0 being straight forward and a positive angle being pointed upwards.
+    */
+    public double getShooterAngleToSpeaker(double exitVelocityMetersPerSecond) {
+        
+        //see https://www.desmos.com/calculator/czxwosgvbz
+
+        double h = FieldConstants.speakerHeightMeters-FieldConstants.pivotHeightMeters;
+        double d = distToSpeakerBaseMeters();
+        double v = exitVelocityMetersPerSecond;
+        double g = 9.81;
+
+        double a = (h*h)/(d*d)+1;
+        double b = -2*(h*h)*(v*v)/(d*d) - (v*v) - g*h;
+        double c = (h*h)*Math.pow(v, 4)/(d*d) + (g*g)*(d*d)/4 + g*h*(v*v);
+
+        double vy = Math.sqrt((-b-Math.sqrt(b*b-4*a*c))/2*a);
+
+        return Math.toDegrees(Math.asin(vy/v));
+    }
+
     /** 
      * Gets the angle the robot needs to aim in order for the shooter to 
      * point at the center of the front edge of your alliance's speaker. 
      * This angle is counter-clockwise positive with an angle of zero facing away from the blue alliance wall.
      * */
-    public Rotation2d getAngleToSpeaker() {
+    public Rotation2d getDriveAngleToSpeaker() {
         return (DriverStation.getAlliance().get() == Alliance.Red ? 
                 FieldConstants.redSpeakerTranslation2d : FieldConstants.blueSpeakerTranslation2d)
                     .minus(getPoseMeters().getTranslation()).getAngle();
