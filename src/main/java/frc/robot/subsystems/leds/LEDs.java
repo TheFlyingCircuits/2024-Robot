@@ -34,25 +34,42 @@ public class LEDs {
         leds.setData(buffer);
     }
 
-    public void showFlywheelProgress(double progress) {
-        double flywheelTopHalfStart = LEDConstants.stripLengthMeters * (2.0/3.0);
-        double middleOfStrip = LEDConstants.stripLengthMeters / 2.0;
-        double flywheelBottomHalfStart = LEDConstants.stripLengthMeters * (1.0/3.0);
-        this.showProgressAsTrafficLight(flywheelTopHalfStart, middleOfStrip, progress);
-        this.showProgressAsTrafficLight(flywheelBottomHalfStart, middleOfStrip, progress);
+    public void slingshot(double progress) {
+        double maxOrange = LEDConstants.stripLengthMeters + (LEDConstants.metersPerLed/2) - (LEDConstants.stripLengthMeters/2)*progress;
+        double minOrange = 0 - (LEDConstants.metersPerLed/2) + (LEDConstants.stripLengthMeters/2)*progress;
+        int allianceHue = this.getAllianceHue();
+        for (int i = 0; i < buffer.getLength(); i += 1) {
+            double position = (i + 1) * LEDConstants.metersPerLed;
+
+            if (position <= maxOrange && position >= minOrange) {
+                buffer.setHSV(i, LEDConstants.Hues.orangeSignalLight, 255, 255);
+            }
+            else {
+                buffer.setHSV(i, allianceHue, 255, 255);
+            }
+        }
+        leds.setData(buffer);
     }
 
     public void showArmProgress(double progress) {
         // Show arm progress on the top 3rd of the led strips
-        double progressBarStartLocation = LEDConstants.stripLengthMeters;
-        double progressBarEndLocation = LEDConstants.stripLengthMeters * (2.0/3.0);
+        double progressBarStartLocation = LEDConstants.stripLengthMeters + (LEDConstants.metersPerLed/2);
+        double progressBarEndLocation = progressBarStartLocation - 0.25;
         this.showProgressAsTrafficLight(progressBarStartLocation, progressBarEndLocation, progress);
+    }
+
+    public void showFlywheelProgress(double progress) {
+        double flywheelTopHalfStart = LEDConstants.stripLengthMeters - 0.25 + (LEDConstants.metersPerLed/2);
+        double middleOfStrip = LEDConstants.stripLengthMeters / 2.0;
+        double flywheelBottomHalfStart = middleOfStrip - 0.22 - (LEDConstants.metersPerLed/2);
+        this.showProgressAsTrafficLight(flywheelTopHalfStart, middleOfStrip, progress);
+        this.showProgressAsTrafficLight(flywheelBottomHalfStart, middleOfStrip, progress);
     }
 
     public void showDrivetrainProgress(double progress) {
         // Show drivetrain progress on the bottom 3rd of the led strips
-        double progressBarStartLocation = 0;
-        double progressBarEndLocation = LEDConstants.stripLengthMeters * (1.0/3.0);
+        double progressBarStartLocation = 0 - (LEDConstants.metersPerLed/2);
+        double progressBarEndLocation = progressBarStartLocation + 0.28; //LEDConstants.stripLengthMeters * (9.0/32.0);
         this.showProgressAsTrafficLight(progressBarStartLocation, progressBarEndLocation, progress);
     }
 
@@ -81,7 +98,7 @@ public class LEDs {
         for (int i = 0; i < buffer.getLength(); i += 1) {
 
             // Find how far we are along the strip
-            double positionAlongStrip = i * LEDConstants.metersPerLed;
+            double positionAlongStrip = (i + 1) * LEDConstants.metersPerLed;
 
             // See where the current LED lies within the progress bar segment.
             // 0 = beginning of segment, 1 = end of segment
@@ -100,9 +117,9 @@ public class LEDs {
             }
 
             // Color the LED based on it's position within the segment, as well as the given progress.
-            // Cubing positionWithinSegent was experimentally found to give more aesthetically
+            // Squaring positionWithinSegent was experimentally found to give more aesthetically
             // pleasing results than simply lerping from startHue to endHue.
-            double hue = (endHue - startHue) * (positionWithinSegment * positionWithinSegment * positionWithinSegment) + startHue;
+            double hue = (endHue - startHue) * Math.pow(positionWithinSegment, 2) + startHue;
             buffer.setHSV(i, (int)hue, 255, 255);
         }
         leds.setData(buffer);
@@ -116,7 +133,7 @@ public class LEDs {
         // use negative speed to move from the top of the strip to the bottom of the strip.
         double patternSpeedMetersPerSecond = -1.0;
         int numBlobs = 3;
-        double blobLength = (LEDConstants.stripLengthMeters/2.0)/(1.0 * numBlobs); // half the strip will be lit up at any given moment.
+        double blobLength = (LEDConstants.stripLengthMeters/4.0)/(1.0 * numBlobs); // a quarter of the strip will be lit up at any given moment.
         double blobRadius = blobLength / 2.0;
 
         // clear the buffer
@@ -133,7 +150,7 @@ public class LEDs {
 
             // find which LEDs are within each blob
             for (int ledIndex = 0; ledIndex < buffer.getLength(); ledIndex += 1) {
-                double position = ledIndex * LEDConstants.metersPerLed;
+                double position = (ledIndex + 1) * LEDConstants.metersPerLed;
 
                 boolean partOfBlob = (lowerBound <= upperBound) && (position >= lowerBound) && (position <= upperBound);
                 
@@ -148,6 +165,8 @@ public class LEDs {
             // Move to the next blob
             blobCenter = this.wrapPosition(blobCenter + (LEDConstants.stripLengthMeters / numBlobs));
         }
+
+        leds.setData(buffer);
     }
 
     private double wrapPosition(double positionToWrap) {
@@ -179,5 +198,13 @@ public class LEDs {
             return LEDConstants.Hues.redBumpers;
         }
         return LEDConstants.Hues.betweenBlueAndRed;
+    }
+
+    public AddressableLED getLEDs() {
+        return leds;
+    }
+
+    public AddressableLEDBuffer getBuffer() {
+        return buffer;
     }
 }

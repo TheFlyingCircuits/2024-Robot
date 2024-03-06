@@ -311,10 +311,10 @@ public final class Constants {
         public final static class Hues {
 
             public final static int orangeSignalLight = 4;
-            public final static int blueBumpers = 120;
+            public final static int blueBumpers = 114;
             public final static int redBumpers = 0;
-            public final static int redTrafficLight = 0;
-            public final static int greenTrafficLight = 0;
+            public final static int redTrafficLight = 0;//0;
+            public final static int greenTrafficLight = 40;//60;
             public final static int betweenBlueAndRed = 150; // a purple/pink that's between blue and red.
 
         }

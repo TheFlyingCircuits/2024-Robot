@@ -28,14 +28,14 @@ public class SwerveModuleIOKraken implements SwerveModuleIO {
      * @param isDriveMotorOnTop - Is drive motor mounted on top
      * @param isAngleMotorOnTop - Is angle motor mounted on top
      */
-    public SwerveModuleIOKraken(int driveMotorID, int angleMotorID, double angleOffsetDegrees, int cancoderID, boolean isDriveMotorOnTop, boolean isAngleMotorOnTop){
+    public SwerveModuleIOKraken(int driveMotorID, int angleMotorID, double angleOffsetDegrees, int cancoderID, boolean isDriveMotorOnTop, boolean isAngleMotorOnTop, String name){
         
         /* Angle Encoder Config */
         absoluteEncoder = new CANcoder(cancoderID, "CTRENetwork");
         configCANCoder(angleOffsetDegrees);
 
         /* Angle Motor Config */
-        angleMotor = new Neo(angleMotorID);
+        angleMotor = new Neo(name+"Steer", angleMotorID);
         if(isAngleMotorOnTop) {
             configAngleMotor(false);
         } else {
@@ -43,7 +43,7 @@ public class SwerveModuleIOKraken implements SwerveModuleIO {
         }
 
         /* Drive Motor Config */
-        driveMotor = new Kraken(driveMotorID, "CTRENetwork");
+        driveMotor = new Kraken(name+"Drive", driveMotorID, "CTRENetwork");
         if(isDriveMotorOnTop) {
             configDriveMotor(InvertedValue.CounterClockwise_Positive);
         } else {
@@ -90,7 +90,7 @@ public class SwerveModuleIOKraken implements SwerveModuleIO {
     }
 
     private void configAngleMotor(boolean invertedValue) {
-        angleMotor.restoreFactoryDefaults();
+        // Neo is automatically reset to factory defaults upon construction
         angleMotor.setSmartCurrentLimit(MotorConstants.angleContinuousCurrentLimit);
         angleMotor.setInverted(invertedValue);
         angleMotor.setIdleMode(MotorConstants.angleNeutralMode);

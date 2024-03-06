@@ -87,10 +87,10 @@ public class RobotContainer {
         if (RobotBase.isReal()) {
             drivetrain = new Drivetrain(
                 new GyroIOPigeon(),
-                new SwerveModuleIOKraken(3, 1, -0.00342, 7, false, false),
-                new SwerveModuleIOKraken(2, 2, 0.36816, 6, false, false),
-                new SwerveModuleIOKraken(1, 5, -0.09009, 5, false, true),
-                new SwerveModuleIOKraken(0, 6, -0.37622, 4, true, false),
+                new SwerveModuleIOKraken(3, 1, -0.00342, 7, false, false, "frontLeft"),
+                new SwerveModuleIOKraken(2, 2, 0.36816, 6, false, false, "frontRight"),
+                new SwerveModuleIOKraken(1, 5, -0.09009, 5, false, true, "backLeft"),
+                new SwerveModuleIOKraken(0, 6, -0.37622, 4, true, false, "backRight"),
                 new VisionIOPhotonLib()
             );
 

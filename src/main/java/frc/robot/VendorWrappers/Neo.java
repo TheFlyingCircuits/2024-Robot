@@ -32,50 +32,53 @@ public class Neo extends CANSparkMax {
         this.restoreFactoryDefaults();
     }
 
-    public REVLibError waitForConfig(Supplier<REVLibError> configFunction) {
+    public REVLibError waitForConfig(Supplier<REVLibError> configFunction, String errorMessage) {
         double waitTimeSeconds = 1.0/8.0;
         
         while (true) {
             REVLibError errorCode = configFunction.get();
 
             if (errorCode == REVLibError.kOk) {
-                System.out.println("Success!");
                 return errorCode;
             }
 
-            System.out.println("Neo Error: " + errorCode);
-            System.out.println("Retrying...");
+            String fullErrorMessage = errorMessage;
+            fullErrorMessage += "\nNeo Error: " + errorCode;
+            fullErrorMessage += "\nRetrying...";
+            System.out.println(fullErrorMessage);
             Timer.delay(waitTimeSeconds);
         }
     }
 
     public REVLibError restoreFactoryDefaults() {
-        System.out.println("Restoring "+name+" to factory defaults");
-        return this.waitForConfig(super::restoreFactoryDefaults);
+        String errorMessage = "Failed to restore "+name+" to factory defaults!";
+        return this.waitForConfig(super::restoreFactoryDefaults, errorMessage);
     }
 
     public REVLibError setIdleMode(IdleMode idleMode) {
-        System.out.println("Setting "+name+" idle mode to "+idleMode);
-        return this.waitForConfig(() -> {return super.setIdleMode(idleMode);});
+        String errorMessage = "Failed to set "+name+"'s idle mode to "+idleMode+"!";
+        return this.waitForConfig(() -> {return super.setIdleMode(idleMode);}, errorMessage);
     }
 
     public void setInverted(boolean isInverted) {
+        String errorMessage = "Failed to set "+name+" to be ";
         if (isInverted) {
-            System.out.println("Setting "+name+" to be Clockwise Positive");
+            errorMessage += "Clockwise Positive";
         } else {
-            System.out.println("Setting "+name+" to be Counter Clockwise Positive");
+            errorMessage += "Counter Clockwise Positive";
         }
 
-        this.waitForConfig(() -> {super.setInverted(isInverted); return super.getLastError(); /* idk if this works */});
+        this.waitForConfig(() -> {super.setInverted(isInverted); return super.getLastError(); /* idk if this works */}, errorMessage);
     }
 
     public REVLibError setSmartCurrentLimit(int limitAmps) {
-        System.out.println("Setting current limit of "+limitAmps+" amps for "+name);
-        return this.waitForConfig(() -> {return super.setSmartCurrentLimit(limitAmps);});
+        String errorMessage = "Failed to set a current limit of "+limitAmps+" amps for "+name+"!";
+        return this.waitForConfig(() -> {return super.setSmartCurrentLimit(limitAmps);}, errorMessage);
     }
 
     public REVLibError burnFlash() {
-        return this.waitForConfig(super::burnFlash);
+        String errorMessage = "Failed to burn settings to flash for "+name+"!";
+        return this.waitForConfig(super::burnFlash, errorMessage);
     }
 
     public double getPosition() {
@@ -151,18 +154,18 @@ public class Neo extends CANSparkMax {
     }
 
     public REVLibError setPositionConversionFactor(double factor) {
-        System.out.println("Setting position conversion factor for "+name);
-        return this.waitForConfig(() -> {return encoder.setPositionConversionFactor(factor);});
+        String errorMessage = "Failed to set "+name+"'s positionConversionFactor to "+factor+"!";
+        return this.waitForConfig(() -> {return encoder.setPositionConversionFactor(factor);}, errorMessage);
     }
 
     public REVLibError setVelocityConversionFactor(double factor) {
-        System.out.println("Setting velocity conversion factor for "+name);
-        return this.waitForConfig(() -> {return encoder.setVelocityConversionFactor(factor);});
+        String errorMessage = "Failed to set "+name+"'s velocityConversionFactor to "+factor+"!";
+        return this.waitForConfig(() -> {return encoder.setVelocityConversionFactor(factor);}, errorMessage);
     }
 
     public REVLibError setPosition(double position) {
-        System.out.println("Setting position of "+name+" to "+position);
-        return this.waitForConfig(() -> {return encoder.setPosition(position);});
+        String errorMessage = "Failed to set the position of "+name+" to "+position+"!";
+        return this.waitForConfig(() -> {return encoder.setPosition(position);}, errorMessage);
     }
 
 
