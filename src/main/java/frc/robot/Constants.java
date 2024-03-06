@@ -304,6 +304,9 @@ public final class Constants {
 
         public final static double metersPerLed = 1/ledsPerMeter;
 
+        public final static double topThirdBreakpoint = stripLengthMeters - 0.24;
+        public final static double bottomThirdBreakpoint = 0.29;
+
         /**
          * Hues for specific colors
          * Values use the openCV convention where hue ranges from [0, 180)

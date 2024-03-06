@@ -137,6 +137,11 @@ public class Robot extends LoggedRobot {
 
         LEDs leds = m_robotContainer.leds;
 
+        if (true) {
+            leds.breatheAllianceColorCommand().execute();
+            return;
+        }
+
         if (false) {
             double slinshotTime = 0.25;
             if (slingshotTimer.get() > 5.0) {
@@ -197,6 +202,9 @@ public class Robot extends LoggedRobot {
         leds.showFlywheelProgress(flywheelProgress);
         leds.showArmProgress(flywheelProgress);
         leds.showDrivetrainProgress(flywheelProgress);
+
+        Command indexNoteCommand = m_robotContainer.indexNote();
+        //System.out.println("Requirements: " + indexNoteCommand.getRequirements());
     }
 
     /** This autonomous runs the autonomous command selected by your {@link RobotContainer} class. */

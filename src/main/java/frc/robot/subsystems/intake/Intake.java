@@ -64,6 +64,8 @@ public class Intake extends SubsystemBase {
     }
 
     public boolean isRingInIntake() {
+        // Proximit sensor pulls the digital input pin high by default,
+        // and pulls it low when it detects an object.
         return !intakeProximitySwitch.get();
     }
 

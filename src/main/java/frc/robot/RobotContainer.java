@@ -56,6 +56,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.ParallelRaceGroup;
+import edu.wpi.first.wpilibj2.command.ScheduleCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -139,6 +140,7 @@ public class RobotContainer {
         
         
         drivetrain.setDefaultCommand(new JoystickDrive(true, drivetrain));
+        leds.setDefaultCommand(leds.breatheAllianceColorCommand());
 
         isRingInIntake = new Trigger(intake::isRingInIntake);
         
@@ -147,7 +149,8 @@ public class RobotContainer {
         NamedCommands.registerCommand("continuousPrepShotFromAnywhere", continuousPrepShotFromAnywhereNoDrivetrain());
 
 
-        testBindings();
+        //testBindings();
+        realBindings();
     }
 
     /** Generates a command to rumble the controller for a given duration and strength.
@@ -164,25 +167,10 @@ public class RobotContainer {
     //these command compositions must be separated into their own methods
     //since wpilib requires a new instance of a command to be used in each
     //composition (the same instance of a command cannot be used in multiple compositions).
-
-    Command intakeNote() {
-        return new ParallelRaceGroup(
-            new IntakeNote(intake),
-            new SolidOrange(leds)
-        );
-    }
-
-    Command indexNote() {
-        return new ParallelRaceGroup(
-            new IndexNote(intake, indexer),
-            new ChasePattern(leds)
-        );
-    }
-
-    //has a timeout after a set time indexing, is used during auto
-    //so that we keep moving if we miss a note
-    Command indexWithTimeout(double seconds) {
-        return new IndexNote(intake, indexer).withTimeout(seconds);
+    public Command indexNote() {
+        return new ScheduleCommand(leds.playIntakeAnimationCommand())
+               .andThen(new IndexNote(intake, indexer))
+               .andThen(new ScheduleCommand(leds.solidOrangeCommand()));
     }
 
     Command aimShooterAtAngle(double angle) {
@@ -197,8 +185,6 @@ public class RobotContainer {
             new ShooterChargeUp(leds, shooter, leftFlywheelMetersPerSecond)
         );
     }
-
-
 
     /** Resets the angle and speed of the shooter back to its default idle position. */
     Command resetShooter() {
@@ -339,7 +325,8 @@ public class RobotContainer {
 
         controller.x().onTrue(resetShooter());
 
-        isRingInIntake.onTrue(rumbleController(0.25, 0.5));
+        //isRingInIntake.onTrue(rumbleController(0.25, 0.5));
+        isRingInIntake.onTrue(leds.flashWhiteCommand(4, 0.5).andThen(new ScheduleCommand(leds.playIntakeAnimationCommand())));
     }
 
     private void testBindings() {

@@ -1,5 +1,6 @@
 package frc.robot.subsystems.leds;
 
+import java.sql.Driver;
 import java.util.Optional;
 import java.util.function.DoubleSupplier;
 
@@ -9,14 +10,19 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.LEDConstants;
 
-public class LEDs {
+public class LEDs extends SubsystemBase {
 
     private AddressableLED leds;
     private AddressableLEDBuffer buffer;
 
+    /**
+     * TODO: document whole class
+     */
     public LEDs() {
         leds = new AddressableLED(LEDConstants.ledPWMPort);
         buffer = new AddressableLEDBuffer(LEDConstants.ledsPerStrip);
@@ -34,10 +40,13 @@ public class LEDs {
         leds.setData(buffer);
     }
 
+    public void turnOff() {
+        this.solidColorHSV(0, 0, 0);
+    }
+
     public void slingshot(double progress) {
         double maxOrange = LEDConstants.stripLengthMeters + (LEDConstants.metersPerLed/2) - (LEDConstants.stripLengthMeters/2)*progress;
         double minOrange = 0 - (LEDConstants.metersPerLed/2) + (LEDConstants.stripLengthMeters/2)*progress;
-        int allianceHue = this.getAllianceHue();
         for (int i = 0; i < buffer.getLength(); i += 1) {
             double position = (i + 1) * LEDConstants.metersPerLed;
 
@@ -45,31 +54,32 @@ public class LEDs {
                 buffer.setHSV(i, LEDConstants.Hues.orangeSignalLight, 255, 255);
             }
             else {
-                buffer.setHSV(i, allianceHue, 255, 255);
+                buffer.setHSV(i, 0, 255, 255);
             }
         }
         leds.setData(buffer);
     }
 
     public void showArmProgress(double progress) {
-        // Show arm progress on the top 3rd of the led strips
+        // Show arm progress on the top 3rd of the LED strip
         double progressBarStartLocation = LEDConstants.stripLengthMeters + (LEDConstants.metersPerLed/2);
-        double progressBarEndLocation = progressBarStartLocation - 0.25;
+        double progressBarEndLocation = LEDConstants.topThirdBreakpoint;
         this.showProgressAsTrafficLight(progressBarStartLocation, progressBarEndLocation, progress);
     }
 
     public void showFlywheelProgress(double progress) {
-        double flywheelTopHalfStart = LEDConstants.stripLengthMeters - 0.25 + (LEDConstants.metersPerLed/2);
-        double middleOfStrip = LEDConstants.stripLengthMeters / 2.0;
-        double flywheelBottomHalfStart = middleOfStrip - 0.22 - (LEDConstants.metersPerLed/2);
-        this.showProgressAsTrafficLight(flywheelTopHalfStart, middleOfStrip, progress);
-        this.showProgressAsTrafficLight(flywheelBottomHalfStart, middleOfStrip, progress);
+        // Show flywheel progress on the middle 3rd of the LED strip (building progress towards the middle)
+        double topHalfStartLocation = LEDConstants.topThirdBreakpoint;
+        double bottomHalfStartLocation = LEDConstants.bottomThirdBreakpoint;
+        double endLocation = LEDConstants.stripLengthMeters/2.0; // end in middle of strip.
+        this.showProgressAsTrafficLight(topHalfStartLocation, endLocation, progress);
+        this.showProgressAsTrafficLight(bottomHalfStartLocation, endLocation, progress);
     }
 
     public void showDrivetrainProgress(double progress) {
         // Show drivetrain progress on the bottom 3rd of the led strips
         double progressBarStartLocation = 0 - (LEDConstants.metersPerLed/2);
-        double progressBarEndLocation = progressBarStartLocation + 0.28; //LEDConstants.stripLengthMeters * (9.0/32.0);
+        double progressBarEndLocation = LEDConstants.bottomThirdBreakpoint;
         this.showProgressAsTrafficLight(progressBarStartLocation, progressBarEndLocation, progress);
     }
 
@@ -125,22 +135,17 @@ public class LEDs {
         leds.setData(buffer);
     }
 
-    public void turnOff() {
-        this.solidColorHSV(0, 0, 0);
-    }
-
     public void loadingPattern() {
         // use negative speed to move from the top of the strip to the bottom of the strip.
         double patternSpeedMetersPerSecond = -1.0;
         int numBlobs = 3;
-        double blobLength = (LEDConstants.stripLengthMeters/4.0)/(1.0 * numBlobs); // a quarter of the strip will be lit up at any given moment.
-        double blobRadius = blobLength / 2.0;
+        double blobLength = (LEDConstants.stripLengthMeters/4) / numBlobs; // a quarter of the strip will be lit up at any given moment.
+        double blobRadius = blobLength / 2;
 
-        // clear the buffer
+        // Start with a blank strip
         for (int i = 0; i < buffer.getLength(); i += 1) {
             buffer.setRGB(i, 0, 0, 0);
         }
-
 
         // draw each blob
         double blobCenter = this.wrapPosition(patternSpeedMetersPerSecond * Timer.getFPGATimestamp());
@@ -148,7 +153,7 @@ public class LEDs {
             double upperBound = this.wrapPosition(blobCenter + blobRadius);
             double lowerBound = this.wrapPosition(blobCenter - blobRadius);
 
-            // find which LEDs are within each blob
+            // find which LEDs are within the current blob
             for (int ledIndex = 0; ledIndex < buffer.getLength(); ledIndex += 1) {
                 double position = (ledIndex + 1) * LEDConstants.metersPerLed;
 
@@ -188,7 +193,7 @@ public class LEDs {
 
     public int getAllianceHue() {
         Optional<Alliance> alliance = DriverStation.getAlliance();
-        if (!alliance.isPresent()) {
+        if (!alliance.isPresent() || !DriverStation.isDSAttached()) {
             return LEDConstants.Hues.betweenBlueAndRed;
         }
         else if (alliance.get() == Alliance.Blue) {
@@ -200,11 +205,66 @@ public class LEDs {
         return LEDConstants.Hues.betweenBlueAndRed;
     }
 
-    public AddressableLED getLEDs() {
-        return leds;
+    public Command breatheAllianceColorCommand() {
+        return super.run(() -> {
+            double period = 1.5;
+            double timeBetweenBeats = 0.25;
+            double progress = Timer.getFPGATimestamp() % period;
+            double k1 = 8;
+            double k2 = 2;
+
+            double normalizedBrightness = 0;
+            if (progress < timeBetweenBeats) {
+                normalizedBrightness = Math.exp(-k1*progress);
+            }
+            else {
+                normalizedBrightness = Math.exp(-k2*(progress - timeBetweenBeats));
+            }
+
+            // if (normalizedBrightness < 0.5) {
+            //     normalizedBrightness = normalizedBrightness;
+            // }
+
+
+            int value = (int)(255 * normalizedBrightness);
+            this.solidColorHSV(this.getAllianceHue(), 255, value);
+        });
+    }
+
+    public Command playIntakeAnimationCommand() {
+        return super.run(this::loadingPattern);
+    }
+
+    public Command solidColorCommand(int h, int s, int v) {
+        return super.run(() -> {this.solidColorHSV(h, s, v);});
+    }
+
+    public Command solidOrangeCommand() {
+        return this.solidColorCommand(LEDConstants.Hues.orangeSignalLight, 255, 255);
+    }
+
+    public Command turnOffCommand() {
+        return super.run(this::turnOff);
+    }
+
+    public Command flashWhiteCommand(int numFlashes, double totalRuntimeSeconds) {
+        double onTime = (totalRuntimeSeconds / numFlashes) / 2;
+        double offTime = onTime;
+
+        Command output = new InstantCommand();
+        for (int i = 0; i < numFlashes; i += 1) {
+            output = output.andThen(this.solidColorCommand(0, 0, 255).withTimeout(onTime))
+                           .andThen(this.turnOffCommand().withTimeout(offTime));
+        }
+
+        return output;
     }
 
     public AddressableLEDBuffer getBuffer() {
         return buffer;
+    }
+
+    public AddressableLED getLEDs() {
+        return leds;
     }
 }

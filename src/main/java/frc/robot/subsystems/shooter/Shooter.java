@@ -59,6 +59,10 @@ public class Shooter extends SubsystemBase {
      * @param metersPerSecond - Desired surface speed in meters per second.
      */
     public void setLeftFlywheelsMetersPerSecond(double metersPerSecond) {
+        if (metersPerSecond == 0) {
+            io.setLeftMotorVolts(0);
+            return;
+        }
         double feedforwardOutput = flywheelsFeedforward.calculate(metersPerSecond);
         double pidOutput = leftFlywheelsPID.calculate(inputs.leftFlywheelsMetersPerSecond, metersPerSecond);
         io.setLeftMotorVolts(feedforwardOutput + pidOutput);
@@ -77,6 +81,10 @@ public class Shooter extends SubsystemBase {
      * @param metersPerSecond - Desired surface speed in meters per second.
      */
     public void setRightFlywheelsMetersPerSecond(double metersPerSecond) {
+        if (metersPerSecond == 0) {
+            io.setRightMotorVolts(0);
+            return;
+        }
         double feedforwardOutput = flywheelsFeedforward.calculate(metersPerSecond);
         double pidOutput = rightFlywheelsPID.calculate(inputs.rightFlywheelsMetersPerSecond, metersPerSecond);
         io.setRightMotorVolts(feedforwardOutput + pidOutput);
