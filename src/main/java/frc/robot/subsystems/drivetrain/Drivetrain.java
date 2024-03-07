@@ -1,6 +1,8 @@
 
 package frc.robot.subsystems.drivetrain;
 
+import java.util.function.Supplier;
+
 import org.littletonrobotics.junction.Logger;
 
 import edu.wpi.first.math.Matrix;
@@ -21,8 +23,6 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.DrivetrainConstants;
-import frc.robot.Constants.FieldConstants;
-import frc.robot.subsystems.HumanDriver;
 import frc.robot.subsystems.vision.VisionIO;
 import frc.robot.subsystems.vision.VisionIOInputsAutoLogged;
 
@@ -153,9 +153,9 @@ public class Drivetrain extends SubsystemBase {
         this.fieldOrientedDrive(desiredSpeeds, true);
     }
 
-    public Command fullHumanControlCommand() {
+    public Command fieldOrientedDriveCommand(Supplier<ChassisSpeeds> sourceOfDesiredSpeeds) {
         return this.run(() -> {
-            ChassisSpeeds desiredSpeeds = HumanDriver.getCharlie().getRequestedRobotVelocity(true);
+            ChassisSpeeds desiredSpeeds = sourceOfDesiredSpeeds.get();
             this.fieldOrientedDrive(desiredSpeeds, true);
         });
     }
@@ -163,7 +163,6 @@ public class Drivetrain extends SubsystemBase {
 
     //could be used for a drivetrain command in the future; leave this as its own function
     public void setModuleStates(SwerveModuleState[] desiredStates, boolean closedLoop) {
-        // TODO: why saturate based on theory instead of emperical measurements?
         SwerveDriveKinematics.desaturateWheelSpeeds(desiredStates, DrivetrainConstants.maxAchievableVelocityMetersPerSecond);
         for (SwerveModule mod : swerveModules) {
             mod.setDesiredState(desiredStates[mod.moduleIndex], closedLoop);

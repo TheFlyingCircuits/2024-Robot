@@ -4,6 +4,7 @@ import org.littletonrobotics.junction.Logger;
 
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.ShooterConstants;
 
@@ -51,6 +52,9 @@ public class Shooter extends SubsystemBase {
             ShooterConstants.kSFlywheelsVolts,
             ShooterConstants.kVFlywheelsVoltsSecondsPerMeter,
             ShooterConstants.kAFlywheelsVoltsSecondsSquaredPerMeter);
+
+        leftFlywheelsPID.setTolerance(0.5);
+        rightFlywheelsPID.setTolerance(0.5);
     }
 
     /**
@@ -59,10 +63,6 @@ public class Shooter extends SubsystemBase {
      * @param metersPerSecond - Desired surface speed in meters per second.
      */
     public void setLeftFlywheelsMetersPerSecond(double metersPerSecond) {
-        if (metersPerSecond == 0) {
-            io.setLeftMotorVolts(0);
-            return;
-        }
         double feedforwardOutput = flywheelsFeedforward.calculate(metersPerSecond);
         double pidOutput = leftFlywheelsPID.calculate(inputs.leftFlywheelsMetersPerSecond, metersPerSecond);
         io.setLeftMotorVolts(feedforwardOutput + pidOutput);
@@ -81,10 +81,6 @@ public class Shooter extends SubsystemBase {
      * @param metersPerSecond - Desired surface speed in meters per second.
      */
     public void setRightFlywheelsMetersPerSecond(double metersPerSecond) {
-        if (metersPerSecond == 0) {
-            io.setRightMotorVolts(0);
-            return;
-        }
         double feedforwardOutput = flywheelsFeedforward.calculate(metersPerSecond);
         double pidOutput = rightFlywheelsPID.calculate(inputs.rightFlywheelsMetersPerSecond, metersPerSecond);
         io.setRightMotorVolts(feedforwardOutput + pidOutput);
@@ -93,13 +89,18 @@ public class Shooter extends SubsystemBase {
 
     /**
      * Returns true if both flywheels are spinning within some threshold of their target speeds.
-     * @param rpmThreshold - Max distance from the setpoint for this function to still return true, in meters per second.
      */
-    public boolean flywheelsAtSetpoints(double leftSetpointMetersPerSecond, double rightSetpointMetersPerSecond, double thresholdMetersPerSecond) {
+    public boolean flywheelsAtSetpoints() {
+        return leftFlywheelsPID.atSetpoint() && rightFlywheelsPID.atSetpoint();
+    }
 
-        return 
-            Math.abs(leftSetpointMetersPerSecond - inputs.leftFlywheelsMetersPerSecond) < thresholdMetersPerSecond
-                && Math.abs(rightSetpointMetersPerSecond - inputs.rightFlywheelsMetersPerSecond) < thresholdMetersPerSecond;
+    public void setBothFlywheelsMetersPerSecond(double metersPerSecond) {
+        this.setLeftFlywheelsMetersPerSecond(metersPerSecond);
+        this.setRightFlywheelsMetersPerSecond(metersPerSecond);
+    }
+
+    public Command setFlywheelSurfaceSpeedCommand(double metersPerSecond) {
+        return this.run(() -> {this.setBothFlywheelsMetersPerSecond(metersPerSecond);});
     }
     
 

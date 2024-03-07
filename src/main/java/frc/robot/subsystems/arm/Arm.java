@@ -17,7 +17,6 @@ import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.units.Measure;
 import edu.wpi.first.units.Voltage;
-import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
@@ -85,9 +84,6 @@ public class Arm extends SubsystemBase {
         sysIdRoutine = new SysIdRoutine(new Config(), sysIdMech);
     }
 
-    public void setDesiredPositionToCurrent() {
-        setDesiredDegrees(inputs.armAngleDegrees);
-    };
 
     //This method is in here because future commands which want to move the arm will be more easily written.
     //Rather than having to motion profile within each command, it can be just one function call.
@@ -115,6 +111,10 @@ public class Arm extends SubsystemBase {
 
     public Command setDesiredDegreesCommand(double targetAngleDegrees) {
         return this.run(() -> {this.setDesiredDegrees(targetAngleDegrees);});
+    }
+
+    public Command holdCurrentPositionCommand() {
+        return this.run(() -> {this.setDesiredDegrees(inputs.armAngleDegrees);});
     }
 
     public double getDegrees() {

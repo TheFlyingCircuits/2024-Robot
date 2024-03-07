@@ -4,15 +4,10 @@ import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.signals.AbsoluteSensorRangeValue;
 import com.ctre.phoenix6.signals.SensorDirectionValue;
-import com.revrobotics.CANSparkMax;
-import com.revrobotics.REVLibError;
-import com.revrobotics.RelativeEncoder;
-import com.revrobotics.CANSparkLowLevel.MotorType;
 
 import frc.robot.Constants.MotorConstants;
 import frc.robot.Constants.SwerveModuleConstants;
 import frc.robot.VendorWrappers.Neo;
-import frc.robot.subsystems.drivetrain.SwerveModuleIO.SwerveModuleIOInputs;
 
 public class SwerveModuleIONeo implements SwerveModuleIO{
 

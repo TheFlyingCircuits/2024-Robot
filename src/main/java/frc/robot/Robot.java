@@ -4,9 +4,6 @@
 
 package frc.robot;
 
-import java.lang.constant.DirectMethodHandleDesc;
-import java.sql.Driver;
-
 import org.littletonrobotics.junction.LoggedRobot;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.NT4Publisher;
@@ -25,7 +22,6 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import frc.robot.Constants.ArmConstants;
 import frc.robot.Constants.DrivetrainConstants;
 import frc.robot.Constants.LEDConstants;
 import frc.robot.subsystems.drivetrain.Drivetrain;
@@ -132,11 +128,11 @@ public class Robot extends LoggedRobot {
         //leds.chasePattern();
 
 
-        m_robotContainer.arm.setDesiredPositionToCurrent();
+        //m_robotContainer.arm.setDesiredPositionToCurrent();
 
         LEDs leds = m_robotContainer.leds;
 
-        if (true) {
+        if (false) {
             double solidTime = 1.0;
             double slingshotTime = 1./4.;
             if (slingshotTimer.get() < solidTime) {
@@ -155,8 +151,8 @@ public class Robot extends LoggedRobot {
             return;
         }
 
-        if (false) {
-            leds.allianceColorHeartbeat().execute();
+        if (true) {
+            leds.heartbeatCommand().execute();
             return;
         }
 

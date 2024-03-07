@@ -2,11 +2,13 @@ package frc.robot.subsystems;
 
 import java.util.Optional;
 
-import javax.swing.GroupLayout.Alignment;
-
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj.GenericHID.RumbleType;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.Constants.ControllerConstants;
 import frc.robot.Constants.DrivetrainConstants;
@@ -17,9 +19,8 @@ import frc.robot.Constants.DrivetrainConstants;
 public class HumanDriver {
 
     private CommandXboxController controller;
-    private static HumanDriver charlie = new HumanDriver(0);
 
-    private HumanDriver(int xboxControllerPort) {
+    public HumanDriver(int xboxControllerPort) {
         controller = new CommandXboxController(xboxControllerPort);
     }
 
@@ -27,15 +28,25 @@ public class HumanDriver {
         return controller;
     }
 
-    public static HumanDriver getCharlie() {
-        return charlie;
-    }
-
     public ChassisSpeeds getRequestedFieldOrientedVelocity() {
         return this.getRequestedRobotVelocity(true);
     }
 
-    public ChassisSpeeds getRequestedRobotVelocity(boolean fieldRelative) {
+    public ChassisSpeeds getRequestedRobotOrientedVelocity() {
+        return this.getRequestedRobotVelocity(false);
+    }
+
+    /** Generates a command to rumble the controller for a given duration and strength.
+     * @param seconds - Time to rumble the controller for, in seconds.
+     * @param strength - Strength to rumble the controller at, from 0 to 1.
+     */
+    public Command rumbleController(double seconds, double strength) {
+        return new InstantCommand(() -> controller.getHID().setRumble(RumbleType.kBothRumble, strength))
+            .andThen(new WaitCommand(seconds))
+            .andThen(new InstantCommand(() -> controller.getHID().setRumble(RumbleType.kBothRumble, 0)));
+    }
+
+    private ChassisSpeeds getRequestedRobotVelocity(boolean fieldRelative) {
         double rawThrottleY = -controller.getLeftX(); // Positive robot y is to the left, which is negative controller x
         double rawThrottleX = -controller.getLeftY(); // positive robot x is forward, which is negative controller y (for aircraft reasons)
         double angle = Math.atan2(rawThrottleY, rawThrottleX);

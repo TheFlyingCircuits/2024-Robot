@@ -6,12 +6,8 @@ package frc.robot;
 
 import frc.robot.Constants.ArmConstants;
 import frc.robot.commands.AimEverythingAtSpeaker;
-import frc.robot.commands.climb.LowerClimbArms;
-import frc.robot.commands.climb.RaiseClimbArms;
 import frc.robot.commands.intake.IndexNote;
 import frc.robot.commands.intake.ReverseIntake;
-import frc.robot.commands.shooter.FireNote;
-import frc.robot.commands.shooter.SpinFlywheels;
 import frc.robot.subsystems.HumanDriver;
 import frc.robot.subsystems.arm.Arm;
 import frc.robot.subsystems.arm.ArmIONeo;
@@ -38,16 +34,10 @@ import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 import com.pathplanner.lib.auto.NamedCommands;
 
 import edu.wpi.first.wpilibj.RobotBase;
-import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
-import edu.wpi.first.wpilibj2.command.ParallelRaceGroup;
 import edu.wpi.first.wpilibj2.command.ScheduleCommand;
-import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
-import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 
@@ -59,7 +49,7 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
  */
 public class RobotContainer {
 
-    public final HumanDriver charlie = HumanDriver.getCharlie();//new HumanDriver(0);
+    public final HumanDriver charlie = new HumanDriver(0);
     public final Shooter shooter;
     public final Drivetrain drivetrain;
     public final Arm arm;
@@ -128,32 +118,23 @@ public class RobotContainer {
         Logger.start();
         
         
-        drivetrain.setDefaultCommand(drivetrain.fullHumanControlCommand());
-        //leds.setDefaultCommand(leds.allianceColorHeartbeat());
+        drivetrain.setDefaultCommand(drivetrain.fieldOrientedDriveCommand(charlie::getRequestedFieldOrientedVelocity));
+        //leds.setDefaultCommand(leds.heartbeatCommand());
         intake.setDefaultCommand(Commands.run(() -> {intake.setVolts(0);}, intake));
-        indexer.setDefaultCommand(Commands.run(() -> {indexer.setVolts(0);}, indexer));
-        shooter.setDefaultCommand(new SpinFlywheels(0, 0, shooter));
+        indexer.setDefaultCommand(indexer.setIndexerRPMCommand(0));
+        shooter.setDefaultCommand(shooter.setFlywheelSurfaceSpeedCommand(0));
         climb.setDefaultCommand(Commands.run(() -> {climb.setVolts(0);}, climb));
+        arm.setDefaultCommand(arm.holdCurrentPositionCommand());
 
         isRingInIntake = new Trigger(intake::isRingInIntake);
         
-        //NamedCommands.registerCommand("shootFromAnywhere", shootFromAnywhereNoReset());
-        NamedCommands.registerCommand("indexNote", indexNote().alongWith(resetShooter()));
-        //NamedCommands.registerCommand("continuousPrepShotFromAnywhere", continuousPrepShotFromAnywhereNoDrivetrain());
+        // NamedCommands.registerCommand("shootFromAnywhere", shootFromAnywhereNoReset());
+        // NamedCommands.registerCommand("indexNote", indexNote().alongWith(resetShooter()));
+        // NamedCommands.registerCommand("continuousPrepShotFromAnywhere", continuousPrepShotFromAnywhereNoDrivetrain());
 
 
         //testBindings();
         realBindings();
-    }
-
-    /** Generates a command to rumble the controller for a given duration and strength.
-     * @param seconds - Time to rumble the controller for, in seconds.
-     * @param strength - Strength to rumble the controller at, from 0 to 1.
-     */
-    Command rumbleController(double seconds, double strength) {
-        return new InstantCommand(() -> charlie.getXboxController().getHID().setRumble(RumbleType.kBothRumble, strength))
-            .andThen(new WaitCommand(seconds))
-            .andThen(new InstantCommand(() -> charlie.getXboxController().getHID().setRumble(RumbleType.kBothRumble, 0)));
     }
 
 
@@ -169,30 +150,30 @@ public class RobotContainer {
     /** Resets the angle and speed of the shooter back to its default idle position. */
     Command resetShooter() {
         return arm.setDesiredDegreesCommand(ArmConstants.armMinAngleDegrees+5)
-               .alongWith(new SpinFlywheels( 0, shooter));
+               .alongWith(shooter.setFlywheelSurfaceSpeedCommand(0));
     }
 
     /** Moves the arm back and spins up the flywheels to prepare for an amp shot. */
     Command prepAmpShot() {
         return arm.setDesiredDegreesCommand(110)
-               .alongWith(new SpinFlywheels(20, shooter));
+               .alongWith(shooter.setFlywheelSurfaceSpeedCommand(20));
     }
 
     /** Moves the arm back and spins up the flywheels to prepare for a trap shot. */
     Command prepTrapShot() {
         return arm.setDesiredDegreesCommand(90)
-               .alongWith(new SpinFlywheels(20, shooter));
+               .alongWith(shooter.setFlywheelSurfaceSpeedCommand(20));
     }
 
     /** Spins the flywheels up to speed and aims arm when pressed against the subwoofer. */
     Command prepSubwooferShot() {
         return arm.setDesiredDegreesCommand(42)
-               .alongWith(new SpinFlywheels(27, shooter));
+               .alongWith(shooter.setFlywheelSurfaceSpeedCommand(27));
     }
 
     Command prepShart() {
         return arm.setDesiredDegreesCommand(-15)
-               .alongWith(new SpinFlywheels(25, shooter));
+               .alongWith(shooter.setFlywheelSurfaceSpeedCommand(25));
     }
     
     // /** Command to prepare for a shot. Finishes after the flywheels spin up to a desired
@@ -226,18 +207,10 @@ public class RobotContainer {
     //     );
     // }
 
-    Command fireNote() {
-        return new ParallelRaceGroup(
-            new FireNote(indexer)
-        );
-    }
-
     //aims and then shoots in one motion
-    Command shootFromSubwoofer() { 
-        return new SequentialCommandGroup(
-            prepSubwooferShot(),
-            fireNote(),
-            resetShooter());
+    Command shootFromSubwoofer() {
+        // TODO: check progress for prepSubwooferShot()
+        return prepSubwooferShot().andThen(indexer.fireNoteCommand()).andThen(resetShooter());
     }
 
 
@@ -259,11 +232,7 @@ public class RobotContainer {
     
     
     Command shart() {
-        return new SequentialCommandGroup(
-            prepShart(),
-            fireNote(),
-            resetShooter()
-        );
+        return prepShart().andThen(indexer.fireNoteCommand()).andThen(resetShooter());
     }
 
     private void realBindings() {
@@ -280,32 +249,32 @@ public class RobotContainer {
         controller.rightBumper()
             //.onTrue(continuousPrepShotFromAnywhereWithDrivetrain())
             //.onFalse(resetShooter());
-            .whileTrue(new AimEverythingAtSpeaker(drivetrain, arm, shooter, HumanDriver.getCharlie()::getRequestedFieldOrientedVelocity, leds))
+            .whileTrue(new AimEverythingAtSpeaker(drivetrain, arm, shooter, charlie::getRequestedFieldOrientedVelocity, leds))
             .onFalse(resetShooter());
         controller.leftBumper()
             .onTrue(prepAmpShot())
             .onFalse(resetShooter());
         controller.b().whileTrue(shart());
-        controller.a().onTrue(fireNote());
+        controller.a().onTrue(indexer.fireNoteCommand());
 
 
         /** CLIMB **/
         //climb routine should be tilt shooter back, drive chain over shooter arm, raise arm to amp shot, climb, score trap
         //in other words, press up then left then right then down and then LB
-        //controller.povUp().onTrue(new RaiseClimbArms(climb).alongWith(aimShooterAtAngle(ArmConstants.armMaxAngleDegrees)));
-        controller.povUp().onTrue(new RaiseClimbArms(climb).alongWith(arm.setDesiredDegreesCommand(ArmConstants.armMaxAngleDegrees)));
-        //controller.povRight().onTrue(aimShooterAtAngle(82));
+        controller.povUp().onTrue(climb.raiseHooksCommand().alongWith(arm.setDesiredDegreesCommand(ArmConstants.armMaxAngleDegrees)));
         controller.povRight().onTrue(arm.setDesiredDegreesCommand(82));
-        controller.povDown().whileTrue(new LowerClimbArms(climb).alongWith(prepTrapShot()));
-        controller.start().onTrue(fireNote().andThen(new SpinFlywheels(0, shooter)));
+        controller.povDown().whileTrue(climb.lowerHooksCommand().alongWith(prepTrapShot()));
+        controller.start().onTrue(indexer.fireNoteCommand().andThen(shooter.setFlywheelSurfaceSpeedCommand(0)));
 
         /** MISC **/
         controller.y().onTrue(new InstantCommand(() -> drivetrain.setRobotFacingForward()));
 
         controller.x().onTrue(resetShooter());
 
-        isRingInIntake.onTrue(rumbleController(0.25, 0.5));
+        isRingInIntake.onTrue(charlie.rumbleController(0.25, 0.5));
         isRingInIntake.onTrue(leds.flashWhiteCommand(4, 0.5).andThen(new ScheduleCommand(leds.playIntakeAnimationCommand())));
+        // TODO: prevent flash on reverse? Either condition with positive wheel speeds,
+        //       or no seperate scheudle command?
     }
 
     private void testBindings() {

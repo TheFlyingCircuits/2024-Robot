@@ -210,7 +210,7 @@ public class LEDs extends SubsystemBase {
         return LEDConstants.Hues.betweenBlueAndRed;
     }
 
-    public Command allianceColorHeartbeat() {
+    public Command heartbeatCommand() {
         return super.run(() -> {
             double period = 1.5;
             double timeBetweenBeats = 0.25;
