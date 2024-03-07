@@ -89,9 +89,9 @@ public class Drivetrain extends SubsystemBase {
             visionStdDevs
         );
 
-        angleController = new PIDController(4, 0, 0);
+        angleController = new PIDController(6, 0, 0);
         angleController.enableContinuousInput(-180, 180);
-        angleController.setTolerance(5); // degrees. TODO: could be more precise?
+        angleController.setTolerance(1.5); // degrees. TODO: could be more precise?
     }
 
     /**

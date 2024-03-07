@@ -13,6 +13,12 @@ public interface ShooterIO {
          * Linear surface speed of the right set of flywheels.
          */
         public double rightFlywheelsMetersPerSecond = 0.0;
+
+        public double leftMotorAppliedVoltage = 0.0;
+        public double rightMotorAppliedVoltage = 0.0;
+        
+        public double leftMotorOutputCurrent = 0.0;
+        public double rightMotorOutputCurrent = 0.0;
     }
 
     public default void updateInputs(ShooterIOInputs inputs) {};

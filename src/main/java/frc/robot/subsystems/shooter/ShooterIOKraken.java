@@ -28,6 +28,12 @@ public class ShooterIOKraken implements ShooterIO {
     public void updateInputs(ShooterIOInputs inputs) {
         inputs.leftFlywheelsMetersPerSecond = leftMotor.getVelocity().getValueAsDouble()*ShooterConstants.flywheelCircumferenceMeters;
         inputs.rightFlywheelsMetersPerSecond = rightMotor.getVelocity().getValueAsDouble()*ShooterConstants.flywheelCircumferenceMeters;
+    
+        inputs.leftMotorAppliedVoltage = leftMotor.getMotorVoltage().getValueAsDouble();
+        inputs.rightMotorAppliedVoltage = rightMotor.getMotorVoltage().getValueAsDouble();
+
+        inputs.leftMotorOutputCurrent = leftMotor.getTorqueCurrent().getValueAsDouble();
+        inputs.rightMotorOutputCurrent = rightMotor.getTorqueCurrent().getValueAsDouble();
     }
 
     private void configMotors() {
@@ -53,7 +59,7 @@ public class ShooterIOKraken implements ShooterIO {
             volts = 0;
         }
 
-        leftMotor.setVoltage(volts);
+        leftMotor.setVoltage(0);
     }
 
     @Override
@@ -63,6 +69,6 @@ public class ShooterIOKraken implements ShooterIO {
         }
 
 
-        rightMotor.setVoltage(volts);
+        rightMotor.setVoltage(0);
     }
 }

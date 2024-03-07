@@ -214,7 +214,7 @@ public class RobotContainer {
     /** Moves the arm back and spins up the flywheels to prepare for an amp shot. */
     Command prepAmpShot() {
         return arm.setDesiredDegreesCommand(110)
-               .alongWith(shooter.setFlywheelSurfaceSpeedCommand(20));
+               .alongWith(shooter.setFlywheelSurfaceSpeedCommand(10));
     }
 
     /** Moves the arm back and spins up the flywheels to prepare for a trap shot. */

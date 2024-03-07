@@ -48,13 +48,15 @@ public class AimEverythingAtSpeaker extends Command {
         drivetrain.fieldOrientedDriveWhileAiming(desiredTranslationalSpeeds, this.getDriveDesiredDegrees());
 
         // Flywheels
-        double desiredFlywheelSurfaceSpeedMetersPerSecond = 27;
-        flywheels.setLeftFlywheelsMetersPerSecond(desiredFlywheelSurfaceSpeedMetersPerSecond);
-        flywheels.setRightFlywheelsMetersPerSecond(desiredFlywheelSurfaceSpeedMetersPerSecond);
+        double leftFlywheelMetersPerSecond = 25;
+        double rightFlywheelMetersPerSecond = 25;
+        flywheels.setLeftFlywheelsMetersPerSecond(leftFlywheelMetersPerSecond);
+        flywheels.setRightFlywheelsMetersPerSecond(rightFlywheelMetersPerSecond);
 
         // Arm
         //arm.setDesiredDegrees(this.getSimpleArmDesiredDegrees());
-        arm.setDesiredDegrees(this.getGravCompensatedArmDesiredDegrees(desiredFlywheelSurfaceSpeedMetersPerSecond));
+        arm.setDesiredDegrees(this.getGravCompensatedArmDesiredDegrees(
+            (leftFlywheelMetersPerSecond+rightFlywheelMetersPerSecond)/2));
     }
 
     public void end(boolean isInterrupted) {
