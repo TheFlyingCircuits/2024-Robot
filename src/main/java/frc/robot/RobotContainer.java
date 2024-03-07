@@ -5,6 +5,7 @@
 package frc.robot;
 
 import frc.robot.Constants.ArmConstants;
+import frc.robot.Constants.DrivetrainConstants;
 import frc.robot.commands.AimEverythingAtSpeaker;
 import frc.robot.commands.intake.IndexNote;
 import frc.robot.commands.intake.ReverseIntake;
@@ -28,14 +29,24 @@ import frc.robot.subsystems.vision.VisionIO;
 import frc.robot.subsystems.vision.VisionIOPhotonLib;
 
 import edu.wpi.first.wpilibj.util.Color;
+import java.util.Optional;
 
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.NT4Publisher;
 import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 
+import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
+import com.pathplanner.lib.controllers.PPHolonomicDriveController;
+import com.pathplanner.lib.util.HolonomicPathFollowerConfig;
+import com.pathplanner.lib.util.PIDConstants;
+import com.pathplanner.lib.util.ReplanningConfig;
 
 import edu.wpi.first.wpilibj.RobotBase;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
@@ -131,13 +142,57 @@ public class RobotContainer {
 
         isRingInIntake = new Trigger(intake::isRingInIntake);
         
-        // NamedCommands.registerCommand("shootFromAnywhere", shootFromAnywhereNoReset());
-        // NamedCommands.registerCommand("indexNote", indexNote().alongWith(resetShooter()));
-        // NamedCommands.registerCommand("continuousPrepShotFromAnywhere", continuousPrepShotFromAnywhereNoDrivetrain());
+        //NamedCommands.registerCommand("shootFromAnywhere", shootFromAnywhereNoReset());
+        NamedCommands.registerCommand("indexNote", indexNote().alongWith(resetShooter()));
+        //NamedCommands.registerCommand("continuousPrepShotFromAnywhere", continuousPrepShotFromAnywhereNoDrivetrain());
+        NamedCommands.registerCommand("trackNote", new InstantCommand(() -> drivetrain.isTrackingNote = true));
+        isRingInIntake.onTrue(new InstantCommand(() -> drivetrain.isTrackingNote = false));
 
+        configAutoBuilder();
 
-        //testBindings();
         realBindings();
+    }
+
+
+    private void configAutoBuilder() {
+        AutoBuilder.configureHolonomic(
+            drivetrain::getPoseMeters, // Robot pose supplier
+            drivetrain::setPoseMeters, // Method to reset odometry (will be called if your auto has a starting pose)
+            drivetrain::getChassisSpeeds, // ChassisSpeeds supplier. MUST BE ROBOT RELATIVE
+            (ChassisSpeeds speeds) -> drivetrain.robotOrientedDrive(speeds, true), // Method that will drive the robot given ROBOT RELATIVE ChassisSpeeds
+            new HolonomicPathFollowerConfig( // HolonomicPathFollowerConfig, this should likely live in your Constants class
+                    new PIDConstants(5.0, 0.0, 0.0), // Translation PID constants
+                    new PIDConstants(4.0, 0.0, 0.0), // Rotation PID constants
+                    DrivetrainConstants.maxAchievableVelocityMetersPerSecond, // Max module speed, in m/s
+                    DrivetrainConstants.drivetrainRadiusMeters, // Drive base radius in meters. Distance from robot center to furthest module.
+                    new ReplanningConfig() // Default path replanning config. See the API for the options here
+            ),
+            () -> {
+              // Boolean supplier that controls when the path will be mirrored
+              // We by default draw the paths on the red side of the field, mirroring them if we are on the blue alliance.
+              // THE ORIGIN WILL REMAIN ON THE BLUE SIDE
+
+              var alliance = DriverStation.getAlliance();
+              if (alliance.isPresent()) {
+                return alliance.get() == DriverStation.Alliance.Blue;
+              }
+              return false;
+            },
+            drivetrain // Reference to this subsystem to set requirements
+        );
+
+        PPHolonomicDriveController.setRotationTargetOverride(drivetrain::getAutoRotationOverride);
+    }
+
+
+    /** Generates a command to rumble the controller for a given duration and strength.
+     * @param seconds - Time to rumble the controller for, in seconds.
+     * @param strength - Strength to rumble the controller at, from 0 to 1.
+     */
+    Command rumbleController(double seconds, double strength) {
+        return new InstantCommand(() -> charlie.getXboxController().getHID().setRumble(RumbleType.kBothRumble, strength))
+            .andThen(new WaitCommand(seconds))
+            .andThen(new InstantCommand(() -> charlie.getXboxController().getHID().setRumble(RumbleType.kBothRumble, 0)));
     }
 
 

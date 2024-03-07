@@ -2,6 +2,7 @@
 package frc.robot.subsystems.drivetrain;
 
 import java.util.function.Supplier;
+import java.util.Optional;
 
 import org.littletonrobotics.junction.Logger;
 
@@ -39,6 +40,8 @@ public class Drivetrain extends SubsystemBase {
     private SwerveDrivePoseEstimator poseEstimator;
 
     private Pose2d poseMeters;
+
+    public boolean isTrackingNote;
 
     /** error measured in degrees, output is in degrees per second. */
     private PIDController angleController;
@@ -265,6 +268,23 @@ public class Drivetrain extends SubsystemBase {
 
     public double getAngleError() {
         return angleController.getPositionError();
+    }
+
+    /**
+     * Gets the angle that the robot needs to aim at in order to intake the nearest ring
+     * seen on the intake camera. This is used for the rotation override during auto.
+     */
+    public Rotation2d getFieldRelativeRotationToRing() {
+        return getRobotRotation2d().plus(Rotation2d.fromDegrees(visionInputs.nearestNoteYawDegrees));
+    }
+
+    public Optional<Rotation2d> getAutoRotationOverride() {
+        if (isTrackingNote && visionInputs.intakeSeesNote) {
+            return Optional.of(getFieldRelativeRotationToRing());
+        }
+        else {
+            return Optional.empty();
+        }
     }
 
 

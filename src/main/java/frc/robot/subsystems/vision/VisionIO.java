@@ -3,6 +3,7 @@ package frc.robot.subsystems.vision;
 import org.littletonrobotics.junction.AutoLog;
 
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 
 public interface VisionIO {
 
@@ -26,6 +27,18 @@ public interface VisionIO {
          * Distance from the camera to the nearest tag, in meters.
          */
         public double nearestTagDistanceMeters = 0;
+        
+
+        /**
+         * Whether or not the intake camera currently sees a note to target.
+         */
+        public boolean intakeSeesNote = false;
+        
+        /**
+         * Yaw of the center point of the nearest note RELATIVE TO THE CAMERA detected on the intake camera.
+         * This value is positive to the left, and has maximum value of the camera's FOV/2.
+         */
+        public double nearestNoteYawDegrees = 0.;
 
     }
 
