@@ -34,8 +34,8 @@ public class AimEverythingAtSpeaker extends Command {
     }
 
     public void initialize() {
-        Pose2d pose = new Pose2d(FieldConstants.blueSpeakerTranslation2d.plus(new Translation2d(2, 0)), drivetrain.getRobotRotation2d());
-        drivetrain.setPoseMeters(pose);
+        //Pose2d pose = new Pose2d(FieldConstants.blueSpeakerTranslation2d.plus(new Translation2d(2, 0)), drivetrain.getRobotRotation2d());
+        //drivetrain.setPoseMeters(pose);
 
         // drive angle error may be stale from last call?
         // TODO: look into this.
@@ -48,12 +48,13 @@ public class AimEverythingAtSpeaker extends Command {
         drivetrain.fieldOrientedDriveWhileAiming(desiredTranslationalSpeeds, this.getDriveDesiredDegrees());
 
         // Flywheels
-        double desiredFlywheelSurfaceSpeedMetersPerSecond = 0;//27;
+        double desiredFlywheelSurfaceSpeedMetersPerSecond = 27;
         flywheels.setLeftFlywheelsMetersPerSecond(desiredFlywheelSurfaceSpeedMetersPerSecond);
         flywheels.setRightFlywheelsMetersPerSecond(desiredFlywheelSurfaceSpeedMetersPerSecond);
 
         // Arm
-        arm.setDesiredDegrees(this.getSimpleArmDesiredDegrees());
+        //arm.setDesiredDegrees(this.getSimpleArmDesiredDegrees());
+        arm.setDesiredDegrees(this.getGravCompensatedArmDesiredDegrees(desiredFlywheelSurfaceSpeedMetersPerSecond));
     }
 
     public void end(boolean isInterrupted) {
@@ -98,7 +99,7 @@ public class AimEverythingAtSpeaker extends Command {
         double b = -2*(h*h)*(v*v)/(d*d) - (v*v) - g*h;
         double c = (h*h)*Math.pow(v, 4)/(d*d) + (g*g)*(d*d)/4 + g*h*(v*v);
 
-        double vy = Math.sqrt((-b-Math.sqrt(b*b-4*a*c))/2*a);
+        double vy = Math.sqrt((-b-Math.sqrt(b*b-4*a*c))/(2*a));
 
         return Math.toDegrees(Math.asin(vy/v));
     }

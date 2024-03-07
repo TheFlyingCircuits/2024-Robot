@@ -127,6 +127,8 @@ public class Robot extends LoggedRobot {
 
 
         //m_robotContainer.arm.setDesiredPositionToCurrent();
+
+        m_robotContainer.drivetrain.setPoseToVisionMeasurement();
     }
 
     /** This autonomous runs the autonomous command selected by your {@link RobotContainer} class. */

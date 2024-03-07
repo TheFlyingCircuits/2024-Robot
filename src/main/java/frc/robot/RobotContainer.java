@@ -259,7 +259,8 @@ public class RobotContainer {
             .onTrue(prepAmpShot())
             .onFalse(resetShooter());
         //controller.b().whileTrue(shart());
-        controller.b().whileTrue(prepShart());
+        controller.b().onTrue(prepShart())
+                      .onFalse(resetShooter());
         controller.a().onTrue(indexer.fireNoteCommand().alongWith(leds.playFireNoteAnimationCommand()));
 
 
