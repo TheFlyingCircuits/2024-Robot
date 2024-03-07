@@ -28,7 +28,6 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.Constants.ArmConstants;
 import frc.robot.Constants.DrivetrainConstants;
 import frc.robot.Constants.LEDConstants;
-import frc.robot.commands.leds.RedBlueChasePattern;
 import frc.robot.subsystems.drivetrain.Drivetrain;
 import frc.robot.subsystems.leds.LEDs;
 
@@ -51,7 +50,7 @@ public class Robot extends LoggedRobot {
             drivetrain::getPoseMeters, // Robot pose supplier
             drivetrain::setPoseMeters, // Method to reset odometry (will be called if your auto has a starting pose)
             drivetrain::getChassisSpeeds, // ChassisSpeeds supplier. MUST BE ROBOT RELATIVE
-            (ChassisSpeeds speeds) -> drivetrain.drive(speeds, true), // Method that will drive the robot given ROBOT RELATIVE ChassisSpeeds
+            (ChassisSpeeds speeds) -> drivetrain.robotOrientedDrive(speeds, true), // Method that will drive the robot given ROBOT RELATIVE ChassisSpeeds
             new HolonomicPathFollowerConfig( // HolonomicPathFollowerConfig, this should likely live in your Constants class
                     new PIDConstants(5.0, 0.0, 0.0), // Translation PID constants
                     new PIDConstants(4.0, 0.0, 0.0), // Rotation PID constants
@@ -138,7 +137,26 @@ public class Robot extends LoggedRobot {
         LEDs leds = m_robotContainer.leds;
 
         if (true) {
-            leds.breatheAllianceColorCommand().execute();
+            double solidTime = 1.0;
+            double slingshotTime = 1./4.;
+            if (slingshotTimer.get() < solidTime) {
+                leds.solidColorHSV(LEDConstants.Hues.orangeSignalLight, 255, 255);
+            }
+            else if (slingshotTimer.get() < solidTime+slingshotTime) {
+                double progress = (slingshotTimer.get()-solidTime) / slingshotTime;
+                leds.slingshot(progress);
+            }
+            else if (slingshotTimer.get() < solidTime+slingshotTime+1.0) {
+                leds.solidColorHSV(leds.getAllianceHue(), 255, 255);
+            }
+            else {
+                slingshotTimer.restart();
+            }
+            return;
+        }
+
+        if (false) {
+            leds.allianceColorHeartbeat().execute();
             return;
         }
 

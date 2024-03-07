@@ -5,25 +5,14 @@
 package frc.robot;
 
 import frc.robot.Constants.ArmConstants;
-import frc.robot.commands.arm.AimShooterAtAngle;
-import frc.robot.commands.arm.AimShooterAtSpeaker;
-import frc.robot.commands.arm.ContinuousAimShooterAtSpeaker;
+import frc.robot.commands.AimEverythingAtSpeaker;
 import frc.robot.commands.climb.LowerClimbArms;
 import frc.robot.commands.climb.RaiseClimbArms;
-import frc.robot.commands.drivetrain.AimAtSpeakerWhileJoystickDrive;
-import frc.robot.commands.drivetrain.AimDriveAtSpeaker;
-import frc.robot.commands.drivetrain.JoystickDrive;
 import frc.robot.commands.intake.IndexNote;
-import frc.robot.commands.intake.IntakeNote;
 import frc.robot.commands.intake.ReverseIntake;
-import frc.robot.commands.leds.ChasePattern;
-import frc.robot.commands.leds.CheckerboardGreen;
-import frc.robot.commands.leds.RedBlueChasePattern;
-import frc.robot.commands.leds.ShooterChargeUp;
-import frc.robot.commands.leds.SolidBlue;
-import frc.robot.commands.leds.SolidOrange;
 import frc.robot.commands.shooter.FireNote;
 import frc.robot.commands.shooter.SpinFlywheels;
+import frc.robot.subsystems.HumanDriver;
 import frc.robot.subsystems.arm.Arm;
 import frc.robot.subsystems.arm.ArmIONeo;
 import frc.robot.subsystems.arm.ArmIOSim;
@@ -37,7 +26,6 @@ import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.leds.LEDs;
 import frc.robot.subsystems.shooter.Indexer;
 import frc.robot.subsystems.shooter.Shooter;
-import frc.robot.subsystems.shooter.ShooterIO;
 import frc.robot.subsystems.shooter.ShooterIOKraken;
 import frc.robot.subsystems.shooter.ShooterIOSim;
 import frc.robot.subsystems.vision.VisionIO;
@@ -53,6 +41,7 @@ import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.ParallelRaceGroup;
@@ -70,7 +59,7 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
  */
 public class RobotContainer {
 
-    public final static CommandXboxController controller = new CommandXboxController(0);
+    public final HumanDriver charlie = HumanDriver.getCharlie();//new HumanDriver(0);
     public final Shooter shooter;
     public final Drivetrain drivetrain;
     public final Arm arm;
@@ -139,14 +128,18 @@ public class RobotContainer {
         Logger.start();
         
         
-        drivetrain.setDefaultCommand(new JoystickDrive(true, drivetrain));
-        leds.setDefaultCommand(leds.breatheAllianceColorCommand());
+        drivetrain.setDefaultCommand(drivetrain.fullHumanControlCommand());
+        //leds.setDefaultCommand(leds.allianceColorHeartbeat());
+        intake.setDefaultCommand(Commands.run(() -> {intake.setVolts(0);}, intake));
+        indexer.setDefaultCommand(Commands.run(() -> {indexer.setVolts(0);}, indexer));
+        shooter.setDefaultCommand(new SpinFlywheels(0, 0, shooter));
+        climb.setDefaultCommand(Commands.run(() -> {climb.setVolts(0);}, climb));
 
         isRingInIntake = new Trigger(intake::isRingInIntake);
         
-        NamedCommands.registerCommand("shootFromAnywhere", shootFromAnywhereNoReset());
+        //NamedCommands.registerCommand("shootFromAnywhere", shootFromAnywhereNoReset());
         NamedCommands.registerCommand("indexNote", indexNote().alongWith(resetShooter()));
-        NamedCommands.registerCommand("continuousPrepShotFromAnywhere", continuousPrepShotFromAnywhereNoDrivetrain());
+        //NamedCommands.registerCommand("continuousPrepShotFromAnywhere", continuousPrepShotFromAnywhereNoDrivetrain());
 
 
         //testBindings();
@@ -158,9 +151,9 @@ public class RobotContainer {
      * @param strength - Strength to rumble the controller at, from 0 to 1.
      */
     Command rumbleController(double seconds, double strength) {
-        return new InstantCommand(() -> controller.getHID().setRumble(RumbleType.kBothRumble, strength))
+        return new InstantCommand(() -> charlie.getXboxController().getHID().setRumble(RumbleType.kBothRumble, strength))
             .andThen(new WaitCommand(seconds))
-            .andThen(new InstantCommand(() -> controller.getHID().setRumble(RumbleType.kBothRumble, 0)));
+            .andThen(new InstantCommand(() -> charlie.getXboxController().getHID().setRumble(RumbleType.kBothRumble, 0)));
     }
 
 
@@ -173,88 +166,69 @@ public class RobotContainer {
                .andThen(new ScheduleCommand(leds.solidOrangeCommand()));
     }
 
-    Command aimShooterAtAngle(double angle) {
-        return new ParallelRaceGroup(
-            new AimShooterAtAngle(angle, arm),
-            new SolidBlue(leds));
-    }
-
-    Command spinFlywheels(double leftFlywheelMetersPerSecond, double rightFlywheelsMetersPerSecond) {
-        return new ParallelRaceGroup(
-            new SpinFlywheels(leftFlywheelMetersPerSecond, rightFlywheelsMetersPerSecond, shooter),
-            new ShooterChargeUp(leds, shooter, leftFlywheelMetersPerSecond)
-        );
-    }
-
     /** Resets the angle and speed of the shooter back to its default idle position. */
     Command resetShooter() {
-        return new ParallelCommandGroup(
-            spinFlywheels(0, 0),
-            aimShooterAtAngle(ArmConstants.armMinAngleDegrees+5));
+        return arm.setDesiredDegreesCommand(ArmConstants.armMinAngleDegrees+5)
+               .alongWith(new SpinFlywheels( 0, shooter));
     }
 
     /** Moves the arm back and spins up the flywheels to prepare for an amp shot. */
     Command prepAmpShot() {
-        return new ParallelCommandGroup(
-            spinFlywheels(20, 20),
-            aimShooterAtAngle(110));
+        return arm.setDesiredDegreesCommand(110)
+               .alongWith(new SpinFlywheels(20, shooter));
     }
 
     /** Moves the arm back and spins up the flywheels to prepare for a trap shot. */
     Command prepTrapShot() {
-        return new ParallelCommandGroup(
-            spinFlywheels(20, 20),
-            aimShooterAtAngle(90));
+        return arm.setDesiredDegreesCommand(90)
+               .alongWith(new SpinFlywheels(20, shooter));
     }
 
     /** Spins the flywheels up to speed and aims arm when pressed against the subwoofer. */
     Command prepSubwooferShot() {
-        return new ParallelCommandGroup(
-            spinFlywheels(27, 27),
-            aimShooterAtAngle(42));
+        return arm.setDesiredDegreesCommand(42)
+               .alongWith(new SpinFlywheels(27, shooter));
     }
 
-    Command prepShart() { 
-        return new ParallelCommandGroup(
-            spinFlywheels(25, 25),
-            aimShooterAtAngle(-15));
+    Command prepShart() {
+        return arm.setDesiredDegreesCommand(-15)
+               .alongWith(new SpinFlywheels(25, shooter));
     }
     
-    /** Command to prepare for a shot. Finishes after the flywheels spin up to a desired
-     *  speed, the shooter reaches the correct angle, and the drivetrain aims at the right
-     *  angle.*/
-    Command prepShotFromAnywhere() { 
-        return new ParallelCommandGroup(
-            spinFlywheels(27, 27),
-            new AimShooterAtSpeaker(arm, drivetrain),
-            new AimDriveAtSpeaker(drivetrain));
-    }
+    // /** Command to prepare for a shot. Finishes after the flywheels spin up to a desired
+    //  *  speed, the shooter reaches the correct angle, and the drivetrain aims at the right
+    //  *  angle.*/
+    // Command prepShotFromAnywhere() { 
+    //     return new ParallelCommandGroup(
+    //         new SpinFlywheels(27, shooter),
+    //         new AimShooterAtSpeaker(arm, drivetrain),
+    //         new AimDriveAtSpeaker(drivetrain));
+    // }
 
-    /** Command to prepare for a shot. Same as prepShotFromAnywhere(), but never finishes
-     *  until interrupted. This allows us to prepare our shot while we're still moving.
-     *  This command also doesn't rotate the drivetrain at all.
-     */
-    Command continuousPrepShotFromAnywhereNoDrivetrain() {
-        return new ParallelCommandGroup(
-            spinFlywheels(27, 27),
-            new ContinuousAimShooterAtSpeaker(arm, drivetrain));
-    }
+    // /** Command to prepare for a shot. Same as prepShotFromAnywhere(), but never finishes
+    //  *  until interrupted. This allows us to prepare our shot while we're still moving.
+    //  *  This command also doesn't rotate the drivetrain at all.
+    //  */
+    // Command continuousPrepShotFromAnywhereNoDrivetrain() {
+    //     return new ParallelCommandGroup(
+    //         new SpinFlywheels(27, shooter),
+    //         new ContinuousAimShooterAtSpeaker(arm, drivetrain));
+    // }
 
-    /**
-     * Command to prepare for a shot. Same as prepShotFromAnywhere(), but never finishes until
-     * interrupted. This allows us to prepare our shot while we're still moving.
-     */
-    Command continuousPrepShotFromAnywhereWithDrivetrain() {
-        return new ParallelCommandGroup(
-            continuousPrepShotFromAnywhereNoDrivetrain(),
-            new AimAtSpeakerWhileJoystickDrive(drivetrain)
-        );
-    }
+    // /**
+    //  * Command to prepare for a shot. Same as prepShotFromAnywhere(), but never finishes until
+    //  * interrupted. This allows us to prepare our shot while we're still moving.
+    //  */
+    // Command continuousPrepShotFromAnywhereWithDrivetrain() {
+    //     return new ParallelCommandGroup(
+    //         continuousPrepShotFromAnywhereNoDrivetrain(),
+    //         new AimAtSpeakerWhileJoystickDrive(drivetrain)
+    //     );
+    // }
 
     Command fireNote() {
         return new ParallelRaceGroup(
-            new FireNote(indexer),
-            new CheckerboardGreen(leds)
+            new FireNote(indexer)
         );
     }
 
@@ -267,20 +241,20 @@ public class RobotContainer {
     }
 
 
-    /** Aims and shoots in one motion, and then resets the shooter back to idle mode. */
-    SequentialCommandGroup shootFromAnywhere() {
-        return new SequentialCommandGroup(
-            prepShotFromAnywhere(),
-            fireNote(),
-            resetShooter());
-    }
+    // /** Aims and shoots in one motion, and then resets the shooter back to idle mode. */
+    // SequentialCommandGroup shootFromAnywhere() {
+    //     return new SequentialCommandGroup(
+    //         prepShotFromAnywhere(),
+    //         fireNote(),
+    //         resetShooter());
+    // }
 
-    /** Aims and shoots in one motion, but arm remains up and spinning at the end. */
-    SequentialCommandGroup shootFromAnywhereNoReset() {
-        return new SequentialCommandGroup(
-            prepShotFromAnywhere(),
-            fireNote());
-    }
+    // /** Aims and shoots in one motion, but arm remains up and spinning at the end. */
+    // SequentialCommandGroup shootFromAnywhereNoReset() {
+    //     return new SequentialCommandGroup(
+    //         prepShotFromAnywhere(),
+    //         fireNote());
+    // }
 
     
     
@@ -293,6 +267,7 @@ public class RobotContainer {
     }
 
     private void realBindings() {
+        CommandXboxController controller = charlie.getXboxController();
         /** INTAKE **/
         controller.rightTrigger()
             .onTrue(indexNote().alongWith(resetShooter()));
@@ -303,7 +278,9 @@ public class RobotContainer {
         /** SCORING **/
         //control scheme is rb/lb toggle preps a shot, and then a is fire
         controller.rightBumper()
-            .onTrue(continuousPrepShotFromAnywhereWithDrivetrain())
+            //.onTrue(continuousPrepShotFromAnywhereWithDrivetrain())
+            //.onFalse(resetShooter());
+            .whileTrue(new AimEverythingAtSpeaker(drivetrain, arm, shooter, HumanDriver.getCharlie()::getRequestedFieldOrientedVelocity, leds))
             .onFalse(resetShooter());
         controller.leftBumper()
             .onTrue(prepAmpShot())
@@ -315,29 +292,32 @@ public class RobotContainer {
         /** CLIMB **/
         //climb routine should be tilt shooter back, drive chain over shooter arm, raise arm to amp shot, climb, score trap
         //in other words, press up then left then right then down and then LB
-        controller.povUp().onTrue(new RaiseClimbArms(climb).alongWith(aimShooterAtAngle(ArmConstants.armMaxAngleDegrees)));
-        controller.povRight().onTrue(aimShooterAtAngle(82));
+        //controller.povUp().onTrue(new RaiseClimbArms(climb).alongWith(aimShooterAtAngle(ArmConstants.armMaxAngleDegrees)));
+        controller.povUp().onTrue(new RaiseClimbArms(climb).alongWith(arm.setDesiredDegreesCommand(ArmConstants.armMaxAngleDegrees)));
+        //controller.povRight().onTrue(aimShooterAtAngle(82));
+        controller.povRight().onTrue(arm.setDesiredDegreesCommand(82));
         controller.povDown().whileTrue(new LowerClimbArms(climb).alongWith(prepTrapShot()));
-        controller.start().onTrue(fireNote().andThen(spinFlywheels(0, 0)));
+        controller.start().onTrue(fireNote().andThen(new SpinFlywheels(0, shooter)));
 
         /** MISC **/
         controller.y().onTrue(new InstantCommand(() -> drivetrain.setRobotFacingForward()));
 
         controller.x().onTrue(resetShooter());
 
-        //isRingInIntake.onTrue(rumbleController(0.25, 0.5));
+        isRingInIntake.onTrue(rumbleController(0.25, 0.5));
         isRingInIntake.onTrue(leds.flashWhiteCommand(4, 0.5).andThen(new ScheduleCommand(leds.playIntakeAnimationCommand())));
     }
 
     private void testBindings() {
+        CommandXboxController controller = charlie.getXboxController();
 
         controller.rightTrigger().whileTrue(indexNote());
         controller.leftTrigger().whileTrue(new ReverseIntake(intake, indexer));
 
-        controller.povRight().onTrue(aimShooterAtAngle(0));
-        controller.povUp().onTrue(aimShooterAtAngle(20));
-        controller.povLeft().onTrue(aimShooterAtAngle(30));
-        controller.povDown().onTrue(aimShooterAtAngle(45));
+        // controller.povRight().onTrue(aimShooterAtAngle(0));
+        // controller.povUp().onTrue(aimShooterAtAngle(20));
+        // controller.povLeft().onTrue(aimShooterAtAngle(30));
+        // controller.povDown().onTrue(aimShooterAtAngle(45));
 
         /** SYSID BINDINGS **/
         // controller.a().whileTrue(arm.generateSysIdQuasistatic(SysIdRoutine.Direction.kForward));

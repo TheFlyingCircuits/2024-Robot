@@ -35,7 +35,7 @@ public class IndexNote extends Command {
     @Override
     public void end(boolean interrupted) {
         intake.setVolts(0);
-        indexer.setIndexerRPM(0);
+        indexer.setVolts(0);
     }
 
     @Override

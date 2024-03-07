@@ -128,6 +128,7 @@ public final class Constants {
 
     public final static class ControllerConstants {
         public static final double controllerDeadzone = 0.175;
+        public static final double maxThrottle = 1.0;
     }
 
     public final static class MotorConstants {
@@ -270,8 +271,11 @@ public final class Constants {
         /** X-Y position of the center of 30 cm behind the front edge of the blue speaker. */
         public final static Translation2d redSpeakerTranslation2d = new Translation2d(16.08+0.3, 5.55);
 
-        /** Distance from the floor to the center of the pivot. This is used for angle cal;culations for shoot from anywhere. */
+        /** Distance from the floor to the center of the pivot. This is used for angle calculations for shoot from anywhere. */
         public final static double pivotHeightMeters = Units.inchesToMeters(22);
+        
+        /** Horizontal distance from the robot center to the pivot center */
+        public final static double pivotOffsetMeters = 0.22; // 22 centimeters
     }
 
     public final static class IntakeConstants {

@@ -9,6 +9,10 @@ public class SpinFlywheels extends Command {
     private double leftFlywheelMetersPerSecond;
     private double rightFlywheelMetersPerSecond;   
 
+    public SpinFlywheels(double bothFlywheelsMetersPerSecond, Shooter shooter) {
+        this(bothFlywheelsMetersPerSecond, bothFlywheelsMetersPerSecond, shooter);
+    }
+
     /** Spins the shooter flywheels up to a desired surface speed, in meters per second. This does not launch the note. */
     public SpinFlywheels(double leftFlywheelMetersPerSecond, double rightFlywheelMetersPerSecond, Shooter shooter) {
         this.shooter = shooter;

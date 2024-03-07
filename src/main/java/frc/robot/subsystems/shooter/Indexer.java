@@ -17,8 +17,6 @@ public class Indexer extends SubsystemBase {
 
     private Kraken indexerMotor;
     private DigitalInput indexerProximitySwitch;
-    //Position never used, only read for error detection
-    private double motorPosition;
 
     private PIDController indexerPID;
     private SimpleMotorFeedforward indexerFeedforward;
@@ -75,11 +73,7 @@ public class Indexer extends SubsystemBase {
     public void periodic() {
         Logger.recordOutput("indexer/isNoteIndexed()", isNoteIndexed());
         Logger.recordOutput("indexer/indexerRPM", getIndexerRPM());
-        Logger.recordOutput("indexer/setpointRPM", indexerPID.getSetpoint());
-
-        //Position never used, only read for error detection
-        motorPosition = indexerMotor.getPosition().getValueAsDouble();
-        
+        Logger.recordOutput("indexer/setpointRPM", indexerPID.getSetpoint()); 
     };
 
 }

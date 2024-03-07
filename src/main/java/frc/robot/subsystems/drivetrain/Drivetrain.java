@@ -5,8 +5,8 @@ import org.littletonrobotics.junction.Logger;
 
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
-import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -18,9 +18,11 @@ import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.DrivetrainConstants;
 import frc.robot.Constants.FieldConstants;
+import frc.robot.subsystems.HumanDriver;
 import frc.robot.subsystems.vision.VisionIO;
 import frc.robot.subsystems.vision.VisionIOInputsAutoLogged;
 
@@ -34,12 +36,12 @@ public class Drivetrain extends SubsystemBase {
 
     private SwerveModule[] swerveModules;
 
-    private SlewRateLimiter chassisSpeedsXSlewLimiter;
-    private SlewRateLimiter chassisSpeedsYSlewLimiter;
-
     private SwerveDrivePoseEstimator poseEstimator;
 
     private Pose2d poseMeters;
+
+    /** error measured in degrees, output is in degrees per second. */
+    private PIDController angleController;
 
     public Drivetrain(
         GyroIO gyroIO, 
@@ -84,9 +86,9 @@ public class Drivetrain extends SubsystemBase {
             visionStdDevs
         );
 
-        // TODO: single slew limiter for total speed instead of seperate for x and y
-        chassisSpeedsXSlewLimiter = new SlewRateLimiter(DrivetrainConstants.maxDesiredTeleopAccelMetersPerSecondSquared);
-        chassisSpeedsYSlewLimiter = new SlewRateLimiter(DrivetrainConstants.maxDesiredTeleopAccelMetersPerSecondSquared);
+        angleController = new PIDController(4, 0, 0);
+        angleController.enableContinuousInput(-180, 180);
+        angleController.setTolerance(5); // degrees. TODO: could be more precise?
     }
 
     /**
@@ -117,16 +119,47 @@ public class Drivetrain extends SubsystemBase {
      * @param desiredChassisSpeeds - Robot relative ChassisSpeeds object in meters per second and radians per second.
      * @param closedLoop - Whether or not to used closed loop PID control to control the speed of the drive wheels.
     */
-    public void drive(ChassisSpeeds desiredChassisSpeeds, boolean closedLoop) {
-
-        desiredChassisSpeeds.vxMetersPerSecond = chassisSpeedsXSlewLimiter.calculate(desiredChassisSpeeds.vxMetersPerSecond);
-        desiredChassisSpeeds.vyMetersPerSecond = chassisSpeedsYSlewLimiter.calculate(desiredChassisSpeeds.vyMetersPerSecond);
-
-        
+    public void robotOrientedDrive(ChassisSpeeds desiredChassisSpeeds, boolean closedLoop) {
         SwerveModuleState[] swerveModuleStates = DrivetrainConstants.swerveKinematics.toSwerveModuleStates(desiredChassisSpeeds);
 
         setModuleStates(swerveModuleStates, closedLoop);
     }
+
+    /**
+     * TODO: Documentation
+     * @param desiredChassisSpeeds
+     * @param closedLoop
+     */
+    public void fieldOrientedDrive(ChassisSpeeds desiredChassisSpeeds, boolean closedLoop) {
+        ChassisSpeeds robotOrientedSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(desiredChassisSpeeds, this.getRobotRotation2d());
+        this.robotOrientedDrive(robotOrientedSpeeds, closedLoop);
+    }
+
+    /**
+     * TODO: documentation
+     * @param desiredTranslationalSpeeds
+     * @param desiredAngleDegrees
+     */
+    public void fieldOrientedDriveWhileAiming(ChassisSpeeds desiredTranslationalSpeeds, double desiredAngleDegrees) {
+        // Use PID controller to generate a desired angular velocity based on the desired angle
+        double measuredAngle = this.getRobotRotation2d().getDegrees();
+        double desiredDegreesPerSecond = angleController.calculate(measuredAngle, desiredAngleDegrees);
+        double desiredRadiansPerSecond = Math.toRadians(desiredDegreesPerSecond);
+
+        ChassisSpeeds desiredSpeeds = new ChassisSpeeds();
+        desiredSpeeds.vxMetersPerSecond = desiredTranslationalSpeeds.vxMetersPerSecond;
+        desiredSpeeds.vyMetersPerSecond = desiredTranslationalSpeeds.vyMetersPerSecond;
+        desiredSpeeds.omegaRadiansPerSecond = desiredRadiansPerSecond;
+        this.fieldOrientedDrive(desiredSpeeds, true);
+    }
+
+    public Command fullHumanControlCommand() {
+        return this.run(() -> {
+            ChassisSpeeds desiredSpeeds = HumanDriver.getCharlie().getRequestedRobotVelocity(true);
+            this.fieldOrientedDrive(desiredSpeeds, true);
+        });
+    }
+
 
     //could be used for a drivetrain command in the future; leave this as its own function
     public void setModuleStates(SwerveModuleState[] desiredStates, boolean closedLoop) {
@@ -186,52 +219,12 @@ public class Drivetrain extends SubsystemBase {
      * and a positive Y value brings the robot left as viewed by your alliance.
      * Rotations are counter-clockwise positive, with an angle of 0 facing away from the blue alliance wall.
      * @return The current position of the robot on the field in meters.
+     * TODO: OUT OF DATE DOCUMENTATION?
      */ 
     public Pose2d getPoseMeters() {
         return poseMeters;
     }
 
-    /** Calculates the horizontal translational distance from the center of the robot to the center of the front edge of the speaker.*/
-    public double distToSpeakerBaseMeters() {
-        return getPoseMeters().getTranslation().getDistance(
-            DriverStation.getAlliance().get() == Alliance.Red ? 
-                FieldConstants.redSpeakerTranslation2d : FieldConstants.blueSpeakerTranslation2d
-        );
-    }
-
-    /**
-     * Gets the angle that the shooter needs to aim at in order to point at the speaker target.
-     * This accounts for distance and gravity.
-     * @return - Angle in degrees, with 0 being straight forward and a positive angle being pointed upwards.
-    */
-    public double getShooterAngleToSpeaker(double exitVelocityMetersPerSecond) {
-        
-        //see https://www.desmos.com/calculator/czxwosgvbz
-
-        double h = FieldConstants.speakerHeightMeters-FieldConstants.pivotHeightMeters;
-        double d = distToSpeakerBaseMeters();
-        double v = exitVelocityMetersPerSecond;
-        double g = 9.81;
-
-        double a = (h*h)/(d*d)+1;
-        double b = -2*(h*h)*(v*v)/(d*d) - (v*v) - g*h;
-        double c = (h*h)*Math.pow(v, 4)/(d*d) + (g*g)*(d*d)/4 + g*h*(v*v);
-
-        double vy = Math.sqrt((-b-Math.sqrt(b*b-4*a*c))/2*a);
-
-        return Math.toDegrees(Math.asin(vy/v));
-    }
-
-    /** 
-     * Gets the angle the robot needs to aim in order for the shooter to 
-     * point at the center of the front edge of your alliance's speaker. 
-     * This angle is counter-clockwise positive with an angle of zero facing away from the blue alliance wall.
-     * */
-    public Rotation2d getDriveAngleToSpeaker() {
-        return (DriverStation.getAlliance().get() == Alliance.Red ? 
-                FieldConstants.redSpeakerTranslation2d : FieldConstants.blueSpeakerTranslation2d)
-                    .minus(getPoseMeters().getTranslation()).getAngle();
-    }
 
     /**
      * Takes the estimated pose from the vision, and sets our current poseEstimator pose to this one.

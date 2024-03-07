@@ -86,7 +86,7 @@ public class Arm extends SubsystemBase {
     }
 
     public void setDesiredPositionToCurrent() {
-        setArmDesiredPosition(inputs.armAngleDegrees);
+        setDesiredDegrees(inputs.armAngleDegrees);
     };
 
     //This method is in here because future commands which want to move the arm will be more easily written.
@@ -95,12 +95,14 @@ public class Arm extends SubsystemBase {
      * Sets the desired position for the arm's motion profile to follow.
      * @param targetDegrees - Target angle in degrees for the arm.
      */
-    public void setArmDesiredPosition(double targetAngleDegrees) {
+    public void setDesiredDegrees(double targetAngleDegrees) {
         targetAngleDegrees = MathUtil.clamp(targetAngleDegrees, ArmConstants.armMinAngleDegrees, ArmConstants.armMaxAngleDegrees);
         
         //For continuous control
         if (Math.abs(this.targetAngleDegrees - targetAngleDegrees) < 0.5) {
-            // TODO: doesn't work if first angle requested is 0 degrees
+            // No need to generate a new profile if the requested
+            // target is close to the current target. PID should get us
+            // there on its own.
             return;
         }
 
@@ -111,6 +113,13 @@ public class Arm extends SubsystemBase {
         timer.restart();
     }
 
+    public Command setDesiredDegreesCommand(double targetAngleDegrees) {
+        return this.run(() -> {this.setDesiredDegrees(targetAngleDegrees);});
+    }
+
+    public double getDegrees() {
+        return inputs.armAngleDegrees;
+    }
 
     private void followTrapezoidProfile() {
 

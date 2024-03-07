@@ -1,6 +1,5 @@
 package frc.robot.subsystems.leds;
 
-import java.sql.Driver;
 import java.util.Optional;
 import java.util.function.DoubleSupplier;
 
@@ -11,7 +10,6 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.LEDConstants;
 
@@ -45,16 +43,23 @@ public class LEDs extends SubsystemBase {
     }
 
     public void slingshot(double progress) {
-        double maxOrange = LEDConstants.stripLengthMeters + (LEDConstants.metersPerLed/2) - (LEDConstants.stripLengthMeters/2)*progress;
-        double minOrange = 0 - (LEDConstants.metersPerLed/2) + (LEDConstants.stripLengthMeters/2)*progress;
+        double maxOrange = LEDConstants.stripLengthMeters + (LEDConstants.metersPerLed/2) - (LEDConstants.stripLengthMeters/2)*progress*2;
+        double minOrange = 0 - (LEDConstants.metersPerLed/2) + (LEDConstants.stripLengthMeters/2)*progress*2;
+
+        double maxOff = maxOrange + LEDConstants.stripLengthMeters/2;
+        double minOff = minOrange - LEDConstants.stripLengthMeters/2;
+        int allianceHue = this.getAllianceHue();
         for (int i = 0; i < buffer.getLength(); i += 1) {
             double position = (i + 1) * LEDConstants.metersPerLed;
 
             if (position <= maxOrange && position >= minOrange) {
                 buffer.setHSV(i, LEDConstants.Hues.orangeSignalLight, 255, 255);
             }
+            else if (position <= maxOff && position >= minOff) {
+                buffer.setRGB(i, 0, 0, 0);
+            }
             else {
-                buffer.setHSV(i, 0, 255, 255);
+                buffer.setHSV(i, allianceHue, 255, 255);
             }
         }
         leds.setData(buffer);
@@ -205,7 +210,7 @@ public class LEDs extends SubsystemBase {
         return LEDConstants.Hues.betweenBlueAndRed;
     }
 
-    public Command breatheAllianceColorCommand() {
+    public Command allianceColorHeartbeat() {
         return super.run(() -> {
             double period = 1.5;
             double timeBetweenBeats = 0.25;
@@ -220,11 +225,6 @@ public class LEDs extends SubsystemBase {
             else {
                 normalizedBrightness = Math.exp(-k2*(progress - timeBetweenBeats));
             }
-
-            // if (normalizedBrightness < 0.5) {
-            //     normalizedBrightness = normalizedBrightness;
-            // }
-
 
             int value = (int)(255 * normalizedBrightness);
             this.solidColorHSV(this.getAllianceHue(), 255, value);
