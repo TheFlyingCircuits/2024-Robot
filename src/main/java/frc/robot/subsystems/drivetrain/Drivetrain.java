@@ -263,6 +263,10 @@ public class Drivetrain extends SubsystemBase {
         setPoseMeters(new Pose2d(getPoseMeters().getTranslation(), rotation));
     }
 
+    public double getAngleError() {
+        return angleController.getPositionError();
+    }
+
 
     @Override
     public void periodic() {

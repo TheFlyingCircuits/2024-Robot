@@ -4,7 +4,6 @@ import java.util.Optional;
 import java.util.function.Supplier;
 
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -22,7 +21,7 @@ public class AimEverythingAtSpeaker extends Command {
     private Arm arm;
     private Shooter flywheels;
     private Supplier<ChassisSpeeds> translationController;
-    private LEDs leds;
+    private Command ledFeedbackCommand;
 
     public AimEverythingAtSpeaker(Drivetrain drivetrain, Arm arm, Shooter flywheels, Supplier<ChassisSpeeds> translationController, LEDs leds) {
         this.drivetrain = drivetrain;
@@ -30,12 +29,17 @@ public class AimEverythingAtSpeaker extends Command {
         this.flywheels = flywheels;
         this.translationController = translationController;
         super.addRequirements(drivetrain, arm, flywheels);
-        this.leds = leds;
+
+        this.ledFeedbackCommand = leds.playAimingAnimationCommand(arm::getErrorDegrees, flywheels::getWorstError, drivetrain::getAngleError);
     }
 
     public void initialize() {
         Pose2d pose = new Pose2d(FieldConstants.blueSpeakerTranslation2d.plus(new Translation2d(2, 0)), drivetrain.getRobotRotation2d());
         drivetrain.setPoseMeters(pose);
+
+        // drive angle error may be stale from last call?
+        // TODO: look into this.
+        ledFeedbackCommand.schedule();
     }
 
     public void execute() {
@@ -50,18 +54,10 @@ public class AimEverythingAtSpeaker extends Command {
 
         // Arm
         arm.setDesiredDegrees(this.getSimpleArmDesiredDegrees());
-
-        double armError = Math.abs(arm.getDegrees() - this.getSimpleArmDesiredDegrees());
-        leds.showArmProgress(1-(armError/10));
-
-        double drivetrainError = Math.abs(drivetrain.getRobotRotation2d().minus(Rotation2d.fromDegrees(this.getDriveDesiredDegrees())).getDegrees());
-        leds.showDrivetrainProgress(1-(drivetrainError/10));
-
-        leds.showFlywheelProgress(0);
     }
 
     public void end(boolean isInterrupted) {
-        leds.turnOff();
+        ledFeedbackCommand.cancel();
     }
 
 

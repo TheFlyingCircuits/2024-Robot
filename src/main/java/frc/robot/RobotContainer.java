@@ -27,6 +27,8 @@ import frc.robot.subsystems.shooter.ShooterIOSim;
 import frc.robot.subsystems.vision.VisionIO;
 import frc.robot.subsystems.vision.VisionIOPhotonLib;
 
+import edu.wpi.first.wpilibj.util.Color;
+
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.NT4Publisher;
 import org.littletonrobotics.junction.wpilog.WPILOGWriter;
@@ -38,6 +40,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ScheduleCommand;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 
@@ -119,12 +122,12 @@ public class RobotContainer {
         
         
         drivetrain.setDefaultCommand(drivetrain.fieldOrientedDriveCommand(charlie::getRequestedFieldOrientedVelocity));
-        //leds.setDefaultCommand(leds.heartbeatCommand());
+        leds.setDefaultCommand(leds.heartbeatCommand().ignoringDisable(true));
         intake.setDefaultCommand(Commands.run(() -> {intake.setVolts(0);}, intake));
         indexer.setDefaultCommand(indexer.setIndexerRPMCommand(0));
         shooter.setDefaultCommand(shooter.setFlywheelSurfaceSpeedCommand(0));
         climb.setDefaultCommand(Commands.run(() -> {climb.setVolts(0);}, climb));
-        arm.setDefaultCommand(arm.holdCurrentPositionCommand());
+        arm.setDefaultCommand(arm.holdCurrentPositionCommand().ignoringDisable(true));
 
         isRingInIntake = new Trigger(intake::isRingInIntake);
         
@@ -232,6 +235,7 @@ public class RobotContainer {
     
     
     Command shart() {
+        // TODO: check progress for prepShart()
         return prepShart().andThen(indexer.fireNoteCommand()).andThen(resetShooter());
     }
 
@@ -254,8 +258,9 @@ public class RobotContainer {
         controller.leftBumper()
             .onTrue(prepAmpShot())
             .onFalse(resetShooter());
-        controller.b().whileTrue(shart());
-        controller.a().onTrue(indexer.fireNoteCommand());
+        //controller.b().whileTrue(shart());
+        controller.b().whileTrue(prepShart());
+        controller.a().onTrue(indexer.fireNoteCommand().alongWith(leds.playFireNoteAnimationCommand()));
 
 
         /** CLIMB **/
@@ -272,7 +277,7 @@ public class RobotContainer {
         controller.x().onTrue(resetShooter());
 
         isRingInIntake.onTrue(charlie.rumbleController(0.25, 0.5));
-        isRingInIntake.onTrue(leds.flashWhiteCommand(4, 0.5).andThen(new ScheduleCommand(leds.playIntakeAnimationCommand())));
+        isRingInIntake.onTrue(leds.strobeCommand(Color.kWhite, 4, 0.5).ignoringDisable(true));//.andThen(new ScheduleCommand(leds.playIntakeAnimationCommand())));
         // TODO: prevent flash on reverse? Either condition with positive wheel speeds,
         //       or no seperate scheudle command?
     }

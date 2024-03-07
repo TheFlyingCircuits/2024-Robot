@@ -121,6 +121,10 @@ public class Arm extends SubsystemBase {
         return inputs.armAngleDegrees;
     }
 
+    public double getErrorDegrees() {
+        return this.targetAngleDegrees - inputs.armAngleDegrees;
+    }
+
     private void followTrapezoidProfile() {
 
         //Hold the current position if there's no trapezoidal profile active. 

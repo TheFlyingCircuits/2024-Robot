@@ -307,6 +307,7 @@ public final class Constants {
 
         public final static double metersPerLed = 1/ledsPerMeter;
 
+        /** TODO: documentation */
         public final static double topThirdBreakpoint = stripLengthMeters - 0.24;
         public final static double bottomThirdBreakpoint = 0.29;
 

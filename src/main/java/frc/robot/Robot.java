@@ -23,9 +23,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.Constants.DrivetrainConstants;
-import frc.robot.Constants.LEDConstants;
 import frc.robot.subsystems.drivetrain.Drivetrain;
-import frc.robot.subsystems.leds.LEDs;
 
 /**
  * The VM is configured to automatically run this class, and to call the functions corresponding to
@@ -129,96 +127,6 @@ public class Robot extends LoggedRobot {
 
 
         //m_robotContainer.arm.setDesiredPositionToCurrent();
-
-        LEDs leds = m_robotContainer.leds;
-
-        if (false) {
-            double solidTime = 1.0;
-            double slingshotTime = 1./4.;
-            if (slingshotTimer.get() < solidTime) {
-                leds.solidColorHSV(LEDConstants.Hues.orangeSignalLight, 255, 255);
-            }
-            else if (slingshotTimer.get() < solidTime+slingshotTime) {
-                double progress = (slingshotTimer.get()-solidTime) / slingshotTime;
-                leds.slingshot(progress);
-            }
-            else if (slingshotTimer.get() < solidTime+slingshotTime+1.0) {
-                leds.solidColorHSV(leds.getAllianceHue(), 255, 255);
-            }
-            else {
-                slingshotTimer.restart();
-            }
-            return;
-        }
-
-        if (true) {
-            leds.heartbeatCommand().execute();
-            return;
-        }
-
-        if (false) {
-            double slinshotTime = 0.25;
-            if (slingshotTimer.get() > 5.0) {
-                slingshotTimer.restart();
-            }
-            if (slingshotTimer.get() < 2.0) {
-                leds.solidColorHSV(LEDConstants.Hues.orangeSignalLight, 255, 255);
-            }
-            else if (slingshotTimer.get() < 2.0 + slinshotTime) {
-                leds.slingshot(((slingshotTimer.get()-2)/slinshotTime) % 1.0);
-            }
-            else if (slingshotTimer.get() < 5.0) {
-                leds.solidColorHSV(leds.getAllianceHue(), 255, 255);
-            }
-            // leds.slingshot((Timer.getFPGATimestamp()/0.25) % 1.0);
-            return;
-        }
-
-
-        if (false) {
-            int hue = (int) SmartDashboard.getNumber("hue", 0);
-            leds.solidColorHSV(hue, 255, 255);
-            SmartDashboard.putNumber("hue", hue);
-            return;
-        }
-
-        if (false) {
-            leds.loadingPattern();
-            return;
-        }
-        
-        if (false) {
-            if (flashTimer.get() < 3.0) {
-                leds.loadingPattern();
-            }
-            else if (flashTimer.get() < 3.5) {
-                if (timeBetweenFlashes.get() < (1.0/12.0)) {
-                    leds.solidColorHSV(0, 0, 255);
-                }
-                else if (timeBetweenFlashes.get() < (2.0/12.0)) {
-                    leds.solidColorHSV(0, 0, 0);
-                }
-                else {
-                    timeBetweenFlashes.restart();
-                }
-            }
-            else {
-                flashTimer.restart();
-            }
-            return;
-        }
-
-        double frequency = 1.0;
-        double period = 1/frequency;
-        double flywheelProgress = Math.sin(2*Math.PI*(Timer.getFPGATimestamp()/period))/2.0 + 0.5;
-        double armProgress = Math.sin(2*Math.PI*(Timer.getFPGATimestamp()/period) + (2*Math.PI/3.0))/2.0 + 0.5;
-        double drivetrainProgress = Math.sin(2*Math.PI*(Timer.getFPGATimestamp()/period) + (4*Math.PI/3.0))/2.0 + 0.5;
-        leds.showFlywheelProgress(flywheelProgress);
-        leds.showArmProgress(flywheelProgress);
-        leds.showDrivetrainProgress(flywheelProgress);
-
-        Command indexNoteCommand = m_robotContainer.indexNote();
-        //System.out.println("Requirements: " + indexNoteCommand.getRequirements());
     }
 
     /** This autonomous runs the autonomous command selected by your {@link RobotContainer} class. */

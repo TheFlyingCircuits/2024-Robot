@@ -102,6 +102,16 @@ public class Shooter extends SubsystemBase {
     public Command setFlywheelSurfaceSpeedCommand(double metersPerSecond) {
         return this.run(() -> {this.setBothFlywheelsMetersPerSecond(metersPerSecond);});
     }
+
+    public double getWorstError() {
+        double errorLeft = leftFlywheelsPID.getPositionError();
+        double errorRight = rightFlywheelsPID.getPositionError();
+
+        if (Math.abs(errorLeft) > Math.abs(errorRight)) {
+            return errorLeft;
+        }
+        return errorRight;
+    }
     
 
     @Override
