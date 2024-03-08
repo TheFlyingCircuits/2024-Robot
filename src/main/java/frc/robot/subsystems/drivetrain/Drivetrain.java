@@ -291,6 +291,9 @@ public class Drivetrain extends SubsystemBase {
         }
     }
 
+    public boolean isAligned() {
+        return angleController.atSetpoint();
+    }
 
     @Override
     public void periodic() {

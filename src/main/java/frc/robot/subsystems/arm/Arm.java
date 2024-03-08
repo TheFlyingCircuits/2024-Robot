@@ -125,6 +125,10 @@ public class Arm extends SubsystemBase {
         return this.targetAngleDegrees - inputs.armAngleDegrees;
     }
 
+    public boolean isCloseToTarget() {
+        return Math.abs(getErrorDegrees()) < 2.0; // TODO: pick non arbitrary value based on sensor resolution?
+    }
+
     private void followTrapezoidProfile() {
 
         //Hold the current position if there's no trapezoidal profile active. 

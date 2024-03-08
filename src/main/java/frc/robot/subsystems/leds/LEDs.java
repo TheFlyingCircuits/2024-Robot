@@ -305,10 +305,11 @@ public class LEDs extends SubsystemBase {
     }
 
     public Command playFireNoteAnimationCommand() {
-        double totalLengthSeconds = 1./4.;
+        double timeForEachSegment = 1./8.;
         Color orange = Color.fromHSV(LEDConstants.Hues.orangeSignalLight, 255, 255);
-        return this.playWipeToColorCommand(totalLengthSeconds/2, orange)
-               .andThen(this.playWipeToColorCommand(totalLengthSeconds/2, Color.kBlack))
-               .andThen(this.playWipeToAllianceColorCommand(totalLengthSeconds/2));
+        return this.playWipeToColorCommand(timeForEachSegment, Color.kBlack)
+               .andThen(this.playWipeToColorCommand(timeForEachSegment, orange))
+               .andThen(this.playWipeToColorCommand(timeForEachSegment, Color.kBlack))
+               .andThen(this.playWipeToAllianceColorCommand(timeForEachSegment));
     }
 }

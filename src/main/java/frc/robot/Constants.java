@@ -275,6 +275,9 @@ public final class Constants {
         
         /** Horizontal distance from the robot center to the pivot center */
         public final static double pivotOffsetMeters = 0.22; // 22 centimeters
+
+        public final static Translation2d redAmpLocation = new Translation2d(14.7, 8.2); // tag 5
+        public final static Translation2d blueAmpLocation = new Translation2d(1.84, 8.2); // tag 6
     }
 
     public final static class IntakeConstants {
