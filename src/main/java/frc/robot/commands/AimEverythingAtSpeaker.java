@@ -24,7 +24,7 @@ public class AimEverythingAtSpeaker extends Command {
     private Supplier<ChassisSpeeds> translationController;
     private Command ledFeedbackCommand;
 
-    private boolean testingWithoutTags = true;
+    private boolean testingWithoutTags = false;
     public boolean setpointsAreFresh = false;
 
     public AimEverythingAtSpeaker(Drivetrain drivetrain, Arm arm, Shooter flywheels, Supplier<ChassisSpeeds> translationController, LEDs leds) {

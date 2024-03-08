@@ -24,7 +24,7 @@ public class AimEverythingAtAmp extends Command {
     private Supplier<ChassisSpeeds> translationController;
     private Command ledFeedbackCommand;
 
-    private boolean testingWithoutTags = true;
+    private boolean testingWithoutTags = false;
     public boolean setpointsAreFresh = false;
 
     public AimEverythingAtAmp(Drivetrain drivetrain, Arm arm, Shooter flywheels, Supplier<ChassisSpeeds> translationController, LEDs leds) {
@@ -109,7 +109,7 @@ public class AimEverythingAtAmp extends Command {
         // We want robot to align with the vector from robot to speaker
         // that means we want the robot's angle to be the same as that vector's angle
         Translation2d vector = ampLocation.minus(drivetrain.getPoseMeters().getTranslation());
-        return vector.getAngle().getDegrees();
+        return vector.unaryMinus().getAngle().getDegrees();
     }
 
 

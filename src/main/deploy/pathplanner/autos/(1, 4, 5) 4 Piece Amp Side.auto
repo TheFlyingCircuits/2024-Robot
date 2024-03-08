@@ -26,6 +26,12 @@
                 "data": {
                   "name": "indexNote"
                 }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "trackNote"
+                }
               }
             ]
           }
@@ -50,6 +56,12 @@
                 "type": "named",
                 "data": {
                   "name": "indexNote"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "trackNote"
                 }
               }
             ]
@@ -81,6 +93,12 @@
                 "type": "named",
                 "data": {
                   "name": "indexNote"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "trackNote"
                 }
               }
             ]

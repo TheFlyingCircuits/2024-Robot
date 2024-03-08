@@ -37,7 +37,8 @@ public class Drivetrain extends SubsystemBase {
 
     private SwerveModule[] swerveModules;
 
-    private SwerveDrivePoseEstimator poseEstimator;
+    private SwerveDrivePoseEstimator fusedPoseEstimator;
+    private SwerveDrivePoseEstimator wheelsOnlyPoseEstimator;
 
     public boolean isTrackingNote;
 
@@ -76,7 +77,7 @@ public class Drivetrain extends SubsystemBase {
         //these values are automatically recalculated periodically depending on distance
         Matrix<N3, N1> visionStdDevs = VecBuilder.fill(0., 0., 0.);
 
-        poseEstimator = new SwerveDrivePoseEstimator(
+        fusedPoseEstimator = new SwerveDrivePoseEstimator(
             DrivetrainConstants.swerveKinematics, 
             gyroInputs.robotYawRotation2d,
             getModulePositions(),
@@ -85,9 +86,15 @@ public class Drivetrain extends SubsystemBase {
             visionStdDevs
         );
 
-        angleController = new PIDController(6, 0, 0);
+        wheelsOnlyPoseEstimator = new SwerveDrivePoseEstimator(
+            DrivetrainConstants.swerveKinematics,
+            gyroInputs.robotYawRotation2d,
+            getModulePositions(), 
+            new Pose2d());
+
+        angleController = new PIDController(8, 0, 0.);
         angleController.enableContinuousInput(-180, 180);
-        angleController.setTolerance(1.5); // degrees. TODO: could be more precise? Calculate based on margin for error at range?
+        angleController.setTolerance(2.0); // degrees. TODO: could be more precise? Calculate based on margin for error at range?
     }
 
 
@@ -111,7 +118,7 @@ public class Drivetrain extends SubsystemBase {
      * @param closedLoop
      */
     public void fieldOrientedDrive(ChassisSpeeds desiredChassisSpeeds, boolean closedLoop) {
-        Rotation2d currentOrientation = poseEstimator.getEstimatedPosition().getRotation();
+        Rotation2d currentOrientation = fusedPoseEstimator.getEstimatedPosition().getRotation();
         ChassisSpeeds robotOrientedSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(desiredChassisSpeeds, currentOrientation);
         this.robotOrientedDrive(robotOrientedSpeeds, closedLoop);
     }
@@ -124,7 +131,7 @@ public class Drivetrain extends SubsystemBase {
      */
     public void fieldOrientedDriveWhileAiming(ChassisSpeeds desiredTranslationalSpeeds, double desiredAngleDegrees) {
         // Use PID controller to generate a desired angular velocity based on the desired angle
-        double measuredAngle = poseEstimator.getEstimatedPosition().getRotation().getDegrees();
+        double measuredAngle = fusedPoseEstimator.getEstimatedPosition().getRotation().getDegrees();
         double desiredDegreesPerSecond = angleController.calculate(measuredAngle, desiredAngleDegrees);
         double desiredRadiansPerSecond = Math.toRadians(desiredDegreesPerSecond);
 
@@ -133,10 +140,6 @@ public class Drivetrain extends SubsystemBase {
         desiredSpeeds.vyMetersPerSecond = desiredTranslationalSpeeds.vyMetersPerSecond;
         desiredSpeeds.omegaRadiansPerSecond = desiredRadiansPerSecond;
         this.fieldOrientedDrive(desiredSpeeds, true);
-    }
-
-    public boolean isAligned() {
-        return angleController.atSetpoint();
     }
 
 
@@ -194,7 +197,8 @@ public class Drivetrain extends SubsystemBase {
      * @param pose
      */
     public void setPoseMeters(Pose2d pose) {
-        poseEstimator.resetPosition(gyroInputs.robotYawRotation2d, getModulePositions(), pose);
+        fusedPoseEstimator.resetPosition(gyroInputs.robotYawRotation2d, getModulePositions(), pose);
+        wheelsOnlyPoseEstimator.resetPosition(gyroInputs.robotYawRotation2d, getModulePositions(), pose);
     }
 
     /**
@@ -209,7 +213,7 @@ public class Drivetrain extends SubsystemBase {
      * TODO: OUT OF DATE DOCUMENTATION?
      */ 
     public Pose2d getPoseMeters() {
-        return poseEstimator.getEstimatedPosition();
+        return fusedPoseEstimator.getEstimatedPosition();
     }
 
 
@@ -228,7 +232,7 @@ public class Drivetrain extends SubsystemBase {
      */
     private Matrix<N3, N1> getVisionStdDevs(double distToTargetMeters) {
 
-        double slopeStdDevMetersPerMeter = 1.5;
+        double slopeStdDevMetersPerMeter = .5;
         double slopeStdDevRadiansPerMeter = 1000;
 
         //corresponds to x, y, and rotation standard deviations (meters and radians)
@@ -248,7 +252,7 @@ public class Drivetrain extends SubsystemBase {
         Rotation2d rotation = (DriverStation.getAlliance().get() == Alliance.Blue) ?
             Rotation2d.fromDegrees(0) : Rotation2d.fromDegrees(180);
 
-        Translation2d location = poseEstimator.getEstimatedPosition().getTranslation();
+        Translation2d location = fusedPoseEstimator.getEstimatedPosition().getTranslation();
 
         setPoseMeters(new Pose2d(location, rotation));
     }
@@ -266,7 +270,7 @@ public class Drivetrain extends SubsystemBase {
      * seen on the intake camera. This is used for the rotation override during auto.
      */
     public Rotation2d getFieldRelativeRotationToNote() {
-        Rotation2d currentAngle = poseEstimator.getEstimatedPosition().getRotation();
+        Rotation2d currentAngle = fusedPoseEstimator.getEstimatedPosition().getRotation();
         return currentAngle.plus(Rotation2d.fromDegrees(visionInputs.nearestNoteYawDegrees));
     }
 
@@ -283,6 +287,25 @@ public class Drivetrain extends SubsystemBase {
         return angleController.atSetpoint();
     }
 
+    private void updatePoseEstimator() {
+
+        fusedPoseEstimator.update(gyroInputs.robotYawRotation2d, getModulePositions());
+        wheelsOnlyPoseEstimator.update(gyroInputs.robotYawRotation2d, getModulePositions());
+
+
+        Translation2d visionTranslation = visionInputs.robotFieldPose.getTranslation();
+        Translation2d estimatedTranslation = fusedPoseEstimator.getEstimatedPosition().getTranslation();
+
+        // don't add vision measurements that are too far away
+        if (visionTranslation.getDistance(estimatedTranslation) < 2 && visionInputs.nearestTagDistanceMeters < 6) {
+            fusedPoseEstimator.addVisionMeasurement(
+                visionInputs.robotFieldPose, 
+                visionInputs.timestampSeconds, 
+                getVisionStdDevs(visionInputs.nearestTagDistanceMeters)
+            );
+        }
+    }
+
     @Override
     public void periodic() {
         gyroIO.updateInputs(gyroInputs);
@@ -297,16 +320,11 @@ public class Drivetrain extends SubsystemBase {
         Logger.processInputs("gyroInputs", gyroInputs);
         Logger.processInputs("visionInputs", visionInputs);
 
+        updatePoseEstimator();
 
 
-        poseEstimator.update(gyroInputs.robotYawRotation2d, getModulePositions());
-        poseEstimator.addVisionMeasurement(
-            visionInputs.robotFieldPose, 
-            visionInputs.timestampSeconds, 
-            getVisionStdDevs(visionInputs.nearestTagDistanceMeters)
-        );
-
-        Logger.recordOutput("drivetrain/poseEstimatorPose", poseEstimator.getEstimatedPosition());
+        Logger.recordOutput("drivetrain/fusedPose", fusedPoseEstimator.getEstimatedPosition());
+        Logger.recordOutput("drivetrain/wheelsOnlyPose", wheelsOnlyPoseEstimator.getEstimatedPosition());
 
         Logger.recordOutput(
             "drivetrain/swerveModuleStates",
@@ -316,6 +334,10 @@ public class Drivetrain extends SubsystemBase {
               swerveModules[2].getState(),
               swerveModules[3].getState()
           });
+
+        Logger.recordOutput("drivetrain/anglePIDSetpoint", Rotation2d.fromDegrees(angleController.getSetpoint()));
+        Logger.recordOutput("drivetrain/isAligned", isAligned());
+        Logger.recordOutput("drivetrain/isTrackingNote", isTrackingNote);
         
     }
 }

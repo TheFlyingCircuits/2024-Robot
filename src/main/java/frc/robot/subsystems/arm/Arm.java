@@ -126,7 +126,7 @@ public class Arm extends SubsystemBase {
     }
 
     public boolean isCloseToTarget() {
-        return Math.abs(getErrorDegrees()) < 2.0; // TODO: pick non arbitrary value based on sensor resolution?
+        return Math.abs(getErrorDegrees()) < 1.0; // TODO: pick non arbitrary value based on sensor resolution?
     }
 
     private void followTrapezoidProfile() {

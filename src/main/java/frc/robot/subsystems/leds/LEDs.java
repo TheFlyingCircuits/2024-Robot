@@ -262,19 +262,21 @@ public class LEDs extends SubsystemBase {
 
     public Command playAimingAnimationCommand(Supplier<Double> armErrorDegrees, Supplier<Double> flywheelErrorMetersPerSecond, Supplier<Double> drivetrainErrorDegrees) {
         return this.run(() -> {
+            // TODO: get tollerances from subsystems
+            // multiply by 3 so that we're at yellow/green when within tolerance.
             // Arm
-            double minArmErrorForProgress = 10;
-            double armProgress = 1.0 - ( Math.abs(armErrorDegrees.get()) / minArmErrorForProgress );
+            double maxArmErrorToShow = 3 * 1.0;
+            double armProgress = 1.0 - ( Math.abs(armErrorDegrees.get()) / maxArmErrorToShow );
             armProgress = MathUtil.clamp(armProgress, 0.0, 1.0);
 
             // Flywheels
-            double minFlywheelErrorForProgress = 30;
-            double flywheelProgress = 1.0 - ( Math.abs(flywheelErrorMetersPerSecond.get()) / minFlywheelErrorForProgress );
+            double maxFlywheelErrorToShow = 3 * 0.5;
+            double flywheelProgress = 1.0 - ( Math.abs(flywheelErrorMetersPerSecond.get()) / maxFlywheelErrorToShow );
             flywheelProgress = MathUtil.clamp(flywheelProgress, 0.0, 1.0);
 
             // Drivetrain
-            double minDrivetrainErrorForProgress = 45;
-            double drivetrainProgress = 1.0 - ( Math.abs(drivetrainErrorDegrees.get()) / minDrivetrainErrorForProgress );
+            double maxDrivetrainErrorToShow = 3 * 2.0;
+            double drivetrainProgress = 1.0 - ( Math.abs(drivetrainErrorDegrees.get()) / maxDrivetrainErrorToShow );
             drivetrainProgress = MathUtil.clamp(drivetrainProgress, 0.0, 1.0);
 
             this.showArmProgress(armProgress);

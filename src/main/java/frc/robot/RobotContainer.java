@@ -141,11 +141,10 @@ public class RobotContainer {
 
         isRingInIntake = new Trigger(intake::isRingInIntake);
         
-        //NamedCommands.registerCommand("shootFromAnywhere", shootFromAnywhereNoReset());
-        NamedCommands.registerCommand("indexNote", indexNote().alongWith(resetShooter()));
-        //NamedCommands.registerCommand("continuousPrepShotFromAnywhere", continuousPrepShotFromAnywhereNoDrivetrain());
-        NamedCommands.registerCommand("trackNote", new InstantCommand(() -> drivetrain.isTrackingNote = true));
-        isRingInIntake.onTrue(new InstantCommand(() -> drivetrain.isTrackingNote = false));
+        NamedCommands.registerCommand("shootFromAnywhere", speakerShot());
+        NamedCommands.registerCommand("indexNote", indexNote().raceWith(resetShooter()));
+        NamedCommands.registerCommand("trackNote", new InstantCommand(() -> {drivetrain.isTrackingNote = true;}));
+        isRingInIntake.onTrue(new InstantCommand(() -> {drivetrain.isTrackingNote = false;}));
 
         configAutoBuilder();
 
@@ -196,9 +195,16 @@ public class RobotContainer {
 
     /** Resets the angle and speed of the shooter back to its default idle position. */
     Command resetShooter() {
-        double desiredAngle = ArmConstants.armMinAngleDegrees+5; // puts the arm at min height to pass under stage
+        double desiredAngle = ArmConstants.armMinAngleDegrees+12; // puts the arm at min height to pass under stage
         return arm.setDesiredDegreesCommand(desiredAngle)
                .alongWith(shooter.setFlywheelSurfaceSpeedCommand(0));
+               //.alongWith(indexer.setIndexerRPMCommand(0)));
+    }
+
+    /** Moves the arm back and spins up the flywheels to prepare for an amp shot. */
+    Command prepAmpShot() {
+        return arm.setDesiredDegreesCommand(110)
+               .alongWith(shooter.setFlywheelSurfaceSpeedCommand(10));
     }
 
     /** Moves the arm back and spins up the flywheels to prepare for a trap shot. */
@@ -245,8 +251,8 @@ public class RobotContainer {
         CommandXboxController controller = charlie.getXboxController();
         /** INTAKE **/
         controller.rightTrigger()
-            //.whileTrue(new NoteTrackingIndexNote(intake, indexer, drivetrain, charlie::getRequestedFieldOrientedVelocity));
-            .onTrue(indexNote().raceWith(resetShooter())); // reset never ends, indexNote does.
+            .whileTrue(new NoteTrackingIndexNote(intake, indexer, drivetrain, charlie::getRequestedFieldOrientedVelocity));
+            //.onTrue(indexNote().raceWith(resetShooter())); // reset never ends, indexNote does.
     
         controller.leftTrigger().whileTrue(new ReverseIntake(intake, indexer));
         
@@ -254,10 +260,11 @@ public class RobotContainer {
         /** SCORING **/
         //control scheme is rb/lb toggle preps a shot, and then a is fire
         controller.rightBumper()
-            .onTrue(this.speakerShot().andThen(this.resetShooter()));
+            .onTrue(this.speakerShot().andThen(new ScheduleCommand(this.resetShooter())));
             // .onFalse(this.resetShooter());
         controller.leftBumper()
-            .onTrue(new AimEverythingAtAmp(drivetrain, arm, shooter, charlie::getRequestedFieldOrientedVelocity, leds))
+            //.onTrue(new AimEverythingAtAmp(drivetrain, arm, shooter, charlie::getRequestedFieldOrientedVelocity, leds))
+            .onTrue(prepAmpShot())
             .onFalse(this.fireNote().andThen(new ScheduleCommand(this.resetShooter())));
             // use a schedule command so the onFalse sequence doesn't cancel the aiming while the note is being shot.
         //controller.b().whileTrue(shart());

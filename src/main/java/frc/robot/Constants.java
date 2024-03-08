@@ -31,7 +31,7 @@ public final class Constants {
 
         public static final double flywheelCircumferenceMeters = Units.inchesToMeters(3.875)*Math.PI;
     
-        public final static double kPFlywheelsVoltsSecondsPerMeter = .2;
+        public final static double kPFlywheelsVoltsSecondsPerMeter = .4;
         public final static double kIFlywheelsVoltsPerMeter = 0.;
         public final static double kDFlywheelsVoltsSecondsSquaredPerMeter = 0.;
 
@@ -100,7 +100,7 @@ public final class Constants {
          * <br>
          * This value will be less than or equal to the maxAchievableVelocityMetersPerSecond, depending on driver preference.
          */
-        public static final double maxDesiredTeleopVelocityMetersPerSecond = maxAchievableVelocityMetersPerSecond; // TODO: placeholder
+        public static final double maxDesiredTeleopVelocityMetersPerSecond = maxAchievableVelocityMetersPerSecond; 
 
         /**
          * The maximum achievable angular velocity of the robot in radians per second.
@@ -119,8 +119,6 @@ public final class Constants {
          */
         public static final double maxDesiredTeleopAngularVelocityRadiansPerSecond = 5.4;
 
-
-        public static final double maxDesiredTeleopAccelMetersPerSecondSquared = 100.0; // TODO: placeholder
 
 
     }

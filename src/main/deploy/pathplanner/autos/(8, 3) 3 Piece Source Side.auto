@@ -26,6 +26,12 @@
                 "data": {
                   "name": "indexNote"
                 }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "trackNote"
+                }
               }
             ]
           }
@@ -38,12 +44,6 @@
                 "type": "path",
                 "data": {
                   "pathName": "Ring 8 to Starting Line"
-                }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "continuousPrepShotFromAnywhere"
                 }
               }
             ]
@@ -69,6 +69,12 @@
                 "type": "named",
                 "data": {
                   "name": "indexNote"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "trackNote"
                 }
               }
             ]

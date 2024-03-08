@@ -3,13 +3,13 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 15.730059420175902,
-        "y": 6.862550215827963
+        "x": 14.711216640692909,
+        "y": 7.003080254377342
       },
       "prevControl": null,
       "nextControl": {
-        "x": 15.21288103000723,
-        "y": 7.336023389926042
+        "x": 14.242783178861648,
+        "y": 6.991369417831561
       },
       "isLocked": false,
       "linkedName": "Amp Side Speaker"
@@ -20,21 +20,15 @@
         "y": 7.003080254377342
       },
       "prevControl": {
-        "x": 14.607512870748899,
-        "y": 7.00011877397313
+        "x": 14.184228996132742,
+        "y": 6.991369417831561
       },
       "nextControl": null,
       "isLocked": false,
       "linkedName": "Ring 1"
     }
   ],
-  "rotationTargets": [
-    {
-      "waypointRelativePos": 0.0,
-      "rotationDegrees": -59.9186802542158,
-      "rotateFast": false
-    }
-  ],
+  "rotationTargets": [],
   "constraintZones": [],
   "eventMarkers": [],
   "globalConstraints": {
