@@ -39,8 +39,6 @@ public class Drivetrain extends SubsystemBase {
 
     private SwerveDrivePoseEstimator poseEstimator;
 
-    private Pose2d poseMeters;
-
     public boolean isTrackingNote;
 
     /** error measured in degrees, output is in degrees per second. */
@@ -70,8 +68,6 @@ public class Drivetrain extends SubsystemBase {
 
         gyroIO.setRobotYaw(0);
 
-        poseMeters = new Pose2d(new Translation2d(0, 0), new Rotation2d(0));
-
         //corresponds to x, y, and rotation standard deviations (meters and radians)
         Matrix<N3, N1> stateStdDevs = VecBuilder.fill(0.1, 0.1, 0.005);
 
@@ -84,35 +80,15 @@ public class Drivetrain extends SubsystemBase {
             DrivetrainConstants.swerveKinematics, 
             gyroInputs.robotYawRotation2d,
             getModulePositions(),
-            poseMeters,
+            new Pose2d(),
             stateStdDevs,
             visionStdDevs
         );
 
         angleController = new PIDController(6, 0, 0);
         angleController.enableContinuousInput(-180, 180);
-        angleController.setTolerance(1.5); // degrees. TODO: could be more precise?
+        angleController.setTolerance(1.5); // degrees. TODO: could be more precise? Calculate based on margin for error at range?
     }
-
-    /**
-     * Sets the robot pose's angle to the rotation passed into it.. This affects all subsequent uses of the robot's angle.
-     * You should be setting an angle of 0 to be facing away from the blue alliance wall.
-     * <br>
-     * This can be used to set the direction the robot is currently facing to the 'forwards' direction.
-     */
-    public void setRobotRotation2d(Rotation2d rotation2d) {
-        setPoseMeters(new Pose2d(getPoseMeters().getTranslation(), rotation2d));
-    }
-
-    /**
-     * Gets the angle of the robot measured by the gyroscope as a Rotation2d (continuous).
-     * An angle of 0 is always facing away from the blue alliance wall.
-     * @return rotation2d - this angle will be counterclockwise positive.
-     */
-    public Rotation2d getRobotRotation2d() {
-        return poseMeters.getRotation();
-    }
-
 
 
     /**
@@ -128,15 +104,18 @@ public class Drivetrain extends SubsystemBase {
         setModuleStates(swerveModuleStates, closedLoop);
     }
 
+
     /**
      * TODO: Documentation
      * @param desiredChassisSpeeds
      * @param closedLoop
      */
     public void fieldOrientedDrive(ChassisSpeeds desiredChassisSpeeds, boolean closedLoop) {
-        ChassisSpeeds robotOrientedSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(desiredChassisSpeeds, this.getRobotRotation2d());
+        Rotation2d currentOrientation = poseEstimator.getEstimatedPosition().getRotation();
+        ChassisSpeeds robotOrientedSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(desiredChassisSpeeds, currentOrientation);
         this.robotOrientedDrive(robotOrientedSpeeds, closedLoop);
     }
+
 
     /**
      * TODO: documentation
@@ -145,7 +124,7 @@ public class Drivetrain extends SubsystemBase {
      */
     public void fieldOrientedDriveWhileAiming(ChassisSpeeds desiredTranslationalSpeeds, double desiredAngleDegrees) {
         // Use PID controller to generate a desired angular velocity based on the desired angle
-        double measuredAngle = this.getRobotRotation2d().getDegrees();
+        double measuredAngle = poseEstimator.getEstimatedPosition().getRotation().getDegrees();
         double desiredDegreesPerSecond = angleController.calculate(measuredAngle, desiredAngleDegrees);
         double desiredRadiansPerSecond = Math.toRadians(desiredDegreesPerSecond);
 
@@ -155,6 +134,11 @@ public class Drivetrain extends SubsystemBase {
         desiredSpeeds.omegaRadiansPerSecond = desiredRadiansPerSecond;
         this.fieldOrientedDrive(desiredSpeeds, true);
     }
+
+    public boolean isAligned() {
+        return angleController.atSetpoint();
+    }
+
 
     public Command fieldOrientedDriveCommand(Supplier<ChassisSpeeds> sourceOfDesiredSpeeds) {
         return this.run(() -> {
@@ -183,6 +167,7 @@ public class Drivetrain extends SubsystemBase {
         return swervePositions;
     }
 
+
     public SwerveModuleState[] getModuleStates() {
         SwerveModuleState[] swerveStates = new SwerveModuleState[4];
 
@@ -192,6 +177,7 @@ public class Drivetrain extends SubsystemBase {
 
         return swerveStates;
     }
+
 
     /** Gets robot relative chassis speeds. */
     public ChassisSpeeds getChassisSpeeds() {
@@ -209,7 +195,6 @@ public class Drivetrain extends SubsystemBase {
      */
     public void setPoseMeters(Pose2d pose) {
         poseEstimator.resetPosition(gyroInputs.robotYawRotation2d, getModulePositions(), pose);
-        poseMeters = pose;
     }
 
     /**
@@ -224,7 +209,7 @@ public class Drivetrain extends SubsystemBase {
      * TODO: OUT OF DATE DOCUMENTATION?
      */ 
     public Pose2d getPoseMeters() {
-        return poseMeters;
+        return poseEstimator.getEstimatedPosition();
     }
 
 
@@ -263,7 +248,9 @@ public class Drivetrain extends SubsystemBase {
         Rotation2d rotation = (DriverStation.getAlliance().get() == Alliance.Blue) ?
             Rotation2d.fromDegrees(0) : Rotation2d.fromDegrees(180);
 
-        setPoseMeters(new Pose2d(getPoseMeters().getTranslation(), rotation));
+        Translation2d location = poseEstimator.getEstimatedPosition().getTranslation();
+
+        setPoseMeters(new Pose2d(location, rotation));
     }
 
     public double getAngleError() {
@@ -279,7 +266,8 @@ public class Drivetrain extends SubsystemBase {
      * seen on the intake camera. This is used for the rotation override during auto.
      */
     public Rotation2d getFieldRelativeRotationToNote() {
-        return getRobotRotation2d().plus(Rotation2d.fromDegrees(visionInputs.nearestNoteYawDegrees));
+        Rotation2d currentAngle = poseEstimator.getEstimatedPosition().getRotation();
+        return currentAngle.plus(Rotation2d.fromDegrees(visionInputs.nearestNoteYawDegrees));
     }
 
     public Optional<Rotation2d> getAutoRotationOverride() {
@@ -308,7 +296,7 @@ public class Drivetrain extends SubsystemBase {
 
 
 
-        poseMeters = poseEstimator.update(gyroInputs.robotYawRotation2d, getModulePositions());
+        poseEstimator.update(gyroInputs.robotYawRotation2d, getModulePositions());
         poseEstimator.addVisionMeasurement(
             visionInputs.robotFieldPose, 
             visionInputs.timestampSeconds, 

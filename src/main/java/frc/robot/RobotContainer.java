@@ -6,6 +6,7 @@ package frc.robot;
 
 import frc.robot.Constants.ArmConstants;
 import frc.robot.Constants.DrivetrainConstants;
+import frc.robot.commands.AimEverythingAtAmp;
 import frc.robot.commands.AimEverythingAtSpeaker;
 import frc.robot.commands.NoteTrackingIndexNote;
 import frc.robot.commands.intake.IndexNote;
@@ -44,15 +45,13 @@ import com.pathplanner.lib.util.PIDConstants;
 import com.pathplanner.lib.util.ReplanningConfig;
 
 import edu.wpi.first.wpilibj.RobotBase;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ScheduleCommand;
-import edu.wpi.first.wpilibj2.command.WaitCommand;
+import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 
@@ -128,7 +127,6 @@ public class RobotContainer {
         
         /**** ADVANTAGE KIT LOGGER  *****/
         Logger.recordMetadata("projectName", "2024Robot");
-
         Logger.addDataReceiver(new NT4Publisher());
         Logger.start();
         
@@ -186,17 +184,6 @@ public class RobotContainer {
     }
 
 
-    /** Generates a command to rumble the controller for a given duration and strength.
-     * @param seconds - Time to rumble the controller for, in seconds.
-     * @param strength - Strength to rumble the controller at, from 0 to 1.
-     */
-    Command rumbleController(double seconds, double strength) {
-        return new InstantCommand(() -> charlie.getXboxController().getHID().setRumble(RumbleType.kBothRumble, strength))
-            .andThen(new WaitCommand(seconds))
-            .andThen(new InstantCommand(() -> charlie.getXboxController().getHID().setRumble(RumbleType.kBothRumble, 0)));
-    }
-
-
     //these command compositions must be separated into their own methods
     //since wpilib requires a new instance of a command to be used in each
     //composition (the same instance of a command cannot be used in multiple compositions).
@@ -204,18 +191,14 @@ public class RobotContainer {
         return new ScheduleCommand(leds.playIntakeAnimationCommand())
                .andThen(new IndexNote(intake, indexer))
                .andThen(new ScheduleCommand(leds.solidOrangeCommand()));
+               // TODO: reverse LEDs when barfing?
     }
 
     /** Resets the angle and speed of the shooter back to its default idle position. */
     Command resetShooter() {
-        return arm.setDesiredDegreesCommand(ArmConstants.armMinAngleDegrees+5)
+        double desiredAngle = ArmConstants.armMinAngleDegrees+5; // puts the arm at min height to pass under stage
+        return arm.setDesiredDegreesCommand(desiredAngle)
                .alongWith(shooter.setFlywheelSurfaceSpeedCommand(0));
-    }
-
-    /** Moves the arm back and spins up the flywheels to prepare for an amp shot. */
-    Command prepAmpShot() {
-        return arm.setDesiredDegreesCommand(110)
-               .alongWith(shooter.setFlywheelSurfaceSpeedCommand(10));
     }
 
     /** Moves the arm back and spins up the flywheels to prepare for a trap shot. */
@@ -234,73 +217,36 @@ public class RobotContainer {
         return arm.setDesiredDegreesCommand(-15)
                .alongWith(shooter.setFlywheelSurfaceSpeedCommand(25));
     }
-    
-    // /** Command to prepare for a shot. Finishes after the flywheels spin up to a desired
-    //  *  speed, the shooter reaches the correct angle, and the drivetrain aims at the right
-    //  *  angle.*/
-    // Command prepShotFromAnywhere() { 
-    //     return new ParallelCommandGroup(
-    //         new SpinFlywheels(27, shooter),
-    //         new AimShooterAtSpeaker(arm, drivetrain),
-    //         new AimDriveAtSpeaker(drivetrain));
-    // }
-
-    // /** Command to prepare for a shot. Same as prepShotFromAnywhere(), but never finishes
-    //  *  until interrupted. This allows us to prepare our shot while we're still moving.
-    //  *  This command also doesn't rotate the drivetrain at all.
-    //  */
-    // Command continuousPrepShotFromAnywhereNoDrivetrain() {
-    //     return new ParallelCommandGroup(
-    //         new SpinFlywheels(27, shooter),
-    //         new ContinuousAimShooterAtSpeaker(arm, drivetrain));
-    // }
-
-    // /**
-    //  * Command to prepare for a shot. Same as prepShotFromAnywhere(), but never finishes until
-    //  * interrupted. This allows us to prepare our shot while we're still moving.
-    //  */
-    // Command continuousPrepShotFromAnywhereWithDrivetrain() {
-    //     return new ParallelCommandGroup(
-    //         continuousPrepShotFromAnywhereNoDrivetrain(),
-    //         new AimAtSpeakerWhileJoystickDrive(drivetrain)
-    //     );
-    // }
 
     //aims and then shoots in one motion
     Command shootFromSubwoofer() {
         // TODO: check progress for prepSubwooferShot()
-        return prepSubwooferShot().andThen(indexer.fireNoteCommand()).andThen(resetShooter());
+        return prepSubwooferShot().andThen(this.fireNote()).andThen(resetShooter());
     }
-
-
-    // /** Aims and shoots in one motion, and then resets the shooter back to idle mode. */
-    // SequentialCommandGroup shootFromAnywhere() {
-    //     return new SequentialCommandGroup(
-    //         prepShotFromAnywhere(),
-    //         fireNote(),
-    //         resetShooter());
-    // }
-
-    // /** Aims and shoots in one motion, but arm remains up and spinning at the end. */
-    // SequentialCommandGroup shootFromAnywhereNoReset() {
-    //     return new SequentialCommandGroup(
-    //         prepShotFromAnywhere(),
-    //         fireNote());
-    // }
-
-    
     
     Command shart() {
         // TODO: check progress for prepShart()
-        return prepShart().andThen(indexer.fireNoteCommand()).andThen(resetShooter());
+        return prepShart().andThen(this.fireNote()).andThen(resetShooter());
+    }
+
+    public Command fireNote() {
+        return indexer.setIndexerRPMCommand(1500).withTimeout(0.5)
+               .alongWith(new ScheduleCommand(leds.playFireNoteAnimationCommand()));
+    }
+
+    public Command speakerShot() {
+        AimEverythingAtSpeaker aim = new AimEverythingAtSpeaker(drivetrain, arm, shooter, charlie::getRequestedFieldOrientedVelocity, leds);
+        Command waitForAlignment = new WaitUntilCommand(aim::readyToShoot);
+        Command fire = this.fireNote();
+        return aim.raceWith(waitForAlignment.andThen(fire));
     }
 
     private void realBindings() {
         CommandXboxController controller = charlie.getXboxController();
         /** INTAKE **/
         controller.rightTrigger()
-            .whileTrue(new NoteTrackingIndexNote(intake, indexer, drivetrain, charlie::getRequestedFieldOrientedVelocity));
-            //.onTrue(indexNote().alongWith(resetShooter()));
+            //.whileTrue(new NoteTrackingIndexNote(intake, indexer, drivetrain, charlie::getRequestedFieldOrientedVelocity));
+            .onTrue(indexNote().raceWith(resetShooter())); // reset never ends, indexNote does.
     
         controller.leftTrigger().whileTrue(new ReverseIntake(intake, indexer));
         
@@ -308,17 +254,16 @@ public class RobotContainer {
         /** SCORING **/
         //control scheme is rb/lb toggle preps a shot, and then a is fire
         controller.rightBumper()
-            //.onTrue(continuousPrepShotFromAnywhereWithDrivetrain())
-            //.onFalse(resetShooter());
-            .whileTrue(new AimEverythingAtSpeaker(drivetrain, arm, shooter, charlie::getRequestedFieldOrientedVelocity, leds))
-            .onFalse(resetShooter());
+            .onTrue(this.speakerShot().andThen(this.resetShooter()));
+            // .onFalse(this.resetShooter());
         controller.leftBumper()
-            .onTrue(prepAmpShot())
-            .onFalse(resetShooter());
+            .onTrue(new AimEverythingAtAmp(drivetrain, arm, shooter, charlie::getRequestedFieldOrientedVelocity, leds))
+            .onFalse(this.fireNote().andThen(new ScheduleCommand(this.resetShooter())));
+            // use a schedule command so the onFalse sequence doesn't cancel the aiming while the note is being shot.
         //controller.b().whileTrue(shart());
         controller.b().onTrue(prepShart())
                       .onFalse(resetShooter());
-        controller.a().onTrue(indexer.fireNoteCommand().alongWith(leds.playFireNoteAnimationCommand()));
+        controller.a().onTrue(this.fireNote());
 
 
         /** CLIMB **/
@@ -327,7 +272,7 @@ public class RobotContainer {
         controller.povUp().onTrue(climb.raiseHooksCommand().alongWith(arm.setDesiredDegreesCommand(ArmConstants.armMaxAngleDegrees)));
         controller.povRight().onTrue(arm.setDesiredDegreesCommand(82));
         controller.povDown().whileTrue(climb.lowerHooksCommand().alongWith(prepTrapShot()));
-        controller.start().onTrue(indexer.fireNoteCommand().andThen(shooter.setFlywheelSurfaceSpeedCommand(0)));
+        controller.start().onTrue(this.fireNote().andThen(shooter.setFlywheelSurfaceSpeedCommand(0)));
 
         /** MISC **/
         controller.y().onTrue(new InstantCommand(() -> drivetrain.setRobotFacingForward()));

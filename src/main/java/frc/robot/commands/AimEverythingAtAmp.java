@@ -16,7 +16,7 @@ import frc.robot.subsystems.drivetrain.Drivetrain;
 import frc.robot.subsystems.leds.LEDs;
 import frc.robot.subsystems.shooter.Shooter;
 
-public class AimEverythingAtSpeaker extends Command {
+public class AimEverythingAtAmp extends Command {
 
     private Drivetrain drivetrain;
     private Arm arm;
@@ -27,7 +27,7 @@ public class AimEverythingAtSpeaker extends Command {
     private boolean testingWithoutTags = true;
     public boolean setpointsAreFresh = false;
 
-    public AimEverythingAtSpeaker(Drivetrain drivetrain, Arm arm, Shooter flywheels, Supplier<ChassisSpeeds> translationController, LEDs leds) {
+    public AimEverythingAtAmp(Drivetrain drivetrain, Arm arm, Shooter flywheels, Supplier<ChassisSpeeds> translationController, LEDs leds) {
         this.drivetrain = drivetrain;
         this.arm = arm;
         this.flywheels = flywheels;
@@ -39,12 +39,12 @@ public class AimEverythingAtSpeaker extends Command {
 
     public void initialize() {
         if (testingWithoutTags) {
-            Translation2d speakerLocation = FieldConstants.blueSpeakerTranslation2d;
-            Translation2d offset = new Translation2d(2, 0);
-            Translation2d inFrontOfSpeaker = speakerLocation.plus(offset);
+            Translation2d ampLocation = FieldConstants.blueAmpLocation;
+            Translation2d offset = new Translation2d(0, -2);
+            Translation2d inFrontOfAmp = ampLocation.plus(offset);
 
             Rotation2d robotAngle = drivetrain.getPoseMeters().getRotation();
-            drivetrain.setPoseMeters(new Pose2d(inFrontOfSpeaker, robotAngle));
+            drivetrain.setPoseMeters(new Pose2d(inFrontOfAmp, robotAngle));
         }
 
         // drive angle error may be stale from last call?
@@ -59,8 +59,8 @@ public class AimEverythingAtSpeaker extends Command {
         drivetrain.fieldOrientedDriveWhileAiming(desiredTranslationalSpeeds, this.getDriveDesiredDegrees());
 
         // Flywheels
-        double leftFlywheelMetersPerSecond = 20;
-        double rightFlywheelMetersPerSecond = 25;
+        double leftFlywheelMetersPerSecond = 10;
+        double rightFlywheelMetersPerSecond = 10;
         if (testingWithoutTags) {
             flywheels.setBothFlywheelsMetersPerSecond(0);
         } else {
@@ -69,10 +69,7 @@ public class AimEverythingAtSpeaker extends Command {
         }
 
         // Arm
-        //arm.setDesiredDegrees(this.getSimpleArmDesiredDegrees());
-        arm.setDesiredDegrees(this.getGravCompensatedArmDesiredDegrees(
-            (leftFlywheelMetersPerSecond+rightFlywheelMetersPerSecond)/2));
-        // TODO: use measured avg of flywheel speed?
+        arm.setDesiredDegrees(110);
 
         setpointsAreFresh = true;
     }
@@ -86,57 +83,15 @@ public class AimEverythingAtSpeaker extends Command {
         ledFeedbackCommand.cancel();
     }
 
-    public Translation2d getSpeakerLocation() {
+    public Translation2d getAmpLocation() {
         return DriverStation.getAlliance().get() == Alliance.Red ?
-               FieldConstants.redSpeakerTranslation2d :
-               FieldConstants.blueSpeakerTranslation2d;
-    }
-
-
-    /** Calculates the horizontal translational distance from the center of the robot to the center of the front edge of the speaker.*/
-    public double driveDistToSpeakerBaseMeters() {
-        Translation2d speakerLocation = this.getSpeakerLocation();
-        Translation2d robotLocation = drivetrain.getPoseMeters().getTranslation();
-        return robotLocation.getDistance(speakerLocation);
-    }
-
-    public double armDistToSpeakerBaseMeters() {
-        return this.driveDistToSpeakerBaseMeters() + FieldConstants.pivotOffsetMeters;
-    }
-
-    public double getSimpleArmDesiredDegrees() {
-        double horizontalDistance = this.armDistToSpeakerBaseMeters();
-        double verticalDistance = FieldConstants.speakerHeightMeters - FieldConstants.pivotHeightMeters;
-        double radians = Math.atan2(verticalDistance, horizontalDistance); // prob don't need arctan2 here, regular arctan will do.
-        return Math.toDegrees(radians);
-    }
-
-    /**
-     * Gets the angle that the shooter needs to aim at in order to point at the speaker target.
-     * This accounts for distance and gravity.
-     * @return - Angle in degrees, with 0 being straight forward and a positive angle being pointed upwards.
-    */
-    public double getGravCompensatedArmDesiredDegrees(double exitVelocityMetersPerSecond) {
-        
-        //see https://www.desmos.com/calculator/czxwosgvbz
-
-        double h = FieldConstants.speakerHeightMeters-FieldConstants.pivotHeightMeters;
-        double d = this.armDistToSpeakerBaseMeters();
-        double v = exitVelocityMetersPerSecond;
-        double g = 9.81;
-
-        double a = (h*h)/(d*d)+1;
-        double b = -2*(h*h)*(v*v)/(d*d) - (v*v) - g*h;
-        double c = (h*h)*Math.pow(v, 4)/(d*d) + (g*g)*(d*d)/4 + g*h*(v*v);
-
-        double vy = Math.sqrt((-b-Math.sqrt(b*b-4*a*c))/(2*a));
-
-        return Math.toDegrees(Math.asin(vy/v));
+               FieldConstants.redAmpLocation :
+               FieldConstants.blueAmpLocation;
     }
 
     /** TODO: documentation */
     public double getDriveDesiredDegrees() {
-        Translation2d speakerLocation = null;
+        Translation2d ampLocation = null;
 
         Optional<Alliance> alliance = DriverStation.getAlliance();
         if (!alliance.isPresent()) {
@@ -145,15 +100,15 @@ public class AimEverythingAtSpeaker extends Command {
         }
 
         if (alliance.get() == Alliance.Blue) {
-            speakerLocation = FieldConstants.blueSpeakerTranslation2d;
+            ampLocation = FieldConstants.blueAmpLocation;
         }
         else if (alliance.get() == Alliance.Red) {
-            speakerLocation = FieldConstants.redSpeakerTranslation2d;
+            ampLocation = FieldConstants.redAmpLocation;
         }
 
         // We want robot to align with the vector from robot to speaker
         // that means we want the robot's angle to be the same as that vector's angle
-        Translation2d vector = speakerLocation.minus(drivetrain.getPoseMeters().getTranslation());
+        Translation2d vector = ampLocation.minus(drivetrain.getPoseMeters().getTranslation());
         return vector.getAngle().getDegrees();
     }
 

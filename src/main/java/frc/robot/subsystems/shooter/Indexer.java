@@ -48,10 +48,6 @@ public class Indexer extends SubsystemBase {
         return this.run(() -> {this.setIndexerRPM(rpm);});
     }
 
-    public Command fireNoteCommand() {
-        return this.setIndexerRPMCommand(1500).withTimeout(0.5);
-    }
-
     /** Gets the RPM of the indexer wheels. */
     public double getIndexerRPM() {
         return indexerMotor.getVelocity().getValueAsDouble()/ShooterConstants.indexerGearReduction*60;
