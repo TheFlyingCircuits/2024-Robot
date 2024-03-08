@@ -7,6 +7,7 @@ package frc.robot;
 import frc.robot.Constants.ArmConstants;
 import frc.robot.Constants.DrivetrainConstants;
 import frc.robot.commands.AimEverythingAtSpeaker;
+import frc.robot.commands.NoteTrackingIndexNote;
 import frc.robot.commands.intake.IndexNote;
 import frc.robot.commands.intake.ReverseIntake;
 import frc.robot.subsystems.HumanDriver;
@@ -298,7 +299,8 @@ public class RobotContainer {
         CommandXboxController controller = charlie.getXboxController();
         /** INTAKE **/
         controller.rightTrigger()
-            .onTrue(indexNote().alongWith(resetShooter()));
+            .whileTrue(new NoteTrackingIndexNote(intake, indexer, drivetrain, charlie::getRequestedFieldOrientedVelocity));
+            //.onTrue(indexNote().alongWith(resetShooter()));
     
         controller.leftTrigger().whileTrue(new ReverseIntake(intake, indexer));
         

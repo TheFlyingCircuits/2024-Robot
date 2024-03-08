@@ -59,7 +59,7 @@ public class ShooterIOKraken implements ShooterIO {
             volts = 0;
         }
 
-        leftMotor.setVoltage(0);
+        leftMotor.setVoltage(volts);
     }
 
     @Override
@@ -69,6 +69,6 @@ public class ShooterIOKraken implements ShooterIO {
         }
 
 
-        rightMotor.setVoltage(0);
+        rightMotor.setVoltage(volts);
     }
 }

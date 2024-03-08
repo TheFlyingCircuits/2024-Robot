@@ -270,17 +270,21 @@ public class Drivetrain extends SubsystemBase {
         return angleController.getPositionError();
     }
 
+    public boolean intakeSeesNote() {
+        return visionInputs.intakeSeesNote;
+    }
+
     /**
      * Gets the angle that the robot needs to aim at in order to intake the nearest ring
      * seen on the intake camera. This is used for the rotation override during auto.
      */
-    public Rotation2d getFieldRelativeRotationToRing() {
+    public Rotation2d getFieldRelativeRotationToNote() {
         return getRobotRotation2d().plus(Rotation2d.fromDegrees(visionInputs.nearestNoteYawDegrees));
     }
 
     public Optional<Rotation2d> getAutoRotationOverride() {
         if (isTrackingNote && visionInputs.intakeSeesNote) {
-            return Optional.of(getFieldRelativeRotationToRing());
+            return Optional.of(getFieldRelativeRotationToNote());
         }
         else {
             return Optional.empty();
