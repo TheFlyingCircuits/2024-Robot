@@ -49,13 +49,26 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "Center Speaker to Ring 4"
+                  "pathName": "Ring 1 to Ring 4"
                 }
               },
               {
-                "type": "named",
+                "type": "sequential",
                 "data": {
-                  "name": "indexNote"
+                  "commands": [
+                    {
+                      "type": "wait",
+                      "data": {
+                        "waitTime": 1.0
+                      }
+                    },
+                    {
+                      "type": "named",
+                      "data": {
+                        "name": "indexNote"
+                      }
+                    }
+                  ]
                 }
               },
               {

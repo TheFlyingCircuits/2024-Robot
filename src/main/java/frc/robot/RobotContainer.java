@@ -195,7 +195,8 @@ public class RobotContainer {
 
     /** Resets the angle and speed of the shooter back to its default idle position. */
     Command resetShooter() {
-        double desiredAngle = ArmConstants.armMinAngleDegrees+12; // puts the arm at min height to pass under stage
+        double desiredAngle = ArmConstants.armMinAngleDegrees+5; // puts the arm at min height to pass under stage
+        desiredAngle = ArmConstants.armMinAngleDegrees+12; // temporary adjustment while the intake fingers are being re-worked.
         return arm.setDesiredDegreesCommand(desiredAngle)
                .alongWith(shooter.setFlywheelSurfaceSpeedCommand(0));
                //.alongWith(indexer.setIndexerRPMCommand(0)));
@@ -230,10 +231,15 @@ public class RobotContainer {
         return prepSubwooferShot().andThen(this.fireNote()).andThen(resetShooter());
     }
     
-    Command shart() {
-        // TODO: check progress for prepShart()
-        return prepShart().andThen(this.fireNote()).andThen(resetShooter());
-    }
+    // Command shart() {
+    //     Command aim = arm.setDesiredDegreesCommand(-15)
+    //                   .alongWith(shooter.setFlywheelSurfaceSpeedCommand(25));
+    //     Command waitForAlignment = new WaitUntilCommand(() -> {
+    //         return arm.isMovingToTarget
+    //     })
+    //     // TODO: check progress for prepShart()
+    //     return prepShart().andThen(this.fireNote()).andThen(resetShooter());
+    // }
 
     public Command fireNote() {
         return indexer.setIndexerRPMCommand(1500).withTimeout(0.5)
@@ -251,8 +257,8 @@ public class RobotContainer {
         CommandXboxController controller = charlie.getXboxController();
         /** INTAKE **/
         controller.rightTrigger()
-            .whileTrue(new NoteTrackingIndexNote(intake, indexer, drivetrain, charlie::getRequestedFieldOrientedVelocity));
-            //.onTrue(indexNote().raceWith(resetShooter())); // reset never ends, indexNote does.
+            //.whileTrue(new NoteTrackingIndexNote(intake, indexer, drivetrain, charlie::getRequestedFieldOrientedVelocity));
+            .onTrue(indexNote().raceWith(resetShooter())); // reset never ends, indexNote does.
     
         controller.leftTrigger().whileTrue(new ReverseIntake(intake, indexer));
         

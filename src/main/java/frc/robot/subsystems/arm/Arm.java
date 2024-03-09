@@ -126,7 +126,10 @@ public class Arm extends SubsystemBase {
     }
 
     public boolean isCloseToTarget() {
-        return Math.abs(getErrorDegrees()) < 1.0; // TODO: pick non arbitrary value based on sensor resolution?
+        // TODO: pick a non-arbitrary value based on sensor resolution?
+        boolean errorIsSmall = Math.abs(getErrorDegrees()) < 1.0;
+        boolean isSteady = inputs.armVelocityDegreesPerSecond < 1.0;
+        return errorIsSmall && isSteady; // This worked without the isSteady before because I forgot to deploy!
     }
 
     private void followTrapezoidProfile() {

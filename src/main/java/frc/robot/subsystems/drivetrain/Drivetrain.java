@@ -92,7 +92,7 @@ public class Drivetrain extends SubsystemBase {
             getModulePositions(), 
             new Pose2d());
 
-        angleController = new PIDController(8, 0, 0.);
+        angleController = new PIDController(6, 0, 0.);
         angleController.enableContinuousInput(-180, 180);
         angleController.setTolerance(2.0); // degrees. TODO: could be more precise? Calculate based on margin for error at range?
     }
@@ -297,7 +297,8 @@ public class Drivetrain extends SubsystemBase {
         Translation2d estimatedTranslation = fusedPoseEstimator.getEstimatedPosition().getTranslation();
 
         // don't add vision measurements that are too far away
-        if (visionTranslation.getDistance(estimatedTranslation) < 2 && visionInputs.nearestTagDistanceMeters < 6) {
+        // for reference: it is 6 meters from speaker tags to wing.
+        if (visionTranslation.getDistance(estimatedTranslation) < 2 && visionInputs.nearestTagDistanceMeters < 3) {
             fusedPoseEstimator.addVisionMeasurement(
                 visionInputs.robotFieldPose, 
                 visionInputs.timestampSeconds, 

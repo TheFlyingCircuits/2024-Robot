@@ -59,8 +59,8 @@ public class AimEverythingAtSpeaker extends Command {
         drivetrain.fieldOrientedDriveWhileAiming(desiredTranslationalSpeeds, this.getDriveDesiredDegrees());
 
         // Flywheels
-        double leftFlywheelMetersPerSecond = 20;
-        double rightFlywheelMetersPerSecond = 25;
+        double leftFlywheelMetersPerSecond = 25;
+        double rightFlywheelMetersPerSecond = 15;
         if (testingWithoutTags) {
             flywheels.setBothFlywheelsMetersPerSecond(0);
         } else {
@@ -70,8 +70,8 @@ public class AimEverythingAtSpeaker extends Command {
 
         // Arm
         //arm.setDesiredDegrees(this.getSimpleArmDesiredDegrees());
-        arm.setDesiredDegrees(this.getGravCompensatedArmDesiredDegrees(
-            (leftFlywheelMetersPerSecond+rightFlywheelMetersPerSecond)/2));
+        double estimatedExitVelocity = (leftFlywheelMetersPerSecond + rightFlywheelMetersPerSecond) / 2.0;
+        arm.setDesiredDegrees(this.getGravCompensatedArmDesiredDegrees(estimatedExitVelocity));
         // TODO: use measured avg of flywheel speed?
 
         setpointsAreFresh = true;

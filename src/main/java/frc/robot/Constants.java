@@ -29,7 +29,7 @@ public final class Constants {
         /**Rotations of the motor per rotations of the wheel; a number greater than 1 represents a reduction. */
         public final static double flywheelGearReduction = 1.;
 
-        public static final double flywheelCircumferenceMeters = Units.inchesToMeters(3.875)*Math.PI;
+        public static final double flywheelCircumferenceMeters = Units.inchesToMeters(4)*Math.PI;
     
         public final static double kPFlywheelsVoltsSecondsPerMeter = .4;
         public final static double kIFlywheelsVoltsPerMeter = 0.;
@@ -107,8 +107,7 @@ public final class Constants {
          * <br>
          * This is a measure of how fast the robot can rotate in place, based off of maxAchievableVelocityMetersPerSecond.
          */
-        public static final double maxAchievableAngularVelocityRadiansPerSecond = maxAchievableVelocityMetersPerSecond /
-            Math.hypot(trackwidthMeters / 2.0, wheelbaseMeters / 2.0);
+        public static final double maxAchievableAngularVelocityRadiansPerSecond = maxAchievableVelocityMetersPerSecond / drivetrainRadiusMeters;
 
         /**
          * This is the max desired angular velocity that will be achievable in teleop.
@@ -117,7 +116,7 @@ public final class Constants {
          * <br>
          * This value will be tuned based off of driver preference.
          */
-        public static final double maxDesiredTeleopAngularVelocityRadiansPerSecond = 5.4;
+        public static final double maxDesiredTeleopAngularVelocityRadiansPerSecond = Units.rotationsToRadians(0.85);
 
 
 
@@ -150,7 +149,9 @@ public final class Constants {
 
         // The wheels have a 2 inch radius, but sink into the capet about (1/8) of an inch
         // for an effective radius of 2-(1/8).
-        public static final double wheelRadiusMeters = Units.inchesToMeters(2.-1./8.);
+        // Update: they don't sink as much as orignially, though, so now we subtract
+        // 1/16 of an inch instead and odometry seems to agree with this.
+        public static final double wheelRadiusMeters = Units.inchesToMeters(2.-1./16.);
         public static final double wheelCircumferenceMeters = 2 * Math.PI * wheelRadiusMeters;
 
         // PID + FEEDFORWARD CONSTANTS FOR MOTORS
@@ -252,21 +253,40 @@ public final class Constants {
         public final static AprilTagFieldLayout aprilTagFieldLayout = AprilTagFields.k2024Crescendo.loadAprilTagLayoutField();
     
         public final static Transform3d robotToCamera = new Transform3d(
-            new Translation3d(Units.inchesToMeters(8), 0, Units.inchesToMeters(11.5)),
-            new Rotation3d(0, Math.toRadians(-28), 0)
+            new Translation3d(Units.inchesToMeters(8), 0, Units.inchesToMeters(11.5)), // 11.5 inches off the ground, and 8 inches forward from the center of the robot
+            new Rotation3d(0, Math.toRadians(-28), 0) // tilted up 28 degrees to look at the tags.
         );
     }
 
     public final static class FieldConstants {
 
         /** Distance from the front edge of the speaker structure to the carpet. */
-        public final static double speakerHeightMeters = 2.09;
+        public final static double speakerLowerEdgeHeightMeters = Units.inchesToMeters((6*12)+6);
+        public final static double speakerUpperEdgeHeightMeters = Units.inchesToMeters((6*12) + 10 + (7.0/8.0));
+        public final static double actualSpeakerHeightMeters = (speakerLowerEdgeHeightMeters + speakerUpperEdgeHeightMeters) / 2.0;
 
-        /** X-Y position of the center of 30 cm behind the front edge of the red speaker.  */
-        public final static Translation2d blueSpeakerTranslation2d = new Translation2d(0.46-0.3, 5.55);
+        /** Our shot was always landing a few inches too high, so this fudge factor was added
+         *  and seemed to do the trick. If I had to guess, I'd say that this effectively
+         *  accounts for the difference in height between the pivot point of the arm
+         *  and the actual height of the note when it exits the shooter.
+         *  The note will be a few inches higher because the shooter is aimed upward.
+         *  It could also have something to do with the note exiting the shooter
+         *  closer to the front of the robot than the pivot point is?
+         *  Either way, it works for now, and we'll probably just stick with the fudge factor
+         *  in the interest of time.
+         */
+        public final static double speakerHeightFudgeFactorMeters = Units.inchesToMeters(-3); // accounts for difference in height between actuall note exit point and the pivot point. exit point is above the pivot, so effective vertical distance is less
+        public final static double speakerHeightMeters = actualSpeakerHeightMeters + speakerHeightFudgeFactorMeters;
 
-        /** X-Y position of the center of 30 cm behind the front edge of the blue speaker. */
-        public final static Translation2d redSpeakerTranslation2d = new Translation2d(16.08+0.3, 5.55);
+        /** X-Y position of the april tag at the center of the red speaker.  
+         *  Copied from https://firstfrc.blob.core.windows.net/frc2024/FieldAssets/2024LayoutMarkingDiagram.pdf
+         */
+        public final static Translation2d blueSpeakerTranslation2d = new Translation2d(Units.inchesToMeters(-1.5), Units.inchesToMeters(218.42));
+
+        /** X-Y position of the april tag at center of the blue speaker.
+         *  Copied from https://firstfrc.blob.core.windows.net/frc2024/FieldAssets/2024LayoutMarkingDiagram.pdf
+         */
+        public final static Translation2d redSpeakerTranslation2d = new Translation2d(Units.inchesToMeters(652.73), Units.inchesToMeters(218.42));
 
         /** Distance from the floor to the center of the pivot. This is used for angle calculations for shoot from anywhere. */
         public final static double pivotHeightMeters = Units.inchesToMeters(22);

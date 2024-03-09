@@ -19,8 +19,6 @@ public class NoteTrackingIndexNote extends Command {
 
     private Supplier<ChassisSpeeds> translationController;
 
-    private PIDController angleController;
-
     public NoteTrackingIndexNote(Intake intake, Indexer indexer, Drivetrain drivetrain, Supplier<ChassisSpeeds> translationController) {
         this.intake = intake;
         this.indexer = indexer;
@@ -28,9 +26,6 @@ public class NoteTrackingIndexNote extends Command {
         this.translationController = translationController;
         
         addRequirements(intake, indexer, drivetrain);
-
-        angleController = new PIDController(
-            6, 0, 0);
     }
 
     @Override
