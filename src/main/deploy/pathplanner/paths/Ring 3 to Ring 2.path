@@ -3,16 +3,16 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 13.64,
-        "y": 4.101006107957202
+        "x": 14.05186316310875,
+        "y": 4.348392164717821
       },
       "prevControl": null,
       "nextControl": {
-        "x": 14.722531754730548,
-        "y": 4.726006107957205
+        "x": 15.567407619731517,
+        "y": 5.223392164717825
       },
       "isLocked": true,
-      "linkedName": "Ring 3"
+      "linkedName": "Ring 3 Pickup"
     },
     {
       "anchor": {
@@ -20,7 +20,7 @@
         "y": 5.55
       },
       "prevControl": {
-        "x": 14.89,
+        "x": 15.39,
         "y": 5.55
       },
       "nextControl": null,
@@ -32,8 +32,8 @@
   "constraintZones": [],
   "eventMarkers": [],
   "globalConstraints": {
-    "maxVelocity": 4.0,
-    "maxAcceleration": 3.0,
+    "maxVelocity": 4.5,
+    "maxAcceleration": 4.0,
     "maxAngularVelocity": 360.0,
     "maxAngularAcceleration": 360.0
   },
