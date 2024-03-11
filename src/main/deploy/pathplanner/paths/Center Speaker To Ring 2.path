@@ -3,25 +3,25 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 14.664373294509787,
-        "y": 5.597779868883561
+        "x": 14.61,
+        "y": 5.55
       },
       "prevControl": null,
       "nextControl": {
-        "x": 13.856325572850862,
-        "y": 5.644623215066687
+        "x": 13.61,
+        "y": 5.55
       },
       "isLocked": false,
       "linkedName": "Center Speaker"
     },
     {
       "anchor": {
-        "x": 13.645530515026794,
-        "y": 5.562647359246215
+        "x": 13.64,
+        "y": 5.55
       },
       "prevControl": {
-        "x": 14.16080732304118,
-        "y": 5.527514849608872
+        "x": 14.64,
+        "y": 5.55
       },
       "nextControl": null,
       "isLocked": false,
@@ -34,8 +34,8 @@
   "globalConstraints": {
     "maxVelocity": 4.0,
     "maxAcceleration": 3.0,
-    "maxAngularVelocity": 540.0,
-    "maxAngularAcceleration": 720.0
+    "maxAngularVelocity": 360.0,
+    "maxAngularAcceleration": 360.0
   },
   "goalEndState": {
     "velocity": 0,

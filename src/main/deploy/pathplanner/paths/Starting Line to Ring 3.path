@@ -3,29 +3,29 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 8.27,
-        "y": 7.46
+        "x": 14.61,
+        "y": 4.825
       },
       "prevControl": null,
       "nextControl": {
-        "x": 11.463338341964288,
-        "y": 6.713374421040379
+        "x": 14.485,
+        "y": 4.608493649053891
       },
-      "isLocked": false,
-      "linkedName": "Ring 4"
+      "isLocked": true,
+      "linkedName": "Center Auto Starting Line"
     },
     {
       "anchor": {
-        "x": 13.64,
-        "y": 7.003080254377342
+        "x": 14.05186316310875,
+        "y": 4.348392164717821
       },
       "prevControl": {
-        "x": 12.326172989938797,
-        "y": 7.058392395400586
+        "x": 14.26836951405486,
+        "y": 4.473392164717821
       },
       "nextControl": null,
-      "isLocked": false,
-      "linkedName": "Ring 1"
+      "isLocked": true,
+      "linkedName": null
     }
   ],
   "rotationTargets": [],
@@ -39,11 +39,14 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 0,
-    "rotateFast": false
+    "rotation": 30.0,
+    "rotateFast": true
   },
   "reversed": false,
-  "folder": "Starts at Ring",
-  "previewStartingState": null,
+  "folder": "Starts at Starting Line",
+  "previewStartingState": {
+    "rotation": 30.0,
+    "velocity": 0
+  },
   "useDefaultConstraints": true
 }

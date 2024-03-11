@@ -4,28 +4,44 @@
     {
       "anchor": {
         "x": 8.27,
-        "y": 2.43
+        "y": 4.1
       },
       "prevControl": null,
       "nextControl": {
-        "x": 12.0057568581043,
-        "y": 0.3688927679424535
+        "x": 9.27,
+        "y": 4.1
       },
-      "isLocked": false,
-      "linkedName": "Ring 7"
+      "isLocked": true,
+      "linkedName": "Ring 6"
+    },
+    {
+      "anchor": {
+        "x": 11.44,
+        "y": 4.465
+      },
+      "prevControl": {
+        "x": 10.732893218813452,
+        "y": 3.757893218813453
+      },
+      "nextControl": {
+        "x": 12.147106781186547,
+        "y": 5.172106781186547
+      },
+      "isLocked": true,
+      "linkedName": "Stage Passthrough"
     },
     {
       "anchor": {
         "x": 14.61,
-        "y": 3.265
+        "y": 4.825
       },
       "prevControl": {
-        "x": 13.406797271985283,
-        "y": 2.177762609918664
+        "x": 13.61,
+        "y": 4.825
       },
       "nextControl": null,
-      "isLocked": false,
-      "linkedName": "Source Side Starting Line"
+      "isLocked": true,
+      "linkedName": "Center Auto Starting Line"
     }
   ],
   "rotationTargets": [],
@@ -39,11 +55,11 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 45.0,
-    "rotateFast": true
+    "rotation": 0,
+    "rotateFast": false
   },
   "reversed": false,
-  "folder": "Starts at Ring",
+  "folder": "Starts at Midline Rings",
   "previewStartingState": {
     "rotation": 0,
     "velocity": 0

@@ -3,24 +3,24 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 8.284824945869945,
-        "y": 5.798225332031854
+        "x": 8.27,
+        "y": 5.78
       },
       "prevControl": null,
       "nextControl": {
-        "x": 10.881773090222357,
-        "y": 5.972526638348569
+        "x": 10.866948144352412,
+        "y": 5.954301306316715
       },
       "isLocked": false,
       "linkedName": "Ring 5"
     },
     {
       "anchor": {
-        "x": 13.69237386120992,
+        "x": 13.64,
         "y": 7.003080254377342
       },
       "prevControl": {
-        "x": 10.916905599859701,
+        "x": 10.864531738649783,
         "y": 7.213875312201409
       },
       "nextControl": null,
@@ -34,8 +34,8 @@
   "globalConstraints": {
     "maxVelocity": 4.0,
     "maxAcceleration": 3.0,
-    "maxAngularVelocity": 540.0,
-    "maxAngularAcceleration": 720.0
+    "maxAngularVelocity": 360.0,
+    "maxAngularAcceleration": 360.0
   },
   "goalEndState": {
     "velocity": 0,

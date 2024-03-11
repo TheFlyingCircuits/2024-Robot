@@ -3,25 +3,25 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 13.69237386120992,
+        "x": 13.64,
         "y": 7.003080254377342
       },
       "prevControl": null,
       "nextControl": {
-        "x": 13.680663024664138,
-        "y": 7.284140331476098
+        "x": 14.50602540378444,
+        "y": 6.503080254377342
       },
       "isLocked": false,
       "linkedName": "Ring 1"
     },
     {
       "anchor": {
-        "x": 13.645530515026794,
-        "y": 5.562647359246215
+        "x": 13.64,
+        "y": 5.55
       },
       "prevControl": {
-        "x": 13.63381967848101,
-        "y": 6.206743369264199
+        "x": 15.14,
+        "y": 5.55
       },
       "nextControl": null,
       "isLocked": false,
@@ -34,18 +34,18 @@
   "globalConstraints": {
     "maxVelocity": 4.0,
     "maxAcceleration": 3.0,
-    "maxAngularVelocity": 540.0,
-    "maxAngularAcceleration": 720.0
+    "maxAngularVelocity": 360.0,
+    "maxAngularAcceleration": 360.0
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 90.0,
+    "rotation": 0.0,
     "rotateFast": true
   },
   "reversed": false,
   "folder": "Starts at Ring",
   "previewStartingState": {
-    "rotation": 0,
+    "rotation": -30.0,
     "velocity": 0
   },
   "useDefaultConstraints": true

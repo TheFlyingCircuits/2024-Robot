@@ -142,8 +142,9 @@ public class RobotContainer {
         isRingInIntake = new Trigger(intake::isRingInIntake);
         
         NamedCommands.registerCommand("shootFromAnywhere", speakerShot());
-        NamedCommands.registerCommand("indexNote", indexNote().raceWith(resetShooter()));
+        NamedCommands.registerCommand("indexNote", indexNote());
         NamedCommands.registerCommand("trackNote", new InstantCommand(() -> {drivetrain.isTrackingNote = true;}));
+        NamedCommands.registerCommand("resetShooter", resetShooter());
         isRingInIntake.onTrue(new InstantCommand(() -> {drivetrain.isTrackingNote = false;}));
 
         configAutoBuilder();
