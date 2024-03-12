@@ -9,8 +9,6 @@ import frc.robot.Constants.DrivetrainConstants;
 import frc.robot.commands.AimEverythingAtAmp;
 import frc.robot.commands.AimEverythingAtSpeaker;
 import frc.robot.commands.NoteTrackingIndexNote;
-import frc.robot.commands.intake.IndexNote;
-import frc.robot.commands.intake.ReverseIntake;
 import frc.robot.subsystems.HumanDriver;
 import frc.robot.subsystems.arm.Arm;
 import frc.robot.subsystems.arm.ArmIONeo;
@@ -48,6 +46,7 @@ import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ScheduleCommand;
@@ -143,7 +142,7 @@ public class RobotContainer {
         
         NamedCommands.registerCommand("prepShot", new AimEverythingAtSpeaker(false, drivetrain, arm, shooter, null, leds));
         NamedCommands.registerCommand("shootFromAnywhere", speakerShot());
-        NamedCommands.registerCommand("indexNote", indexNote());
+        NamedCommands.registerCommand("quickIndexNote", intakeNote().andThen(new ScheduleCommand(indexNote())));
         NamedCommands.registerCommand("trackNote", new InstantCommand(() -> {drivetrain.isTrackingNote = true;}));
         NamedCommands.registerCommand("resetShooter", resetShooter());
         isRingInIntake.onTrue(new InstantCommand(() -> {drivetrain.isTrackingNote = false;}));
@@ -188,11 +187,53 @@ public class RobotContainer {
     //these command compositions must be separated into their own methods
     //since wpilib requires a new instance of a command to be used in each
     //composition (the same instance of a command cannot be used in multiple compositions).
-    Command indexNote() {
+    public Command runIntake() {
         return new ScheduleCommand(leds.playIntakeAnimationCommand())
-               .andThen(new IndexNote(intake, indexer))
-               .andThen(new ScheduleCommand(leds.solidOrangeCommand()));
+               .andThen(
+                    indexer.setIndexerRPMCommand(1100)
+                    .alongWith(intake.setVoltsCommand(12))
+               );
+    }
+
+    public Command reverseIntake() {
+        return indexer.run(() -> {indexer.setVolts(-8);})
+               .alongWith(intake.setVoltsCommand(-8));
                // TODO: reverse LEDs when barfing?
+    }
+
+    /** Starts running the intake, and finishes when a note is detected by the bottom intake sensor.
+     *  Intended to be followed up by indexNote, which will bring the note the rest of the way
+     *  into the shooter until it hits the second intake/indexer sensor.
+     *  Having intakeNote() be seperate from indexNote() will be usefull for auto,
+     *  where we often want to start driving away from a note once we've acquired it,
+     *  even if it isn't fully indexed yet.
+     * @return
+     */
+    public Command intakeNote() {
+        return this.runIntake().until(intake::isRingInIntake);
+    }
+
+    public Command indexNote() {
+        return this.runIntake().until(indexer::isNoteIndexed)
+               .andThen(new ScheduleCommand(leds.solidOrangeCommand()));
+    }
+
+    public Command signalNoteInIntake() {
+        return new InstantCommand(() -> {
+            // Find whatever pattern the LEDs are currently displaying,
+            // so that we can return to that pattern after we're done with the strobe.
+            Command interruptedPattern = leds.getCurrentCommand();
+
+            // Generate the strobe command
+            Command strobe = leds.strobeCommand(Color.kWhite, 4, 0.5);
+
+            // Make a command to re-schedule the original command.
+            Command reSchedule = new ScheduleCommand(interruptedPattern);
+
+            // Schedule the whole sequence.
+            // Allow the strobe to happen while the robot is disabled for testing purposes.
+            CommandScheduler.getInstance().schedule(strobe.andThen(reSchedule).ignoringDisable(true));
+        });
     }
 
     /** Resets the angle and speed of the shooter back to its default idle position. */
@@ -240,7 +281,7 @@ public class RobotContainer {
     // }
 
     public Command fireNote() {
-        return indexer.setIndexerRPMCommand(1500).withTimeout(0.5)
+        return indexer.setIndexerRPMCommand(1500).withTimeout(0.2)
                .alongWith(new ScheduleCommand(leds.playFireNoteAnimationCommand()));
     }
 
@@ -258,7 +299,7 @@ public class RobotContainer {
             //.whileTrue(new NoteTrackingIndexNote(intake, indexer, drivetrain, charlie::getRequestedFieldOrientedVelocity));
             .onTrue(indexNote().raceWith(resetShooter())); // reset never ends, indexNote does.
     
-        controller.leftTrigger().whileTrue(new ReverseIntake(intake, indexer));
+        controller.leftTrigger().whileTrue(reverseIntake());
         
         
         /** SCORING **/
@@ -290,9 +331,30 @@ public class RobotContainer {
 
         controller.x().onTrue(resetShooter());
 
-        isRingInIntake.onTrue(charlie.rumbleController(0.25, 0.5));
-        isRingInIntake.onTrue(leds.strobeCommand(Color.kWhite, 4, 0.5).ignoringDisable(true));//.andThen(new ScheduleCommand(leds.playIntakeAnimationCommand())));
+        /** Driver Feedback **/
+        isRingInIntake.onTrue(charlie.rumbleController(0.25, 0.5)); // lol this happens even during auto
+        isRingInIntake.onTrue(this.signalNoteInIntake().ignoringDisable(true));
         // TODO: prevent flash on reverse? Either condition with positive wheel speeds,
         //       or no seperate scheudle command?
+    }
+
+    private void testBindings() {
+        CommandXboxController controller = charlie.getXboxController();
+
+        controller.rightTrigger().whileTrue(indexNote());
+        controller.leftTrigger().whileTrue(reverseIntake());
+
+        // controller.povRight().onTrue(aimShooterAtAngle(0));
+        // controller.povUp().onTrue(aimShooterAtAngle(20));
+        // controller.povLeft().onTrue(aimShooterAtAngle(30));
+        // controller.povDown().onTrue(aimShooterAtAngle(45));
+
+        /** SYSID BINDINGS **/
+        // controller.a().whileTrue(arm.generateSysIdQuasistatic(SysIdRoutine.Direction.kForward));
+        // controller.b().whileTrue(arm.generateSysIdQuasistatic(SysIdRoutine.Direction.kReverse));
+        
+        // controller.x().whileTrue(arm.generateSysIdDynamic(SysIdRoutine.Direction.kForward));
+        // controller.y().whileTrue(arm.generateSysIdDynamic(SysIdRoutine.Direction.kReverse));
+    
     }
 }

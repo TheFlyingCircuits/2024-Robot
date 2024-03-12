@@ -8,20 +8,20 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 14.485,
-        "y": 4.608493649053891
+        "x": 14.719592786697266,
+        "y": 4.600301488425207
       },
       "isLocked": true,
       "linkedName": "Center Auto Starting Line"
     },
     {
       "anchor": {
-        "x": 14.05186316310875,
-        "y": 4.348392164717821
+        "x": 14.1,
+        "y": 4.33
       },
       "prevControl": {
-        "x": 14.26836951405486,
-        "y": 4.473392164717821
+        "x": 14.324698511574791,
+        "y": 4.439592786697269
       },
       "nextControl": null,
       "isLocked": true,
@@ -32,20 +32,20 @@
   "constraintZones": [],
   "eventMarkers": [],
   "globalConstraints": {
-    "maxVelocity": 4.5,
-    "maxAcceleration": 4.0,
+    "maxVelocity": 4.0,
+    "maxAcceleration": 3.0,
     "maxAngularVelocity": 360.0,
     "maxAngularAcceleration": 360.0
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 30.0,
+    "rotation": 26.0,
     "rotateFast": true
   },
   "reversed": false,
   "folder": "Starts at Starting Line",
   "previewStartingState": {
-    "rotation": 30.0,
+    "rotation": 26.0,
     "velocity": 0
   },
   "useDefaultConstraints": true

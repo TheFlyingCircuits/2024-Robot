@@ -3,14 +3,15 @@
   "robotLength": 0.91,
   "holonomicMode": true,
   "pathFolders": [
+    "Starts at Frontline Rings",
     "Starts at Midline Rings",
     "Starts at Ring",
     "Starts at Speaker",
     "Starts at Starting Line"
   ],
   "autoFolders": [],
-  "defaultMaxVel": 4.5,
-  "defaultMaxAccel": 4.0,
+  "defaultMaxVel": 4.0,
+  "defaultMaxAccel": 3.0,
   "defaultMaxAngVel": 360.0,
   "defaultMaxAngAccel": 360.0,
   "maxModuleSpeed": 4.8
