@@ -141,6 +141,7 @@ public class RobotContainer {
 
         isRingInIntake = new Trigger(intake::isRingInIntake);
         
+        NamedCommands.registerCommand("prepShot", new AimEverythingAtSpeaker(false, drivetrain, arm, shooter, null, leds));
         NamedCommands.registerCommand("shootFromAnywhere", speakerShot());
         NamedCommands.registerCommand("indexNote", indexNote());
         NamedCommands.registerCommand("trackNote", new InstantCommand(() -> {drivetrain.isTrackingNote = true;}));
@@ -187,7 +188,7 @@ public class RobotContainer {
     //these command compositions must be separated into their own methods
     //since wpilib requires a new instance of a command to be used in each
     //composition (the same instance of a command cannot be used in multiple compositions).
-    public Command indexNote() {
+    Command indexNote() {
         return new ScheduleCommand(leds.playIntakeAnimationCommand())
                .andThen(new IndexNote(intake, indexer))
                .andThen(new ScheduleCommand(leds.solidOrangeCommand()));
@@ -197,7 +198,6 @@ public class RobotContainer {
     /** Resets the angle and speed of the shooter back to its default idle position. */
     Command resetShooter() {
         double desiredAngle = ArmConstants.armMinAngleDegrees+5; // puts the arm at min height to pass under stage
-        desiredAngle = ArmConstants.armMinAngleDegrees+12; // temporary adjustment while the intake fingers are being re-worked.
         return arm.setDesiredDegreesCommand(desiredAngle)
                .alongWith(shooter.setFlywheelSurfaceSpeedCommand(0));
                //.alongWith(indexer.setIndexerRPMCommand(0)));
@@ -215,21 +215,18 @@ public class RobotContainer {
                .alongWith(shooter.setFlywheelSurfaceSpeedCommand(20));
     }
 
-    /** Spins the flywheels up to speed and aims arm when pressed against the subwoofer. */
-    Command prepSubwooferShot() {
-        return arm.setDesiredDegreesCommand(42)
-               .alongWith(shooter.setFlywheelSurfaceSpeedCommand(27));
-    }
-
     Command prepShart() {
         return arm.setDesiredDegreesCommand(-15)
                .alongWith(shooter.setFlywheelSurfaceSpeedCommand(25));
     }
 
-    //aims and then shoots in one motion
-    Command shootFromSubwoofer() {
-        // TODO: check progress for prepSubwooferShot()
-        return prepSubwooferShot().andThen(this.fireNote()).andThen(resetShooter());
+    /** Intakes while the arm is at a higher angle and the flywheels are revved up.
+     * This speeds up our index marginally during auto, so that the arm doesn't have as far to travel for the shot.
+     */
+    Command autoIndexNote() {
+        return indexNote()
+            .alongWith(arm.setDesiredDegreesCommand(0))
+            .alongWith(shooter.setFlywheelSurfaceSpeedCommand(20));
     }
     
     // Command shart() {
@@ -248,7 +245,7 @@ public class RobotContainer {
     }
 
     public Command speakerShot() {
-        AimEverythingAtSpeaker aim = new AimEverythingAtSpeaker(drivetrain, arm, shooter, charlie::getRequestedFieldOrientedVelocity, leds);
+        AimEverythingAtSpeaker aim = new AimEverythingAtSpeaker(true, drivetrain, arm, shooter, charlie::getRequestedFieldOrientedVelocity, leds);
         Command waitForAlignment = new WaitUntilCommand(aim::readyToShoot);
         Command fire = this.fireNote();
         return aim.raceWith(waitForAlignment.andThen(fire));
@@ -297,25 +294,5 @@ public class RobotContainer {
         isRingInIntake.onTrue(leds.strobeCommand(Color.kWhite, 4, 0.5).ignoringDisable(true));//.andThen(new ScheduleCommand(leds.playIntakeAnimationCommand())));
         // TODO: prevent flash on reverse? Either condition with positive wheel speeds,
         //       or no seperate scheudle command?
-    }
-
-    private void testBindings() {
-        CommandXboxController controller = charlie.getXboxController();
-
-        controller.rightTrigger().whileTrue(indexNote());
-        controller.leftTrigger().whileTrue(new ReverseIntake(intake, indexer));
-
-        // controller.povRight().onTrue(aimShooterAtAngle(0));
-        // controller.povUp().onTrue(aimShooterAtAngle(20));
-        // controller.povLeft().onTrue(aimShooterAtAngle(30));
-        // controller.povDown().onTrue(aimShooterAtAngle(45));
-
-        /** SYSID BINDINGS **/
-        // controller.a().whileTrue(arm.generateSysIdQuasistatic(SysIdRoutine.Direction.kForward));
-        // controller.b().whileTrue(arm.generateSysIdQuasistatic(SysIdRoutine.Direction.kReverse));
-        
-        // controller.x().whileTrue(arm.generateSysIdDynamic(SysIdRoutine.Direction.kForward));
-        // controller.y().whileTrue(arm.generateSysIdDynamic(SysIdRoutine.Direction.kReverse));
-    
     }
 }

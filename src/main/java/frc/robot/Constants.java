@@ -46,7 +46,7 @@ public final class Constants {
 
         public static final int indexerProximitySwitchID = 1;
 
-        public static final double kPIndexerVoltsPerRPM = 0.0001;
+        public static final double kPIndexerVoltsPerRPM = 0.002;
 
         public static final double kSIndexerVolts = 0;
         public static final double kVIndexerVoltsPerRPM = 0.0031;

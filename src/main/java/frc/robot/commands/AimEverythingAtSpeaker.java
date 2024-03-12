@@ -18,25 +18,44 @@ import frc.robot.subsystems.shooter.Shooter;
 
 public class AimEverythingAtSpeaker extends Command {
 
+
     private Drivetrain drivetrain;
     private Arm arm;
     private Shooter flywheels;
     private Supplier<ChassisSpeeds> translationController;
     private Command ledFeedbackCommand;
 
+    private boolean useDrivetrain;
     private boolean testingWithoutTags = false;
     public boolean setpointsAreFresh = false;
 
-    public AimEverythingAtSpeaker(Drivetrain drivetrain, Arm arm, Shooter flywheels, Supplier<ChassisSpeeds> translationController, LEDs leds) {
+    /** Command to aim all parts of the robot at the speaker in preparation for a shot.
+     *  This command never finishes; instead use the readyToShoot() method to determine when
+     *  a shot should be fired. This command also provides the ability to control translation
+     *  as the robot aims.
+     * 
+     *  @param useDrivetrain - True if the drivetrain is able to be controlled by this command. Set this to false when prepping a shot on the move in auto.
+     *  This means that the drivetrain will not move at all, only the arm and flywheels. 
+     *  @param translationController - Supplier that provides chassisSpeeds so that the robot can be controlled while aiming. If useDrivetrain is false, this value is not used.
+     */
+    public AimEverythingAtSpeaker(boolean useDrivetrain, Drivetrain drivetrain, Arm arm, Shooter flywheels, Supplier<ChassisSpeeds> translationController, LEDs leds) {
         this.drivetrain = drivetrain;
         this.arm = arm;
         this.flywheels = flywheels;
         this.translationController = translationController;
-        super.addRequirements(drivetrain, arm, flywheels);
+        this.useDrivetrain = useDrivetrain;
+        if (useDrivetrain) {
+            super.addRequirements(drivetrain, arm, flywheels);
+        }
+        else {
+            super.addRequirements(arm, flywheels);
+        }
+        
 
         ledFeedbackCommand = leds.playAimingAnimationCommand(arm::getErrorDegrees, flywheels::getWorstError, drivetrain::getAngleError);
     }
 
+    @Override
     public void initialize() {
         if (testingWithoutTags) {
             Translation2d speakerLocation = FieldConstants.blueSpeakerTranslation2d;
@@ -53,10 +72,13 @@ public class AimEverythingAtSpeaker extends Command {
         setpointsAreFresh = false;
     }
 
+    @Override
     public void execute() {
         // Drivetrain
-        ChassisSpeeds desiredTranslationalSpeeds = translationController.get();
-        drivetrain.fieldOrientedDriveWhileAiming(desiredTranslationalSpeeds, this.getDriveDesiredDegrees());
+        if (useDrivetrain) {
+            ChassisSpeeds desiredTranslationalSpeeds = translationController.get();
+            drivetrain.fieldOrientedDriveWhileAiming(desiredTranslationalSpeeds, drivetrain.getDriveDesiredDegrees());
+        }
 
         // Flywheels
         double leftFlywheelMetersPerSecond = 25;
@@ -71,7 +93,7 @@ public class AimEverythingAtSpeaker extends Command {
         // Arm
         //arm.setDesiredDegrees(this.getSimpleArmDesiredDegrees());
         double estimatedExitVelocity = (leftFlywheelMetersPerSecond + rightFlywheelMetersPerSecond) / 2.0;
-        arm.setDesiredDegrees(this.getGravCompensatedArmDesiredDegrees(estimatedExitVelocity));
+        arm.setDesiredDegrees(drivetrain.getGravCompensatedArmDesiredDegrees(estimatedExitVelocity));
         // TODO: use measured avg of flywheel speed?
 
         setpointsAreFresh = true;
@@ -79,83 +101,14 @@ public class AimEverythingAtSpeaker extends Command {
 
     public boolean readyToShoot() {
         return setpointsAreFresh && arm.isCloseToTarget() && flywheels.flywheelsAtSetpoints() && drivetrain.isAligned();
-        // TODO: add velocity constraints (can't be passing thorugh setpoint super fast, you must be setteled).
     }
 
+    @Override
     public void end(boolean isInterrupted) {
         ledFeedbackCommand.cancel();
     }
 
-    public Translation2d getSpeakerLocation() {
-        return DriverStation.getAlliance().get() == Alliance.Red ?
-               FieldConstants.redSpeakerTranslation2d :
-               FieldConstants.blueSpeakerTranslation2d;
-    }
 
-
-    /** Calculates the horizontal translational distance from the center of the robot to the center of the front edge of the speaker.*/
-    public double driveDistToSpeakerBaseMeters() {
-        Translation2d speakerLocation = this.getSpeakerLocation();
-        Translation2d robotLocation = drivetrain.getPoseMeters().getTranslation();
-        return robotLocation.getDistance(speakerLocation);
-    }
-
-    public double armDistToSpeakerBaseMeters() {
-        return this.driveDistToSpeakerBaseMeters() + FieldConstants.pivotOffsetMeters;
-    }
-
-    public double getSimpleArmDesiredDegrees() {
-        double horizontalDistance = this.armDistToSpeakerBaseMeters();
-        double verticalDistance = FieldConstants.speakerHeightMeters - FieldConstants.pivotHeightMeters;
-        double radians = Math.atan2(verticalDistance, horizontalDistance); // prob don't need arctan2 here, regular arctan will do.
-        return Math.toDegrees(radians);
-    }
-
-    /**
-     * Gets the angle that the shooter needs to aim at in order to point at the speaker target.
-     * This accounts for distance and gravity.
-     * @return - Angle in degrees, with 0 being straight forward and a positive angle being pointed upwards.
-    */
-    public double getGravCompensatedArmDesiredDegrees(double exitVelocityMetersPerSecond) {
-        
-        //see https://www.desmos.com/calculator/czxwosgvbz
-
-        double h = FieldConstants.speakerHeightMeters-FieldConstants.pivotHeightMeters;
-        double d = this.armDistToSpeakerBaseMeters();
-        double v = exitVelocityMetersPerSecond;
-        double g = 9.81;
-
-        double a = (h*h)/(d*d)+1;
-        double b = -2*(h*h)*(v*v)/(d*d) - (v*v) - g*h;
-        double c = (h*h)*Math.pow(v, 4)/(d*d) + (g*g)*(d*d)/4 + g*h*(v*v);
-
-        double vy = Math.sqrt((-b-Math.sqrt(b*b-4*a*c))/(2*a));
-
-        return Math.toDegrees(Math.asin(vy/v));
-    }
-
-    /** TODO: documentation */
-    public double getDriveDesiredDegrees() {
-        Translation2d speakerLocation = null;
-
-        Optional<Alliance> alliance = DriverStation.getAlliance();
-        if (!alliance.isPresent()) {
-            // Don't turn if we can't tell where to aim
-            return drivetrain.getPoseMeters().getRotation().getDegrees();
-        }
-
-        if (alliance.get() == Alliance.Blue) {
-            speakerLocation = FieldConstants.blueSpeakerTranslation2d;
-        }
-        else if (alliance.get() == Alliance.Red) {
-            speakerLocation = FieldConstants.redSpeakerTranslation2d;
-        }
-
-        // We want robot to align with the vector from robot to speaker
-        // that means we want the robot's angle to be the same as that vector's angle
-        Translation2d vector = speakerLocation.minus(drivetrain.getPoseMeters().getTranslation());
-        return vector.getAngle().getDegrees();
-    }
 
 
     

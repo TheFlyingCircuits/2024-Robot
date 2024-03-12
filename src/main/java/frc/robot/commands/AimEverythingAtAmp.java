@@ -27,6 +27,9 @@ public class AimEverythingAtAmp extends Command {
     private boolean testingWithoutTags = false;
     public boolean setpointsAreFresh = false;
 
+    
+    /** We are just using manual control for the time being. */
+    @Deprecated
     public AimEverythingAtAmp(Drivetrain drivetrain, Arm arm, Shooter flywheels, Supplier<ChassisSpeeds> translationController, LEDs leds) {
         this.drivetrain = drivetrain;
         this.arm = arm;
