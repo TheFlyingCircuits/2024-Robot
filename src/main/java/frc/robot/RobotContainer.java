@@ -143,6 +143,7 @@ public class RobotContainer {
         NamedCommands.registerCommand("prepShot", new AimEverythingAtSpeaker(false, drivetrain, arm, shooter, null, leds));
         NamedCommands.registerCommand("shootFromAnywhere", speakerShot());
         NamedCommands.registerCommand("quickIndexNote", intakeNote().andThen(new ScheduleCommand(indexNote())));
+        NamedCommands.registerCommand("quickIndexNoteWhileRapidFire", new InstantCommand());
         NamedCommands.registerCommand("trackNote", new InstantCommand(() -> {drivetrain.isTrackingNote = true;}));
         NamedCommands.registerCommand("resetShooter", resetShooter());
         isRingInIntake.onTrue(new InstantCommand(() -> {drivetrain.isTrackingNote = false;}));
@@ -190,7 +191,7 @@ public class RobotContainer {
     public Command runIntake() {
         return new ScheduleCommand(leds.playIntakeAnimationCommand())
                .andThen(
-                    indexer.setIndexerRPMCommand(1100)
+                    indexer.setIndexerRPMCommand(900)
                     .alongWith(intake.setVoltsCommand(12))
                );
     }
@@ -223,6 +224,7 @@ public class RobotContainer {
             // Find whatever pattern the LEDs are currently displaying,
             // so that we can return to that pattern after we're done with the strobe.
             Command interruptedPattern = leds.getCurrentCommand();
+            // TODO: check if the currently scheduled command is itself a strobe, so we don't get duplicate strobes?
 
             // Generate the strobe command
             Command strobe = leds.strobeCommand(Color.kWhite, 4, 0.5);
@@ -253,7 +255,7 @@ public class RobotContainer {
     /** Moves the arm back and spins up the flywheels to prepare for a trap shot. */
     Command prepTrapShot() {
         return arm.setDesiredDegreesCommand(90)
-               .alongWith(shooter.setFlywheelSurfaceSpeedCommand(20));
+               .alongWith(shooter.setFlywheelSurfaceSpeedCommand(10));
     }
 
     Command prepShart() {

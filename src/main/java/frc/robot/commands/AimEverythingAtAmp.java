@@ -93,13 +93,13 @@ public class AimEverythingAtAmp extends Command {
     }
 
     /** TODO: documentation */
-    public double getDriveDesiredDegrees() {
+    public Rotation2d getDriveDesiredDegrees() {
         Translation2d ampLocation = null;
 
         Optional<Alliance> alliance = DriverStation.getAlliance();
         if (!alliance.isPresent()) {
             // Don't turn if we can't tell where to aim
-            return drivetrain.getPoseMeters().getRotation().getDegrees();
+            return drivetrain.getPoseMeters().getRotation();
         }
 
         if (alliance.get() == Alliance.Blue) {
@@ -112,7 +112,7 @@ public class AimEverythingAtAmp extends Command {
         // We want robot to align with the vector from robot to speaker
         // that means we want the robot's angle to be the same as that vector's angle
         Translation2d vector = ampLocation.minus(drivetrain.getPoseMeters().getTranslation());
-        return vector.unaryMinus().getAngle().getDegrees();
+        return vector.unaryMinus().getAngle();
     }
 
 

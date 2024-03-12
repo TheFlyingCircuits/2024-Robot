@@ -41,7 +41,7 @@ public class NoteTrackingIndexNote extends Command {
         if (drivetrain.intakeSeesNote()) {
             drivetrain.fieldOrientedDriveWhileAiming(
                 translationController.get(),
-                drivetrain.getFieldRelativeRotationToNote().getDegrees());
+                drivetrain.getFieldRelativeRotationToNote());
         }
         else {
             drivetrain.fieldOrientedDrive(translationController.get(), true);

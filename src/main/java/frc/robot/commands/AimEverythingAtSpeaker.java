@@ -77,7 +77,7 @@ public class AimEverythingAtSpeaker extends Command {
         // Drivetrain
         if (useDrivetrain) {
             ChassisSpeeds desiredTranslationalSpeeds = translationController.get();
-            drivetrain.fieldOrientedDriveWhileAiming(desiredTranslationalSpeeds, drivetrain.getDriveDesiredDegrees());
+            drivetrain.fieldOrientedDriveWhileAiming(desiredTranslationalSpeeds, drivetrain.getAngleFromDriveToSpeaker());
         }
 
         // Flywheels

@@ -53,8 +53,8 @@ public class Shooter extends SubsystemBase {
             ShooterConstants.kVFlywheelsVoltsSecondsPerMeter,
             ShooterConstants.kAFlywheelsVoltsSecondsSquaredPerMeter);
 
-        leftFlywheelsPID.setTolerance(0.5);
-        rightFlywheelsPID.setTolerance(0.5);
+        leftFlywheelsPID.setTolerance(1.0);
+        rightFlywheelsPID.setTolerance(1.0);
     }
 
     /**

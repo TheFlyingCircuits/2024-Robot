@@ -41,7 +41,8 @@ public class Drivetrain extends SubsystemBase {
     private SwerveDrivePoseEstimator fusedPoseEstimator;
     private SwerveDrivePoseEstimator wheelsOnlyPoseEstimator;
 
-    public boolean isTrackingNote;
+    public boolean isTrackingNote = false;
+    public boolean isTrackingSpeakerInAuto = false;
 
     /** error measured in degrees, output is in degrees per second. */
     private PIDController angleController;
@@ -130,9 +131,10 @@ public class Drivetrain extends SubsystemBase {
      * @param desiredTranslationalSpeeds
      * @param desiredAngleDegrees
      */
-    public void fieldOrientedDriveWhileAiming(ChassisSpeeds desiredTranslationalSpeeds, double desiredAngleDegrees) {
+    public void fieldOrientedDriveWhileAiming(ChassisSpeeds desiredTranslationalSpeeds, Rotation2d desiredAngle) {
         // Use PID controller to generate a desired angular velocity based on the desired angle
         double measuredAngle = fusedPoseEstimator.getEstimatedPosition().getRotation().getDegrees();
+        double desiredAngleDegrees = desiredAngle.getDegrees();
         double desiredDegreesPerSecond = angleController.calculate(measuredAngle, desiredAngleDegrees);
         double desiredRadiansPerSecond = Math.toRadians(desiredDegreesPerSecond);
 
@@ -258,6 +260,9 @@ public class Drivetrain extends SubsystemBase {
     }
 
     public double getAngleError() {
+        if (isTrackingSpeakerInAuto) {
+            return getPoseMeters().getRotation().minus(getAngleFromDriveToSpeaker()).getDegrees();
+        }
         return angleController.getPositionError();
     }
 
@@ -275,6 +280,9 @@ public class Drivetrain extends SubsystemBase {
     }
 
     public Optional<Rotation2d> getAutoRotationOverride() {
+        if (isTrackingSpeakerInAuto) {
+            return Optional.of(getAngleFromDriveToSpeaker());
+        }
         if (isTrackingNote && visionInputs.intakeSeesNote) {
             return Optional.of(getFieldRelativeRotationToNote());
         }
@@ -356,13 +364,13 @@ public class Drivetrain extends SubsystemBase {
     }
 
     /** TODO: documentation */
-    public double getDriveDesiredDegrees() {
+    public Rotation2d getAngleFromDriveToSpeaker() {
         Translation2d speakerLocation = null;
 
         Optional<Alliance> alliance = DriverStation.getAlliance();
         if (!alliance.isPresent()) {
             // Don't turn if we can't tell where to aim
-            return getPoseMeters().getRotation().getDegrees();
+            return getPoseMeters().getRotation();
         }
 
         if (alliance.get() == Alliance.Blue) {
@@ -375,7 +383,7 @@ public class Drivetrain extends SubsystemBase {
         // We want robot to align with the vector from robot to speaker
         // that means we want the robot's angle to be the same as that vector's angle
         Translation2d vector = speakerLocation.minus(getPoseMeters().getTranslation());
-        return vector.getAngle().getDegrees();
+        return vector.getAngle();
     }
 
     @Override

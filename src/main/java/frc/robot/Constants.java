@@ -31,7 +31,7 @@ public final class Constants {
 
         public static final double flywheelCircumferenceMeters = Units.inchesToMeters(4)*Math.PI;
     
-        public final static double kPFlywheelsVoltsSecondsPerMeter = .4;
+        public final static double kPFlywheelsVoltsSecondsPerMeter = .6;
         public final static double kIFlywheelsVoltsPerMeter = 0.;
         public final static double kDFlywheelsVoltsSecondsSquaredPerMeter = 0.;
 
@@ -46,7 +46,7 @@ public final class Constants {
 
         public static final int indexerProximitySwitchID = 1;
 
-        public static final double kPIndexerVoltsPerRPM = 0.002;
+        public static final double kPIndexerVoltsPerRPM = 0.001;
 
         public static final double kSIndexerVolts = 0;
         public static final double kVIndexerVoltsPerRPM = 0.0031;
@@ -189,7 +189,7 @@ public final class Constants {
         public final static double armMinAngleDegrees = -25.8;
 
         /**Maximum angle of the arm, in degrees. This value should be positive and greater than 90, as it is beyond the vertical. */
-        public final static double armMaxAngleDegrees = 143.;
+        public final static double armMaxAngleDegrees = 137.;
 
         public final static double armMaxVelDegreesPerSecond = 360.;
 
