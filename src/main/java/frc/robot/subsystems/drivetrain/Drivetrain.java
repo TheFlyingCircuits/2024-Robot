@@ -234,13 +234,16 @@ public class Drivetrain extends SubsystemBase {
      */
     private Matrix<N3, N1> getVisionStdDevs(double distToTargetMeters) {
 
-        double slopeStdDevMetersPerMeter = .5;
+        double slopeStdDevMetersPerMeterX = 0.001;
+        double slopeStdDevMetersPerMeterY = 0.003;
+        // TODO: maybe just calculate based on last couple seconds instead of as a funciton of distance?
+
         double slopeStdDevRadiansPerMeter = 1000;
 
         //corresponds to x, y, and rotation standard deviations (meters and radians)
         return VecBuilder.fill(
-            slopeStdDevMetersPerMeter*distToTargetMeters,
-            slopeStdDevMetersPerMeter*distToTargetMeters,
+            slopeStdDevMetersPerMeterX*distToTargetMeters,
+            slopeStdDevMetersPerMeterY*distToTargetMeters,
             slopeStdDevRadiansPerMeter*distToTargetMeters
         );
     }
@@ -306,7 +309,7 @@ public class Drivetrain extends SubsystemBase {
 
         // don't add vision measurements that are too far away
         // for reference: it is 6 meters from speaker tags to wing.
-        if (visionTranslation.getDistance(estimatedTranslation) < 2 && visionInputs.nearestTagDistanceMeters < 3) {
+        if (visionTranslation.getDistance(estimatedTranslation) < 2 && visionInputs.nearestTagDistanceMeters < 4) {
             fusedPoseEstimator.addVisionMeasurement(
                 visionInputs.robotFieldPose, 
                 visionInputs.timestampSeconds, 

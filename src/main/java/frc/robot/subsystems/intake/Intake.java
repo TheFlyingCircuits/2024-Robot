@@ -19,6 +19,10 @@ import frc.robot.VendorWrappers.Neo;
 /** Add your docs here. */
 public class Intake extends SubsystemBase {
 
+    private boolean intakeSensorTriggeredPrev = false;
+    private boolean intakeSensorTriggeredNow = false;
+    private boolean isRisingEdge = false;
+
     private DigitalInput intakeProximitySwitch;
     /**
      * Motor object that controls the four axles on the front of the intake. 
@@ -61,9 +65,13 @@ public class Intake extends SubsystemBase {
     }
 
     public boolean isRingInIntake() {
-        // Proximit sensor pulls the digital input pin high by default,
+        // Proximity sensor pulls the digital input pin high by default,
         // and pulls it low when it detects an object.
         return !intakeProximitySwitch.get();
+    }
+
+    public boolean isRisingEdge() {
+        return isRisingEdge;
     }
 
     /**
@@ -122,6 +130,10 @@ public class Intake extends SubsystemBase {
 
     @Override
     public void periodic() {
+        intakeSensorTriggeredPrev = intakeSensorTriggeredNow;
+        intakeSensorTriggeredNow = isRingInIntake();
+        isRisingEdge = intakeSensorTriggeredNow && (!intakeSensorTriggeredPrev);
+
         Logger.recordOutput("intake/frontIntakeMotorRPM", frontIntakeMotor.getVelocity());
         Logger.recordOutput("intake/backIntakeMotorRPM", backIntakeMotor.getVelocity());
         Logger.recordOutput("intake/isRingInIntake", isRingInIntake());

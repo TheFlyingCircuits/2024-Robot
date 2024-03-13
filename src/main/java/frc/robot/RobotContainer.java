@@ -43,6 +43,7 @@ import com.pathplanner.lib.util.PIDConstants;
 import com.pathplanner.lib.util.ReplanningConfig;
 
 import edu.wpi.first.wpilibj.RobotBase;
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -140,10 +141,13 @@ public class RobotContainer {
 
         isRingInIntake = new Trigger(intake::isRingInIntake);
         
-        NamedCommands.registerCommand("prepShot", new AimEverythingAtSpeaker(false, drivetrain, arm, shooter, null, leds));
+        // NamedCommands.registerCommand("prepShot", new AimEverythingAtSpeaker(false, drivetrain, arm, shooter, null, leds));
         NamedCommands.registerCommand("shootFromAnywhere", speakerShot());
-        NamedCommands.registerCommand("quickIndexNote", intakeNote().andThen(new ScheduleCommand(indexNote())));
-        NamedCommands.registerCommand("quickIndexNoteWhileRapidFire", new InstantCommand());
+        NamedCommands.registerCommand("indexNote", indexNote().withTimeout(5.0));
+        NamedCommands.registerCommand("intakeNote", intakeNote().withTimeout(5.0));
+        NamedCommands.registerCommand("rapidFire", new InstantCommand(() -> {drivetrain.isTrackingSpeakerInAuto = true;}).andThen(new AimEverythingAtSpeaker(false, drivetrain, arm, shooter, null, leds).alongWith(runIntake())).finallyDo(() -> {drivetrain.isTrackingSpeakerInAuto = false;}));
+        // NamedCommands.registerCommand("quickIndexNote", intakeNote().andThen(new ScheduleCommand(indexNote())));
+        // NamedCommands.registerCommand("quickIndexNoteWhileRapidFire", new InstantCommand());
         NamedCommands.registerCommand("trackNote", new InstantCommand(() -> {drivetrain.isTrackingNote = true;}));
         NamedCommands.registerCommand("resetShooter", resetShooter());
         isRingInIntake.onTrue(new InstantCommand(() -> {drivetrain.isTrackingNote = false;}));
@@ -157,7 +161,7 @@ public class RobotContainer {
     private void configAutoBuilder() {
         AutoBuilder.configureHolonomic(
             drivetrain::getPoseMeters, // Robot pose supplier
-            drivetrain::setPoseMeters, // Method to reset odometry (will be called if your auto has a starting pose)
+            (Pose2d dummy) -> {}, //drivetrain::setPoseMeters, // Method to reset odometry (will be called if your auto has a starting pose)
             drivetrain::getChassisSpeeds, // ChassisSpeeds supplier. MUST BE ROBOT RELATIVE
             (ChassisSpeeds speeds) -> drivetrain.robotOrientedDrive(speeds, true), // Method that will drive the robot given ROBOT RELATIVE ChassisSpeeds
             new HolonomicPathFollowerConfig( // HolonomicPathFollowerConfig, this should likely live in your Constants class
@@ -191,7 +195,8 @@ public class RobotContainer {
     public Command runIntake() {
         return new ScheduleCommand(leds.playIntakeAnimationCommand())
                .andThen(
-                    indexer.setIndexerRPMCommand(900)
+                    //indexer.setIndexerRPMCommand(1100)
+                    indexer.run(() -> {indexer.setVolts(12);})
                     .alongWith(intake.setVoltsCommand(12))
                );
     }
@@ -211,11 +216,12 @@ public class RobotContainer {
      * @return
      */
     public Command intakeNote() {
-        return this.runIntake().until(intake::isRingInIntake);
+        return this.runIntake().until(intake::isRisingEdge);
     }
 
     public Command indexNote() {
         return this.runIntake().until(indexer::isNoteIndexed)
+               .andThen(new InstantCommand(() -> {indexer.setVolts(0); intake.setVolts(0);}))
                .andThen(new ScheduleCommand(leds.solidOrangeCommand()));
     }
 
@@ -298,6 +304,7 @@ public class RobotContainer {
         CommandXboxController controller = charlie.getXboxController();
         /** INTAKE **/
         controller.rightTrigger()
+            //.onTrue(intakeNote().raceWith(resetShooter()));
             //.whileTrue(new NoteTrackingIndexNote(intake, indexer, drivetrain, charlie::getRequestedFieldOrientedVelocity));
             .onTrue(indexNote().raceWith(resetShooter())); // reset never ends, indexNote does.
     

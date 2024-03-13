@@ -8,6 +8,7 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -50,7 +51,14 @@ public class Indexer extends SubsystemBase {
 
     /** Gets the RPM of the indexer wheels. */
     public double getIndexerRPM() {
-        return indexerMotor.getVelocity().getValueAsDouble()/ShooterConstants.indexerGearReduction*60;
+        double motorRadiansPerSecond = indexerMotor.getVelocity().getValueAsDouble() * 2 * Math.PI;
+        double motorRPM = Units.radiansPerSecondToRotationsPerMinute(motorRadiansPerSecond);
+
+        double motorRotationsPerIndexerRotation = ShooterConstants.indexerGearReduction;
+        double indexerRotationsPerMotorRotation = 1/motorRotationsPerIndexerRotation;
+
+        double indexerRPM = motorRPM * indexerRotationsPerMotorRotation;
+        return indexerRPM;
     }
 
     public void setVolts(double volts) {
@@ -76,9 +84,11 @@ public class Indexer extends SubsystemBase {
 
     @Override
     public void periodic() {
+        Logger.recordOutput("indexer/amps", indexerMotor.getTorqueCurrent().getValueAsDouble());
         Logger.recordOutput("indexer/isNoteIndexed()", isNoteIndexed());
         Logger.recordOutput("indexer/indexerRPM", getIndexerRPM());
         Logger.recordOutput("indexer/setpointRPM", indexerPID.getSetpoint()); 
+        Logger.recordOutput("indexer/supplyCurrent", indexerMotor.getSupplyCurrent().getValueAsDouble());
     };
 
 }

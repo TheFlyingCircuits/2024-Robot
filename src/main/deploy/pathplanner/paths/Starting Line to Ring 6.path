@@ -20,23 +20,23 @@
         "y": 4.67
       },
       "prevControl": {
-        "x": 12.707106781186548,
-        "y": 5.377106781186548
+        "x": 12.958968313515195,
+        "y": 4.953513268955454
       },
       "nextControl": {
-        "x": 11.292893218813452,
-        "y": 3.962893218813452
+        "x": 10.743751509295086,
+        "y": 4.298597617668351
       },
       "isLocked": false,
       "linkedName": "Stage Right"
     },
     {
       "anchor": {
-        "x": 8.75,
+        "x": 8.6,
         "y": 4.1
       },
       "prevControl": {
-        "x": 9.75,
+        "x": 9.6,
         "y": 4.1
       },
       "nextControl": null,
@@ -49,7 +49,7 @@
   "eventMarkers": [],
   "globalConstraints": {
     "maxVelocity": 4.0,
-    "maxAcceleration": 3.0,
+    "maxAcceleration": 4.0,
     "maxAngularVelocity": 360.0,
     "maxAngularAcceleration": 360.0
   },
