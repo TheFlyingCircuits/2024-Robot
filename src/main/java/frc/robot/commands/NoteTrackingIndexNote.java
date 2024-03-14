@@ -2,7 +2,6 @@ package frc.robot.commands;
 
 import java.util.function.Supplier;
 
-import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.drivetrain.Drivetrain;
@@ -35,7 +34,7 @@ public class NoteTrackingIndexNote extends Command {
     @Override
     public void execute() {
         intake.setVolts(12);
-        indexer.setIndexerRPM(1100);
+        indexer.setBlackRollerSurfaceSpeed(1100);
 
 
         if (drivetrain.intakeSeesNote()) {

@@ -2,6 +2,7 @@
 package frc.robot.subsystems.drivetrain;
 
 import java.util.function.Supplier;
+import java.sql.Driver;
 import java.util.Optional;
 
 import org.littletonrobotics.junction.Logger;
@@ -265,6 +266,7 @@ public class Drivetrain extends SubsystemBase {
     public double getAngleError() {
         if (isTrackingSpeakerInAuto) {
             return getPoseMeters().getRotation().minus(getAngleFromDriveToSpeaker()).getDegrees();
+            // TODO: add leds for not tracking too?
         }
         return angleController.getPositionError();
     }
@@ -317,16 +319,11 @@ public class Drivetrain extends SubsystemBase {
             );
         }
     }
-        public Translation2d getSpeakerLocation() {
-        return DriverStation.getAlliance().get() == Alliance.Red ?
-               FieldConstants.redSpeakerTranslation2d :
-               FieldConstants.blueSpeakerTranslation2d;
-    }
 
 
     /** Calculates the horizontal translational distance from the center of the robot to the center of the front edge of the speaker.*/
     public double driveDistToSpeakerBaseMeters() {
-        Translation2d speakerLocation = this.getSpeakerLocation();
+        Translation2d speakerLocation = this.getSpeakerLocation(new Translation2d());
         Translation2d robotLocation = this.getPoseMeters().getTranslation();
         return robotLocation.getDistance(speakerLocation);
     }
@@ -368,25 +365,49 @@ public class Drivetrain extends SubsystemBase {
 
     /** TODO: documentation */
     public Rotation2d getAngleFromDriveToSpeaker() {
-        Translation2d speakerLocation = null;
+        return getAngleFromDriveToTarget(this.getSpeakerLocation(this.getPoseMeters().getTranslation()));
+    }
 
-        Optional<Alliance> alliance = DriverStation.getAlliance();
-        if (!alliance.isPresent()) {
-            // Don't turn if we can't tell where to aim
-            return getPoseMeters().getRotation();
-        }
+    public Rotation2d getAngleFromDriveToAmp() {
+        // aim the back of the robot at the amp cause that's where we score from.
+        return getAngleFromDriveToTarget(this.getAmpLocation(this.getPoseMeters().getTranslation())).plus(Rotation2d.fromDegrees(180));
+    }
 
-        if (alliance.get() == Alliance.Blue) {
-            speakerLocation = FieldConstants.blueSpeakerTranslation2d;
-        }
-        else if (alliance.get() == Alliance.Red) {
-            speakerLocation = FieldConstants.redSpeakerTranslation2d;
-        }
-
-        // We want robot to align with the vector from robot to speaker
-        // that means we want the robot's angle to be the same as that vector's angle
-        Translation2d vector = speakerLocation.minus(getPoseMeters().getTranslation());
+    /**
+     * Computes the vector that points from the drivetrain's current location to the given target,
+     * then returns the angle of that vector relative to the x axis of the field coordinate system.
+     * @param targetLocationOnField The tip of the vector, as measured in the field coordinate system.
+     * @return
+     */
+    public Rotation2d getAngleFromDriveToTarget(Translation2d targetLocationOnField) {
+        Translation2d vector = targetLocationOnField.minus(getPoseMeters().getTranslation());
         return vector.getAngle();
+    }
+
+    public Translation2d getLocationOfFieldElement(Translation2d locationWhenRed, Translation2d locationWhenBlue, Translation2d locationIfNoComms) {
+        Optional<Alliance> alliance = DriverStation.getAlliance();
+
+        if (alliance.isPresent() && alliance.get() == Alliance.Blue) {
+            return locationWhenBlue;
+        }
+
+        if (alliance.isPresent() && alliance.get() == Alliance.Red) {
+            return locationWhenRed;
+        }
+
+        return locationIfNoComms;
+    }
+
+    public Translation2d getSpeakerLocation(Translation2d locationIfNoComms) {
+        Translation2d redSpeaker = FieldConstants.redSpeakerTranslation2d;
+        Translation2d blueSpeaker = FieldConstants.blueSpeakerTranslation2d;
+        return getLocationOfFieldElement(redSpeaker, blueSpeaker, locationIfNoComms);
+    }
+
+    public Translation2d getAmpLocation(Translation2d locationIfNoComms) {
+        Translation2d redAmp = FieldConstants.redAmpLocation;
+        Translation2d blueAmp = FieldConstants.blueAmpLocation;
+        return getLocationOfFieldElement(redAmp, blueAmp, locationIfNoComms);
     }
 
     @Override

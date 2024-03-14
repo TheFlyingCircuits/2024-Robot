@@ -46,13 +46,20 @@ public final class Constants {
 
         public static final int indexerProximitySwitchID = 1;
 
-        public static final double kPIndexerVoltsPerRPM = 0.001;
+        public static final double kPIndexerVoltsPerRPS = 0.04;
 
         public static final double kSIndexerVolts = 0;
-        public static final double kVIndexerVoltsPerRPM = 0.0031;
+        public static final double kVIndexerVoltsPerRPS = 0.130;
 
-        /** Rotations of the motor per rotations of the indexer wheel; a number greater than 1 represents a reduction. */
-        public static final double indexerGearReduction = 24./18.;
+        /** Rotations of the black roller of the indexer per rotation of the motor. */
+        public static final double indexerBlackRollerGearRatio = (17.0/27.0) * (18.0/24.0);
+        public static final double blackRollerRadiusMeters = Units.inchesToMeters(2.125/2.0);
+        public static final double blackRollerCircumferenceMeters = 2 * Math.PI * blackRollerRadiusMeters;
+
+        /** Rotations of the orange wheels on the indexer per rotation of the motor. */
+        public static final double indexerOrangeWheelsGearRatio = (17.0 / 27.0);
+        public static final double orangeWheelsRadiusMeters = Units.inchesToMeters(1.125);
+        public static final double orangeWheelsCircumferenceMeters = 2 * Math.PI * orangeWheelsRadiusMeters;
 
         public static final double motorMaxTempCelsius = 70;
     }

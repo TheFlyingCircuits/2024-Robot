@@ -64,7 +64,7 @@ public class VisionIOPhotonLib implements VisionIO {
         updateShooterCamera(inputs);
 
         PhotonPipelineResult intakeCameraResult = intakeCamera.getLatestResult();
-        if (intakeCameraResult.getBestTarget() == null) {
+        if (!intakeCameraResult.hasTargets()) {
             inputs.intakeSeesNote = false;
             inputs.nearestNoteYawDegrees = 0;
         }

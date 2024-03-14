@@ -77,28 +77,15 @@ public class Robot extends LoggedRobot {
         CommandScheduler.getInstance().run();
     }
 
-    Timer flashTimer = new Timer();
-    Timer timeBetweenFlashes = new Timer();
-    Timer slingshotTimer = new Timer();
-
     /** This function is called once each time the robot enters Disabled mode. */
     @Override
     public void disabledInit() {
-        flashTimer.restart();
-        timeBetweenFlashes.restart();
-        slingshotTimer.restart();
+
     }
 
 
     @Override
     public void disabledPeriodic() {
-
-        // leds.setLEDColor(LEDColor.ORANGE);
-        //leds.chasePattern();
-
-
-        //m_robotContainer.arm.setDesiredPositionToCurrent();
-
         m_robotContainer.drivetrain.setPoseToVisionMeasurement();
     }
 

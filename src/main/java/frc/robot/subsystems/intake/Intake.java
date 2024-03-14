@@ -11,6 +11,7 @@ import com.revrobotics.CANSparkBase.IdleMode;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.wpilibj.DigitalInput;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.IntakeConstants;
@@ -21,7 +22,8 @@ public class Intake extends SubsystemBase {
 
     private boolean intakeSensorTriggeredPrev = false;
     private boolean intakeSensorTriggeredNow = false;
-    private boolean isRisingEdge = false;
+    private boolean ringJustEnteredIntake = false;
+    private Timer sensorDebounceTimer = new Timer(); // helps prevent rapid repeated triggers of intake sensor
 
     private DigitalInput intakeProximitySwitch;
     /**
@@ -43,6 +45,7 @@ public class Intake extends SubsystemBase {
 
     public Intake() {
         intakeProximitySwitch = new DigitalInput(IntakeConstants.intakeProximitySwitchID);
+        sensorDebounceTimer.restart();
 
         frontIntakeMotor = new Neo("frontIntake", IntakeConstants.frontIntakeMotorID);
         backIntakeMotor = new Neo("backIntake", IntakeConstants.backIntakeMotorID);
@@ -65,13 +68,11 @@ public class Intake extends SubsystemBase {
     }
 
     public boolean isRingInIntake() {
-        // Proximity sensor pulls the digital input pin high by default,
-        // and pulls it low when it detects an object.
-        return !intakeProximitySwitch.get();
+        return intakeSensorTriggeredNow;
     }
 
-    public boolean isRisingEdge() {
-        return isRisingEdge;
+    public boolean ringJustEnteredIntake() {
+        return ringJustEnteredIntake;
     }
 
     /**
@@ -130,9 +131,26 @@ public class Intake extends SubsystemBase {
 
     @Override
     public void periodic() {
+        // save information from last iteration
         intakeSensorTriggeredPrev = intakeSensorTriggeredNow;
-        intakeSensorTriggeredNow = isRingInIntake();
-        isRisingEdge = intakeSensorTriggeredNow && (!intakeSensorTriggeredPrev);
+
+        // Record information for this iteration.
+        // Proximity sensor pulls the digital input pin high by default,
+        // and pulls it low when it detects an object.
+        intakeSensorTriggeredNow = !intakeProximitySwitch.get();
+
+        // Detect proximity sensor rising edges.
+        // Debounce the signal to prevent rapid back to back triggers.
+        ringJustEnteredIntake = intakeSensorTriggeredNow && (!intakeSensorTriggeredPrev);
+        if (ringJustEnteredIntake) {
+            if (sensorDebounceTimer.get() < 1.0) {
+                // this is a duplicate trigger that happened too quickly after another recent trigger
+                ringJustEnteredIntake = false;
+            } else {
+                // this is a legit trigger, so we reset the timer
+                sensorDebounceTimer.restart();
+            }
+        }
 
         Logger.recordOutput("intake/frontIntakeMotorRPM", frontIntakeMotor.getVelocity());
         Logger.recordOutput("intake/backIntakeMotorRPM", backIntakeMotor.getVelocity());

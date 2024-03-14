@@ -1,14 +1,11 @@
 package frc.robot.commands;
 
-import java.util.Optional;
 import java.util.function.Supplier;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
-import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants.FieldConstants;
 import frc.robot.subsystems.arm.Arm;
@@ -25,19 +22,33 @@ public class AimEverythingAtAmp extends Command {
     private Command ledFeedbackCommand;
 
     private boolean testingWithoutTags = false;
-    public boolean setpointsAreFresh = false;
+    private boolean setpointsAreFresh = false;
+    private boolean useAutoRotate = false;
+
 
     
     /** We are just using manual control for the time being. */
-    @Deprecated
-    public AimEverythingAtAmp(Drivetrain drivetrain, Arm arm, Shooter flywheels, Supplier<ChassisSpeeds> translationController, LEDs leds) {
+    public AimEverythingAtAmp(boolean useAutoRotate, Drivetrain drivetrain, Arm arm, Shooter flywheels, Supplier<ChassisSpeeds> translationController, LEDs leds) {
         this.drivetrain = drivetrain;
         this.arm = arm;
         this.flywheels = flywheels;
         this.translationController = translationController;
-        super.addRequirements(drivetrain, arm, flywheels);
+        this.useAutoRotate = useAutoRotate;
+        if (useAutoRotate) {
+            super.addRequirements(drivetrain, arm, flywheels);
+        }
+        else {
+            super.addRequirements(arm, flywheels);
+        }
 
-        ledFeedbackCommand = leds.playAimingAnimationCommand(arm::getErrorDegrees, flywheels::getWorstError, drivetrain::getAngleError);
+        if (useAutoRotate) {
+            ledFeedbackCommand = leds.playAimingAnimationCommand(arm::getErrorDegrees, flywheels::getWorstError, drivetrain::getAngleError);
+        }
+        else {
+            ledFeedbackCommand = leds.playAimingAnimationCommand(arm::getErrorDegrees, flywheels::getWorstError, () -> {
+                return drivetrain.getAngleFromDriveToAmp().minus(drivetrain.getPoseMeters().getRotation()).getDegrees();
+            });
+        }
     }
 
     public void initialize() {
@@ -45,9 +56,9 @@ public class AimEverythingAtAmp extends Command {
             Translation2d ampLocation = FieldConstants.blueAmpLocation;
             Translation2d offset = new Translation2d(0, -2);
             Translation2d inFrontOfAmp = ampLocation.plus(offset);
+            Rotation2d backPointedAtAmp = Rotation2d.fromDegrees(-90);
 
-            Rotation2d robotAngle = drivetrain.getPoseMeters().getRotation();
-            drivetrain.setPoseMeters(new Pose2d(inFrontOfAmp, robotAngle));
+            drivetrain.setPoseMeters(new Pose2d(inFrontOfAmp, backPointedAtAmp));
         }
 
         // drive angle error may be stale from last call?
@@ -59,16 +70,20 @@ public class AimEverythingAtAmp extends Command {
     public void execute() {
         // Drivetrain
         ChassisSpeeds desiredTranslationalSpeeds = translationController.get();
-        drivetrain.fieldOrientedDriveWhileAiming(desiredTranslationalSpeeds, this.getDriveDesiredDegrees());
+        if (useAutoRotate) {
+            drivetrain.fieldOrientedDriveWhileAiming(desiredTranslationalSpeeds, drivetrain.getAngleFromDriveToAmp());
+        }
+        else {
+            // full manual control
+            drivetrain.fieldOrientedDrive(desiredTranslationalSpeeds, true);
+        }
 
         // Flywheels
-        double leftFlywheelMetersPerSecond = 10;
-        double rightFlywheelMetersPerSecond = 10;
+        double flywheelSpeeed = 10;
         if (testingWithoutTags) {
             flywheels.setBothFlywheelsMetersPerSecond(0);
         } else {
-            flywheels.setLeftFlywheelsMetersPerSecond(leftFlywheelMetersPerSecond);
-            flywheels.setRightFlywheelsMetersPerSecond(rightFlywheelMetersPerSecond);
+            flywheels.setBothFlywheelsMetersPerSecond(flywheelSpeeed);
         }
 
         // Arm
@@ -85,36 +100,5 @@ public class AimEverythingAtAmp extends Command {
     public void end(boolean isInterrupted) {
         ledFeedbackCommand.cancel();
     }
-
-    public Translation2d getAmpLocation() {
-        return DriverStation.getAlliance().get() == Alliance.Red ?
-               FieldConstants.redAmpLocation :
-               FieldConstants.blueAmpLocation;
-    }
-
-    /** TODO: documentation */
-    public Rotation2d getDriveDesiredDegrees() {
-        Translation2d ampLocation = null;
-
-        Optional<Alliance> alliance = DriverStation.getAlliance();
-        if (!alliance.isPresent()) {
-            // Don't turn if we can't tell where to aim
-            return drivetrain.getPoseMeters().getRotation();
-        }
-
-        if (alliance.get() == Alliance.Blue) {
-            ampLocation = FieldConstants.blueAmpLocation;
-        }
-        else if (alliance.get() == Alliance.Red) {
-            ampLocation = FieldConstants.redAmpLocation;
-        }
-
-        // We want robot to align with the vector from robot to speaker
-        // that means we want the robot's angle to be the same as that vector's angle
-        Translation2d vector = ampLocation.minus(drivetrain.getPoseMeters().getTranslation());
-        return vector.unaryMinus().getAngle();
-    }
-
-
     
 }

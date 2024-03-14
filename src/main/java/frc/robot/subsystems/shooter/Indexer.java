@@ -8,7 +8,6 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
-import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -28,37 +27,43 @@ public class Indexer extends SubsystemBase {
         indexerProximitySwitch = new DigitalInput(ShooterConstants.indexerProximitySwitchID);
 
         indexerPID = new PIDController(
-            ShooterConstants.kPIndexerVoltsPerRPM,
+            ShooterConstants.kPIndexerVoltsPerRPS,
             0, 
             0);
         
         indexerFeedforward = new SimpleMotorFeedforward(
             ShooterConstants.kSIndexerVolts,
-            ShooterConstants.kVIndexerVoltsPerRPM);
+            ShooterConstants.kVIndexerVoltsPerRPS);
 
         configMotor();
     }
 
-    public void setIndexerRPM(double rpm) {
-        double feedforwardOutput = indexerFeedforward.calculate(rpm);
-        double pidOutput = indexerPID.calculate(getIndexerRPM(), rpm);
+    public void setBlackRollerSurfaceSpeed(double metersPerSecond) {
+        double blackRollerRotationsPerSecond = metersPerSecond * (1.0 / ShooterConstants.blackRollerCircumferenceMeters);
+        double desiredMotorRotationsPerSecond = blackRollerRotationsPerSecond * (1.0 / ShooterConstants.indexerBlackRollerGearRatio);
+        setMotorRotationsPerSecond(desiredMotorRotationsPerSecond);
+    }
+
+    public void setOrangeWheelsSurfaceSpeed(double metersPerSecond) {
+        double orangeWheelsRotationsPerSecond = metersPerSecond * (1.0 / ShooterConstants.orangeWheelsCircumferenceMeters);
+        double desiredMotorRotationsPerSecond = orangeWheelsRotationsPerSecond * (1.0 / ShooterConstants.indexerOrangeWheelsGearRatio);
+        setMotorRotationsPerSecond(desiredMotorRotationsPerSecond);
+    }
+
+    public void setMotorRotationsPerSecond(double desiredRotationsPerSecond) {
+        double feedforwardOutput = indexerFeedforward.calculate(desiredRotationsPerSecond);
+
+        double currentMotorSpeed = indexerMotor.getVelocity().getValueAsDouble();
+        double pidOutput = indexerPID.calculate(currentMotorSpeed, desiredRotationsPerSecond);
         indexerMotor.setVoltage(feedforwardOutput + pidOutput);
     }
 
-    public Command setIndexerRPMCommand(double rpm) {
-        return this.run(() -> {this.setIndexerRPM(rpm);});
+    public Command setBlackRollerSurfaceSpeedCommand(double metersPerSecond) {
+        return this.run(() -> {this.setBlackRollerSurfaceSpeed(metersPerSecond);});
     }
 
-    /** Gets the RPM of the indexer wheels. */
-    public double getIndexerRPM() {
-        double motorRadiansPerSecond = indexerMotor.getVelocity().getValueAsDouble() * 2 * Math.PI;
-        double motorRPM = Units.radiansPerSecondToRotationsPerMinute(motorRadiansPerSecond);
-
-        double motorRotationsPerIndexerRotation = ShooterConstants.indexerGearReduction;
-        double indexerRotationsPerMotorRotation = 1/motorRotationsPerIndexerRotation;
-
-        double indexerRPM = motorRPM * indexerRotationsPerMotorRotation;
-        return indexerRPM;
+    public Command setOrangeWheelsSurfaceSpeedCommand(double metersPerSecond) {
+        return this.run(() -> {this.setOrangeWheelsSurfaceSpeed(metersPerSecond);});
     }
 
     public void setVolts(double volts) {
@@ -86,8 +91,8 @@ public class Indexer extends SubsystemBase {
     public void periodic() {
         Logger.recordOutput("indexer/amps", indexerMotor.getTorqueCurrent().getValueAsDouble());
         Logger.recordOutput("indexer/isNoteIndexed()", isNoteIndexed());
-        Logger.recordOutput("indexer/indexerRPM", getIndexerRPM());
-        Logger.recordOutput("indexer/setpointRPM", indexerPID.getSetpoint()); 
+        Logger.recordOutput("indexer/indexerRPS", indexerMotor.getVelocity().getValueAsDouble());
+        Logger.recordOutput("indexer/setpointRPS", indexerPID.getSetpoint()); 
         Logger.recordOutput("indexer/supplyCurrent", indexerMotor.getSupplyCurrent().getValueAsDouble());
     };
 
