@@ -79,11 +79,11 @@ public class AimEverythingAtAmp extends Command {
         }
 
         // Flywheels
-        double flywheelSpeeed = 10;
+        double flywheelSpeed = 15;
         if (testingWithoutTags) {
             flywheels.setBothFlywheelsMetersPerSecond(0);
         } else {
-            flywheels.setBothFlywheelsMetersPerSecond(flywheelSpeeed);
+            flywheels.setBothFlywheelsMetersPerSecond(flywheelSpeed);
         }
 
         // Arm

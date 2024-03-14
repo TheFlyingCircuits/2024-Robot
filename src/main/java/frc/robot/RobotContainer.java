@@ -303,7 +303,7 @@ public class RobotContainer {
     }
 
     public Command fireNote() {
-        return indexer.setBlackRollerSurfaceSpeedCommand(20).withTimeout(0.2)
+        return indexer.setBlackRollerSurfaceSpeedCommand(20).withTimeout(0.4)
                .alongWith(new ScheduleCommand(leds.playFireNoteAnimationCommand()));
     }
 

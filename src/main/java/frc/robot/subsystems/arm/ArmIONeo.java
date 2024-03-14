@@ -6,12 +6,17 @@ import com.ctre.phoenix6.signals.AbsoluteSensorRangeValue;
 import com.ctre.phoenix6.signals.SensorDirectionValue;
 import com.revrobotics.CANSparkBase.IdleMode;
 
+import edu.wpi.first.math.filter.LinearFilter;
 import frc.robot.Constants.ArmConstants;
 import frc.robot.VendorWrappers.Neo;
 import frc.robot.subsystems.arm.ArmIO.ArmIOInputs;
 
 public class ArmIONeo implements ArmIO {
     
+
+
+    private LinearFilter velocityFilter;
+
     private Neo leftMotor;
     private Neo rightMotor;
     private CANcoder leftAbsoluteEncoder;
@@ -30,12 +35,15 @@ public class ArmIONeo implements ArmIO {
         
         configMotors();
 
+        velocityFilter = LinearFilter.movingAverage(4);
+
     }
 
     @Override
     public void updateInputs(ArmIOInputs inputs) {
         
-        inputs.armVelocityDegreesPerSecond = rightAbsoluteEncoder.getVelocity().getValueAsDouble()*360;
+        inputs.armVelocityDegreesPerSecond = velocityFilter.calculate(
+            rightAbsoluteEncoder.getVelocity().getValueAsDouble()*360);
 
         inputs.leftEncoderReadingDegrees = leftAbsoluteEncoder.getAbsolutePosition().getValueAsDouble()*360;
         inputs.rightEncoderReadingDegrees = rightAbsoluteEncoder.getAbsolutePosition().getValueAsDouble()*360;
