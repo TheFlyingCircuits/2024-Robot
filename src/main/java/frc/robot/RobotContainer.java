@@ -141,13 +141,11 @@ public class RobotContainer {
 
         isRingInIntake = new Trigger(intake::isRingInIntake);
         
-        // NamedCommands.registerCommand("prepShot", new AimEverythingAtSpeaker(false, drivetrain, arm, shooter, null, leds));
+        NamedCommands.registerCommand("prepShot", prepAutoSpeakerShot());
         NamedCommands.registerCommand("shootFromAnywhere", speakerShot());
         NamedCommands.registerCommand("indexNote", indexNote().withTimeout(5.0));
         NamedCommands.registerCommand("intakeNote", intakeNote().withTimeout(5.0));
-        NamedCommands.registerCommand("rapidFire", new InstantCommand(() -> {drivetrain.isTrackingSpeakerInAuto = true;}).andThen(new AimEverythingAtSpeaker(false, drivetrain, arm, shooter, null, leds).alongWith(runIntake())).finallyDo(() -> {drivetrain.isTrackingSpeakerInAuto = false;}));
-        // NamedCommands.registerCommand("quickIndexNote", intakeNote().andThen(new ScheduleCommand(indexNote())));
-        // NamedCommands.registerCommand("quickIndexNoteWhileRapidFire", new InstantCommand());
+        NamedCommands.registerCommand("rapidFire", prepAutoSpeakerShot().alongWith(runIntake()));
         NamedCommands.registerCommand("trackNote", new InstantCommand(() -> {drivetrain.isTrackingNote = true;}));
         NamedCommands.registerCommand("resetShooter", resetShooter());
         isRingInIntake.onTrue(new InstantCommand(() -> {drivetrain.isTrackingNote = false;}));
@@ -188,6 +186,16 @@ public class RobotContainer {
         PPHolonomicDriveController.setRotationTargetOverride(drivetrain::getAutoRotationOverride);
     }
 
+    /**
+     * Aims the flywheels and arm at the speaker, while also setting the Pathplanner rotation override.
+     * This command never finishes.
+     */
+    Command prepAutoSpeakerShot() {
+        return new InstantCommand(() -> {drivetrain.isTrackingSpeakerInAuto = true;})
+                .andThen(new AimEverythingAtSpeaker(false, drivetrain, arm, shooter, null, leds))
+                .finallyDo(() -> {drivetrain.isTrackingSpeakerInAuto = false;});
+
+    }
 
     //these command compositions must be separated into their own methods
     //since wpilib requires a new instance of a command to be used in each
@@ -195,8 +203,8 @@ public class RobotContainer {
     public Command runIntake() {
         return new ScheduleCommand(leds.playIntakeAnimationCommand())
                .andThen(
-                    //indexer.setIndexerRPMCommand(1100)
-                    indexer.run(() -> {indexer.setVolts(12);})
+                    indexer.setIndexerRPMCommand(1100)
+                    //indexer.run(() -> {indexer.setVolts(12);})
                     .alongWith(intake.setVoltsCommand(12))
                );
     }

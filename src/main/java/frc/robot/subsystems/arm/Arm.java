@@ -128,7 +128,7 @@ public class Arm extends SubsystemBase {
     public boolean isCloseToTarget() {
         // TODO: pick a non-arbitrary value based on sensor resolution?
         boolean errorIsSmall = Math.abs(getErrorDegrees()) < 1.0;
-        boolean isSteady = inputs.armVelocityDegreesPerSecond < 1.0;
+        boolean isSteady = inputs.armVelocityDegreesPerSecond < 2.0;
         return errorIsSmall && isSteady; // This worked without the isSteady before because I forgot to deploy!
     }
 
@@ -215,16 +215,17 @@ public class Arm extends SubsystemBase {
     @Override
     public void periodic() {
         
+        Logger.processInputs("armInputs", inputs);
+
         io.updateInputs(inputs);
 
         followTrapezoidProfile();
         mechLigament.setAngle(inputs.armAngleDegrees);
 
 
-
-        Logger.processInputs("armInputs", inputs);
         Logger.recordOutput("arm/mech2d", armMech2d);
         Logger.recordOutput("arm/isMovingToTarget", isMovingToTarget);
         Logger.recordOutput("arm/targetAngleDegrees", targetAngleDegrees);
+        Logger.recordOutput("arm/isCloseToTarget", isCloseToTarget());
     }
 }

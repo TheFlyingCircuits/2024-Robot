@@ -122,6 +122,7 @@ public class Shooter extends SubsystemBase {
 
         Logger.recordOutput("shooter/leftFlywheelsSetpoint", leftFlywheelsPID.getSetpoint());
         Logger.recordOutput("shooter/rightFlywheelsSetpoint", rightFlywheelsPID.getSetpoint());
+        Logger.recordOutput("shooter/flywheelsAtSetpoints", flywheelsAtSetpoints());
 
     };
 }

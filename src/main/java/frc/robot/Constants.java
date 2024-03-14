@@ -212,7 +212,7 @@ public final class Constants {
         public final static double kAArmVoltsSecondsSquaredPerRadian = 0;
 
         public final static double kPArmVoltsPerDegree = 0.3;
-        public final static double kDArmVoltsSecondsPerDegree = 0.005;
+        public final static double kDArmVoltsSecondsPerDegree = 0.02;
 
         /**** SIM CONSTANTS  ******/
         // public final static double kSArmVolts = 0.0;

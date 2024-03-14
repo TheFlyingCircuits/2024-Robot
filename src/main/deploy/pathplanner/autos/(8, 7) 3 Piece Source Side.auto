@@ -12,9 +12,28 @@
           }
         },
         {
-          "type": "parallel",
+          "type": "deadline",
           "data": {
             "commands": [
+              {
+                "type": "sequential",
+                "data": {
+                  "commands": [
+                    {
+                      "type": "wait",
+                      "data": {
+                        "waitTime": 1.75
+                      }
+                    },
+                    {
+                      "type": "named",
+                      "data": {
+                        "name": "intakeNote"
+                      }
+                    }
+                  ]
+                }
+              },
               {
                 "type": "path",
                 "data": {
@@ -24,12 +43,6 @@
               {
                 "type": "named",
                 "data": {
-                  "name": "indexNote"
-                }
-              },
-              {
-                "type": "named",
-                "data": {
                   "name": "trackNote"
                 }
               }
@@ -37,9 +50,35 @@
           }
         },
         {
-          "type": "path",
+          "type": "race",
           "data": {
-            "pathName": "Ring 8 to Starting Line"
+            "commands": [
+              {
+                "type": "parallel",
+                "data": {
+                  "commands": [
+                    {
+                      "type": "named",
+                      "data": {
+                        "name": "indexNote"
+                      }
+                    },
+                    {
+                      "type": "path",
+                      "data": {
+                        "pathName": "Ring 8 to Starting Line"
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "prepShot"
+                }
+              }
+            ]
           }
         },
         {
@@ -49,19 +88,32 @@
           }
         },
         {
-          "type": "parallel",
+          "type": "deadline",
           "data": {
             "commands": [
+              {
+                "type": "sequential",
+                "data": {
+                  "commands": [
+                    {
+                      "type": "wait",
+                      "data": {
+                        "waitTime": 1.5
+                      }
+                    },
+                    {
+                      "type": "named",
+                      "data": {
+                        "name": "intakeNote"
+                      }
+                    }
+                  ]
+                }
+              },
               {
                 "type": "path",
                 "data": {
                   "pathName": "Source Side Speaker to Ring 7"
-                }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "indexNote"
                 }
               },
               {
@@ -74,9 +126,35 @@
           }
         },
         {
-          "type": "path",
+          "type": "race",
           "data": {
-            "pathName": "Ring 7 to Starting Line"
+            "commands": [
+              {
+                "type": "parallel",
+                "data": {
+                  "commands": [
+                    {
+                      "type": "path",
+                      "data": {
+                        "pathName": "Ring 7 to Starting Line"
+                      }
+                    },
+                    {
+                      "type": "named",
+                      "data": {
+                        "name": "indexNote"
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "prepShot"
+                }
+              }
+            ]
           }
         },
         {
