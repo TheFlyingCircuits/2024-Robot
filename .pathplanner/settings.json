@@ -3,6 +3,7 @@
   "robotLength": 0.91,
   "holonomicMode": true,
   "pathFolders": [
+    "Starts at Wing Shot",
     "Starts at Frontline Rings",
     "Starts at Midline Rings",
     "Starts at Ring",

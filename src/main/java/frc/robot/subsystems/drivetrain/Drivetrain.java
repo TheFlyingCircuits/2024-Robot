@@ -2,11 +2,11 @@
 package frc.robot.subsystems.drivetrain;
 
 import java.util.function.Supplier;
-import java.sql.Driver;
 import java.util.Optional;
 
 import org.littletonrobotics.junction.Logger;
 
+import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.controller.PIDController;
@@ -26,6 +26,8 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.DrivetrainConstants;
 import frc.robot.Constants.FieldConstants;
+import frc.robot.Constants.FieldElement;
+import frc.robot.Constants.VisionConstants;
 import frc.robot.subsystems.vision.VisionIO;
 import frc.robot.subsystems.vision.VisionIOInputsAutoLogged;
 
@@ -265,8 +267,11 @@ public class Drivetrain extends SubsystemBase {
 
     public double getAngleError() {
         if (isTrackingSpeakerInAuto) {
-            return getPoseMeters().getRotation().minus(getAngleFromDriveToSpeaker()).getDegrees();
+            Rotation2d desiredAngle = getAngleFromDriveToFieldElement(FieldElement.SPEAKER);
+            Rotation2d measuredAngle = getPoseMeters().getRotation();
+            return measuredAngle.minus(desiredAngle).getDegrees();
             // TODO: add leds for not tracking too?
+            // maybe see if we can pass in our own angle controller to path planner?
         }
         return angleController.getPositionError();
     }
@@ -286,7 +291,7 @@ public class Drivetrain extends SubsystemBase {
 
     public Optional<Rotation2d> getAutoRotationOverride() {
         if (isTrackingSpeakerInAuto) {
-            return Optional.of(getAngleFromDriveToSpeaker());
+            return Optional.of(getAngleFromDriveToFieldElement(FieldElement.SPEAKER));
         }
         if (isTrackingNote && visionInputs.intakeSeesNote) {
             return Optional.of(getFieldRelativeRotationToNote());
@@ -321,9 +326,9 @@ public class Drivetrain extends SubsystemBase {
     }
 
 
-    /** Calculates the horizontal translational distance from the center of the robot to the center of the front edge of the speaker.*/
+    /** Calculates the horizontal translational distance from the center of the robot to the central apriltag of the speaker.*/
     public double driveDistToSpeakerBaseMeters() {
-        Translation2d speakerLocation = this.getSpeakerLocation(new Translation2d());
+        Translation2d speakerLocation = getLocationOfFieldElement(FieldElement.SPEAKER).getTranslation();
         Translation2d robotLocation = this.getPoseMeters().getTranslation();
         return robotLocation.getDistance(speakerLocation);
     }
@@ -363,16 +368,6 @@ public class Drivetrain extends SubsystemBase {
         return Math.toDegrees(Math.asin(vy/v));
     }
 
-    /** TODO: documentation */
-    public Rotation2d getAngleFromDriveToSpeaker() {
-        return getAngleFromDriveToTarget(this.getSpeakerLocation(this.getPoseMeters().getTranslation()));
-    }
-
-    public Rotation2d getAngleFromDriveToAmp() {
-        // aim the back of the robot at the amp cause that's where we score from.
-        return getAngleFromDriveToTarget(this.getAmpLocation(this.getPoseMeters().getTranslation())).plus(Rotation2d.fromDegrees(180));
-    }
-
     /**
      * Computes the vector that points from the drivetrain's current location to the given target,
      * then returns the angle of that vector relative to the x axis of the field coordinate system.
@@ -384,31 +379,39 @@ public class Drivetrain extends SubsystemBase {
         return vector.getAngle();
     }
 
-    public Translation2d getLocationOfFieldElement(Translation2d locationWhenRed, Translation2d locationWhenBlue, Translation2d locationIfNoComms) {
+    public Rotation2d getAngleFromDriveToFieldElement(FieldElement element) {
+        Pose2d pose = getLocationOfFieldElement(element);
+        return getAngleFromDriveToTarget(pose.getTranslation());
+    }
+
+    public Pose2d getLocationOfFieldElement(FieldElement element) {
+
         Optional<Alliance> alliance = DriverStation.getAlliance();
+        AprilTagFieldLayout fieldLayout = VisionConstants.aprilTagFieldLayout;
 
         if (alliance.isPresent() && alliance.get() == Alliance.Blue) {
-            return locationWhenBlue;
+            if (element == FieldElement.SPEAKER) { return fieldLayout.getTagPose(7).get().toPose2d(); }
+            if (element == FieldElement.AMP) { return fieldLayout.getTagPose(6).get().toPose2d(); }
+            if (element == FieldElement.STAGE_LEFT) { return fieldLayout.getTagPose(15).get().toPose2d(); }
+            if (element == FieldElement.STAGE_RIGHT) { return fieldLayout.getTagPose(16).get().toPose2d(); }
+            if (element == FieldElement.CENTER_STAGE) { return fieldLayout.getTagPose(14).get().toPose2d(); }
         }
 
         if (alliance.isPresent() && alliance.get() == Alliance.Red) {
-            return locationWhenRed;
+            if (element == FieldElement.SPEAKER) { return fieldLayout.getTagPose(4).get().toPose2d(); }
+            if (element == FieldElement.AMP) { return fieldLayout.getTagPose(5).get().toPose2d(); }
+            if (element == FieldElement.STAGE_LEFT) { return fieldLayout.getTagPose(11).get().toPose2d(); }
+            if (element == FieldElement.STAGE_RIGHT) { return fieldLayout.getTagPose(12).get().toPose2d(); }
+            if (element == FieldElement.CENTER_STAGE) { return fieldLayout.getTagPose(13).get().toPose2d(); }
         }
 
-        return locationIfNoComms;
+        // If we don't have comms and can't tell what alliance we're on,
+        // then just return the pose of the robot. This will make it so
+        // when the robot tries to target the field element, it should
+        // just stay in place, which seems like the safest thing to do.
+        return getPoseMeters();
     }
 
-    public Translation2d getSpeakerLocation(Translation2d locationIfNoComms) {
-        Translation2d redSpeaker = FieldConstants.redSpeakerTranslation2d;
-        Translation2d blueSpeaker = FieldConstants.blueSpeakerTranslation2d;
-        return getLocationOfFieldElement(redSpeaker, blueSpeaker, locationIfNoComms);
-    }
-
-    public Translation2d getAmpLocation(Translation2d locationIfNoComms) {
-        Translation2d redAmp = FieldConstants.redAmpLocation;
-        Translation2d blueAmp = FieldConstants.blueAmpLocation;
-        return getLocationOfFieldElement(redAmp, blueAmp, locationIfNoComms);
-    }
 
     @Override
     public void periodic() {

@@ -8,6 +8,7 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants.FieldConstants;
+import frc.robot.Constants.FieldElement;
 import frc.robot.subsystems.arm.Arm;
 import frc.robot.subsystems.drivetrain.Drivetrain;
 import frc.robot.subsystems.leds.LEDs;
@@ -46,7 +47,9 @@ public class AimEverythingAtAmp extends Command {
         }
         else {
             ledFeedbackCommand = leds.playAimingAnimationCommand(arm::getErrorDegrees, flywheels::getWorstError, () -> {
-                return drivetrain.getAngleFromDriveToAmp().minus(drivetrain.getPoseMeters().getRotation()).getDegrees();
+                Rotation2d desiredAngle = drivetrain.getAngleFromDriveToFieldElement(FieldElement.AMP).rotateBy(Rotation2d.fromDegrees(180));
+                Rotation2d measuredAngle = drivetrain.getPoseMeters().getRotation();
+                return desiredAngle.minus(measuredAngle).getDegrees();
             });
         }
     }
@@ -71,7 +74,9 @@ public class AimEverythingAtAmp extends Command {
         // Drivetrain
         ChassisSpeeds desiredTranslationalSpeeds = translationController.get();
         if (useAutoRotate) {
-            drivetrain.fieldOrientedDriveWhileAiming(desiredTranslationalSpeeds, drivetrain.getAngleFromDriveToAmp());
+            // point the back of the robot at the amp.
+            Rotation2d desiredAngle = drivetrain.getAngleFromDriveToFieldElement(FieldElement.AMP).rotateBy(Rotation2d.fromDegrees(180));
+            drivetrain.fieldOrientedDriveWhileAiming(desiredTranslationalSpeeds, desiredAngle);
         }
         else {
             // full manual control

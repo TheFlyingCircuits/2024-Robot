@@ -22,13 +22,13 @@
                     {
                       "type": "wait",
                       "data": {
-                        "waitTime": 2.0
+                        "waitTime": 1.75
                       }
                     },
                     {
                       "type": "named",
                       "data": {
-                        "name": "indexNote"
+                        "name": "intakeNote"
                       }
                     }
                   ]
@@ -50,37 +50,19 @@
           }
         },
         {
-          "type": "path",
-          "data": {
-            "pathName": "Ring 6 to Starting Line"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "shootFromAnywhere"
-          }
-        },
-        {
-          "type": "deadline",
+          "type": "parallel",
           "data": {
             "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "Ring 6 to Starting Line"
+                }
+              },
               {
                 "type": "named",
                 "data": {
                   "name": "indexNote"
-                }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "resetShooter"
-                }
-              },
-              {
-                "type": "path",
-                "data": {
-                  "pathName": "Starting Line to Ring 3"
                 }
               }
             ]
@@ -93,65 +75,41 @@
           }
         },
         {
-          "type": "deadline",
+          "type": "parallel",
           "data": {
             "commands": [
               {
                 "type": "named",
                 "data": {
-                  "name": "indexNote"
+                  "name": "rapidFire"
                 }
               },
               {
-                "type": "named",
+                "type": "sequential",
                 "data": {
-                  "name": "resetShooter"
-                }
-              },
-              {
-                "type": "path",
-                "data": {
-                  "pathName": "Ring 3 to Ring 2"
+                  "commands": [
+                    {
+                      "type": "path",
+                      "data": {
+                        "pathName": "Starting Line to Ring 3"
+                      }
+                    },
+                    {
+                      "type": "path",
+                      "data": {
+                        "pathName": "Ring 3 to Ring 2"
+                      }
+                    },
+                    {
+                      "type": "path",
+                      "data": {
+                        "pathName": "Ring 2 to Ring 1"
+                      }
+                    }
+                  ]
                 }
               }
             ]
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "shootFromAnywhere"
-          }
-        },
-        {
-          "type": "deadline",
-          "data": {
-            "commands": [
-              {
-                "type": "named",
-                "data": {
-                  "name": "indexNote"
-                }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "resetShooter"
-                }
-              },
-              {
-                "type": "path",
-                "data": {
-                  "pathName": "Ring 2 to Ring 1"
-                }
-              }
-            ]
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "shootFromAnywhere"
           }
         }
       ]

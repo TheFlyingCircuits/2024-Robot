@@ -11,7 +11,7 @@
         "x": 11.69,
         "y": 6.62
       },
-      "isLocked": true,
+      "isLocked": false,
       "linkedName": "Amp Side Wing Shot"
     },
     {
@@ -27,7 +27,7 @@
         "x": 13.65,
         "y": 6.25
       },
-      "isLocked": true,
+      "isLocked": false,
       "linkedName": "Amp Side Mid Shot"
     },
     {
@@ -43,7 +43,7 @@
         "x": 14.538794046299168,
         "y": 6.564709107588264
       },
-      "isLocked": true,
+      "isLocked": false,
       "linkedName": "Ring 1"
     },
     {
@@ -59,7 +59,7 @@
         "x": 12.64,
         "y": 5.55
       },
-      "isLocked": true,
+      "isLocked": false,
       "linkedName": "Ring 2"
     },
     {
@@ -75,7 +75,7 @@
         "x": 12.741205953700833,
         "y": 3.6626349611681253
       },
-      "isLocked": true,
+      "isLocked": false,
       "linkedName": "Ring 3"
     },
     {
@@ -91,7 +91,7 @@
         "x": 7.27,
         "y": 7.46
       },
-      "isLocked": true,
+      "isLocked": false,
       "linkedName": "Ring 4"
     },
     {
@@ -107,7 +107,7 @@
         "x": 7.27,
         "y": 5.78
       },
-      "isLocked": true,
+      "isLocked": false,
       "linkedName": "Ring 5"
     },
     {
@@ -123,7 +123,7 @@
         "x": 7.27,
         "y": 4.1
       },
-      "isLocked": true,
+      "isLocked": false,
       "linkedName": "Ring 6"
     },
     {
@@ -139,7 +139,7 @@
         "x": 7.27,
         "y": 2.43
       },
-      "isLocked": true,
+      "isLocked": false,
       "linkedName": "Ring 7"
     },
     {
@@ -155,7 +155,7 @@
         "x": 7.270256540513081,
         "y": 0.7500000000000001
       },
-      "isLocked": true,
+      "isLocked": false,
       "linkedName": "Ring 8"
     },
     {
@@ -171,7 +171,7 @@
         "x": 11.69,
         "y": 1.59
       },
-      "isLocked": true,
+      "isLocked": false,
       "linkedName": "Source Side Wing Shot"
     },
     {
@@ -187,7 +187,7 @@
         "x": 13.65,
         "y": 2.43
       },
-      "isLocked": true,
+      "isLocked": false,
       "linkedName": "Source Side Mid Shot"
     },
     {
@@ -203,7 +203,7 @@
         "x": 15.61,
         "y": 3.265
       },
-      "isLocked": true,
+      "isLocked": false,
       "linkedName": "Source Side Starting Line"
     },
     {
@@ -219,7 +219,7 @@
         "x": 15.61,
         "y": 4.825
       },
-      "isLocked": true,
+      "isLocked": false,
       "linkedName": "Center Auto Starting Line"
     },
     {
@@ -235,7 +235,7 @@
         "x": 15.61,
         "y": 6.25
       },
-      "isLocked": true,
+      "isLocked": false,
       "linkedName": "Amp Side Starting Line"
     },
     {
@@ -248,7 +248,7 @@
         "y": 4.098792791023527
       },
       "nextControl": null,
-      "isLocked": true,
+      "isLocked": false,
       "linkedName": "Under Stage"
     }
   ],

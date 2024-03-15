@@ -8,6 +8,7 @@ import frc.robot.Constants.ArmConstants;
 import frc.robot.Constants.DrivetrainConstants;
 import frc.robot.commands.AimEverythingAtAmp;
 import frc.robot.commands.AimEverythingAtSpeaker;
+import frc.robot.commands.AimEverythingAtTrap;
 import frc.robot.commands.NoteTrackingIndexNote;
 import frc.robot.subsystems.HumanDriver;
 import frc.robot.subsystems.arm.Arm;
@@ -203,7 +204,7 @@ public class RobotContainer {
     public Command runIntake() {
         return new ScheduleCommand(leds.playIntakeAnimationCommand())
                .andThen(
-                    indexer.setBlackRollerSurfaceSpeedCommand(20)
+                    indexer.setBlackRollerSurfaceSpeedCommand(7)
                     //indexer.run(() -> {indexer.setVolts(12);})
                     .alongWith(intake.setVoltsCommand(12))
                );
@@ -256,6 +257,7 @@ public class RobotContainer {
     /** Resets the angle and speed of the shooter back to its default idle position. */
     Command resetShooter() {
         double desiredAngle = ArmConstants.armMinAngleDegrees+5; // puts the arm at min height to pass under stage
+        //desiredAngle = 35;
         return arm.setDesiredDegreesCommand(desiredAngle)
                .alongWith(shooter.setFlywheelSurfaceSpeedCommand(0));
                //.alongWith(indexer.setIndexerRPMCommand(0)));
@@ -303,7 +305,7 @@ public class RobotContainer {
     }
 
     public Command fireNote() {
-        return indexer.setBlackRollerSurfaceSpeedCommand(20).withTimeout(0.4)
+        return indexer.setOrangeWheelsSurfaceSpeedCommand(5).withTimeout(0.4)
                .alongWith(new ScheduleCommand(leds.playFireNoteAnimationCommand()));
     }
 
@@ -312,6 +314,14 @@ public class RobotContainer {
         Command waitForAlignment = new WaitUntilCommand(aim::readyToShoot);
         Command fire = this.fireNote();
         return aim.raceWith(waitForAlignment.andThen(fire));
+    }
+
+    public Command navigateToTrap() {
+        return new InstantCommand(() -> {
+            //Trigger aButton = charlie.getXboxController().a();
+            AimEverythingAtTrap dummy = new AimEverythingAtTrap(drivetrain);
+            dummy.getPathFollowingCommand().schedule();
+        });
     }
 
     private void realBindings() {
@@ -336,7 +346,8 @@ public class RobotContainer {
             // use a schedule command so the onFalse sequence doesn't cancel the aiming while the note is being shot.
         //controller.b().whileTrue(shart());
         controller.b().onTrue(shart().andThen(new ScheduleCommand(this.resetShooter())));
-        controller.a().onTrue(this.fireNote());
+        //controller.a().onTrue(this.fireNote());
+        controller.a().whileTrue(navigateToTrap());
 
 
         /** CLIMB **/

@@ -8,6 +8,7 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants.FieldConstants;
+import frc.robot.Constants.FieldElement;
 import frc.robot.subsystems.arm.Arm;
 import frc.robot.subsystems.drivetrain.Drivetrain;
 import frc.robot.subsystems.leds.LEDs;
@@ -74,7 +75,7 @@ public class AimEverythingAtSpeaker extends Command {
         // Drivetrain
         if (useDrivetrain) {
             ChassisSpeeds desiredTranslationalSpeeds = translationController.get();
-            drivetrain.fieldOrientedDriveWhileAiming(desiredTranslationalSpeeds, drivetrain.getAngleFromDriveToSpeaker());
+            drivetrain.fieldOrientedDriveWhileAiming(desiredTranslationalSpeeds, drivetrain.getAngleFromDriveToFieldElement(FieldElement.SPEAKER));
         }
 
         // Flywheels

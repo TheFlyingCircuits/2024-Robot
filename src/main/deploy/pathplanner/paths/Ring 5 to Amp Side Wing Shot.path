@@ -3,29 +3,29 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 10.811508070947667,
-        "y": 7.14361029292672
+        "x": 8.27,
+        "y": 5.78
       },
       "prevControl": null,
       "nextControl": {
-        "x": 12.252702445228067,
-        "y": 7.14361029292672
+        "x": 9.365487192512848,
+        "y": 6.117504542701393
       },
       "isLocked": false,
-      "linkedName": "Quarter Field Shot 1"
+      "linkedName": "Ring 5"
     },
     {
       "anchor": {
-        "x": 14.61,
-        "y": 5.55
+        "x": 10.69,
+        "y": 6.62
       },
       "prevControl": {
-        "x": 13.61,
-        "y": 5.55
+        "x": 9.454289677810126,
+        "y": 6.068169828647349
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "Center Speaker"
+      "linkedName": "Amp Side Wing Shot"
     }
   ],
   "rotationTargets": [],
@@ -43,9 +43,9 @@
     "rotateFast": false
   },
   "reversed": false,
-  "folder": null,
+  "folder": "Starts at Ring",
   "previewStartingState": {
-    "rotation": -14.931417178137373,
+    "rotation": 0,
     "velocity": 0
   },
   "useDefaultConstraints": true

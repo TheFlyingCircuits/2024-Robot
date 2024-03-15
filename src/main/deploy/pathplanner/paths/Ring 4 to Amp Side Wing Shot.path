@@ -3,29 +3,29 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 14.61,
-        "y": 6.25
-      },
-      "prevControl": null,
-      "nextControl": {
-        "x": 11.61,
-        "y": 6.25
-      },
-      "isLocked": true,
-      "linkedName": "Amp Side Starting Line"
-    },
-    {
-      "anchor": {
         "x": 8.27,
         "y": 7.46
       },
+      "prevControl": null,
+      "nextControl": {
+        "x": 9.207616107539907,
+        "y": 7.035130224106603
+      },
+      "isLocked": false,
+      "linkedName": "Ring 4"
+    },
+    {
+      "anchor": {
+        "x": 10.69,
+        "y": 6.62
+      },
       "prevControl": {
-        "x": 10.27,
-        "y": 7.46
+        "x": 9.523358277485787,
+        "y": 6.9660616244309415
       },
       "nextControl": null,
-      "isLocked": true,
-      "linkedName": "Ring 4"
+      "isLocked": false,
+      "linkedName": "Amp Side Wing Shot"
     }
   ],
   "rotationTargets": [],
@@ -39,11 +39,11 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 0,
+    "rotation": -10.0,
     "rotateFast": true
   },
   "reversed": false,
-  "folder": "Starts at Starting Line",
+  "folder": "Starts at Midline Rings",
   "previewStartingState": {
     "rotation": 0,
     "velocity": 0

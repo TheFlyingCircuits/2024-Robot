@@ -39,12 +39,14 @@ public class Indexer extends SubsystemBase {
     }
 
     public void setBlackRollerSurfaceSpeed(double metersPerSecond) {
+        // theoretical max of 7.74 meters per second of surface speed based on motor and gearing
         double blackRollerRotationsPerSecond = metersPerSecond * (1.0 / ShooterConstants.blackRollerCircumferenceMeters);
         double desiredMotorRotationsPerSecond = blackRollerRotationsPerSecond * (1.0 / ShooterConstants.indexerBlackRollerGearRatio);
         setMotorRotationsPerSecond(desiredMotorRotationsPerSecond);
     }
 
     public void setOrangeWheelsSurfaceSpeed(double metersPerSecond) {
+        // theoretical max of 10.93 meters per second of surface speed based on motor and gearing
         double orangeWheelsRotationsPerSecond = metersPerSecond * (1.0 / ShooterConstants.orangeWheelsCircumferenceMeters);
         double desiredMotorRotationsPerSecond = orangeWheelsRotationsPerSecond * (1.0 / ShooterConstants.indexerOrangeWheelsGearRatio);
         setMotorRotationsPerSecond(desiredMotorRotationsPerSecond);
