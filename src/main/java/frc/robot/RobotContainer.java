@@ -204,7 +204,7 @@ public class RobotContainer {
     public Command runIntake() {
         return new ScheduleCommand(leds.playIntakeAnimationCommand())
                .andThen(
-                    indexer.setBlackRollerSurfaceSpeedCommand(7)
+                    indexer.setBlackRollerSurfaceSpeedCommand(5)
                     //indexer.run(() -> {indexer.setVolts(12);})
                     .alongWith(intake.setVoltsCommand(12))
                );
