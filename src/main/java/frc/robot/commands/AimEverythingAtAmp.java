@@ -56,7 +56,7 @@ public class AimEverythingAtAmp extends Command {
 
     public void initialize() {
         if (testingWithoutTags) {
-            Translation2d ampLocation = FieldConstants.blueAmpLocation;
+            Translation2d ampLocation = drivetrain.getLocationOfFieldElement(FieldElement.AMP).getTranslation();
             Translation2d offset = new Translation2d(0, -2);
             Translation2d inFrontOfAmp = ampLocation.plus(offset);
             Rotation2d backPointedAtAmp = Rotation2d.fromDegrees(-90);
@@ -99,11 +99,9 @@ public class AimEverythingAtAmp extends Command {
 
     public boolean readyToShoot() {
         return setpointsAreFresh && arm.isCloseToTarget() && flywheels.flywheelsAtSetpoints() && drivetrain.isAligned();
-        // TODO: add velocity constraints (can't be passing thorugh setpoint super fast, you must be setteled).
     }
 
     public void end(boolean isInterrupted) {
         ledFeedbackCommand.cancel();
     }
-    
 }

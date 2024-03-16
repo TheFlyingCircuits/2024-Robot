@@ -23,7 +23,7 @@ public class AimEverythingAtSpeaker extends Command {
     private Supplier<ChassisSpeeds> translationController;
     private Command ledFeedbackCommand;
 
-    private boolean useDrivetrain;
+    private boolean useAutoRotate;
     private boolean testingWithoutTags = false;
     public boolean setpointsAreFresh = false;
 
@@ -32,17 +32,17 @@ public class AimEverythingAtSpeaker extends Command {
      *  a shot should be fired. This command also provides the ability to control translation
      *  as the robot aims.
      * 
-     *  @param useDrivetrain - True if the drivetrain is able to be controlled by this command. Set this to false when prepping a shot on the move in auto.
+     *  @param useAutoRotate - True if the drivetrain is able to be controlled by this command. Set this to false when prepping a shot on the move in auto.
      *  This means that the drivetrain will not move at all, only the arm and flywheels. 
-     *  @param translationController - Supplier that provides chassisSpeeds so that the robot can be controlled while aiming. If useDrivetrain is false, this value is not used.
+     *  @param translationController - Supplier that provides chassisSpeeds so that the robot can be controlled while aiming. If useAutoRotate is false, this value is not used.
      */
-    public AimEverythingAtSpeaker(boolean useDrivetrain, Drivetrain drivetrain, Arm arm, Shooter flywheels, Supplier<ChassisSpeeds> translationController, LEDs leds) {
+    public AimEverythingAtSpeaker(boolean useAutoRotate, Drivetrain drivetrain, Arm arm, Shooter flywheels, Supplier<ChassisSpeeds> translationController, LEDs leds) {
         this.drivetrain = drivetrain;
         this.arm = arm;
         this.flywheels = flywheels;
         this.translationController = translationController;
-        this.useDrivetrain = useDrivetrain;
-        if (useDrivetrain) {
+        this.useAutoRotate = useAutoRotate;
+        if (useAutoRotate) {
             super.addRequirements(drivetrain, arm, flywheels);
         }
         else {
@@ -73,7 +73,7 @@ public class AimEverythingAtSpeaker extends Command {
     @Override
     public void execute() {
         // Drivetrain
-        if (useDrivetrain) {
+        if (useAutoRotate) {
             ChassisSpeeds desiredTranslationalSpeeds = translationController.get();
             drivetrain.fieldOrientedDriveWhileAiming(desiredTranslationalSpeeds, drivetrain.getAngleFromDriveToFieldElement(FieldElement.SPEAKER));
         }

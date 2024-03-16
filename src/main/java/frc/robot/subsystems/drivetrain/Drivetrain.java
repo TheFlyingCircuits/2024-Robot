@@ -99,7 +99,7 @@ public class Drivetrain extends SubsystemBase {
 
         angleController = new PIDController(6, 0, 0.);
         angleController.enableContinuousInput(-180, 180);
-        angleController.setTolerance(2.0); // degrees. TODO: could be more precise? Calculate based on margin for error at range?
+        angleController.setTolerance(3.0); // degrees. TODO: could be more precise? Calculate based on margin for error at range?
     }
 
 
