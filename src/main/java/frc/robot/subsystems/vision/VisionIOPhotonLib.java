@@ -16,18 +16,28 @@ import frc.robot.Constants.VisionConstants;
 public class VisionIOPhotonLib implements VisionIO {
     
     PhotonCamera shooterCamera;
-    PhotonCamera intakeCamera;
-    PhotonPoseEstimator photonPoseEstimator;
+    PhotonCamera trapCamera;
+    PhotonCamera noteCamera;
+    PhotonPoseEstimator shooterPoseEstimator;
+    PhotonPoseEstimator trapPoseEstimator;
 
     public VisionIOPhotonLib() {
         shooterCamera = new PhotonCamera("frontCamera");
-        intakeCamera = new PhotonCamera("intakeCamera");
+        trapCamera = new PhotonCamera("trapCamera");
+        noteCamera = new PhotonCamera("noteCamera");
 
-        photonPoseEstimator = new PhotonPoseEstimator(
+        shooterPoseEstimator = new PhotonPoseEstimator(
             VisionConstants.aprilTagFieldLayout, 
             PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
             shooterCamera,
-            VisionConstants.robotToCamera
+            VisionConstants.robotToShooterCamera
+        );
+
+        trapPoseEstimator = new PhotonPoseEstimator(
+            VisionConstants.aprilTagFieldLayout, 
+            PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
+            shooterCamera,
+            VisionConstants.robotToTrapCamera
         );
     }
 
@@ -38,15 +48,10 @@ public class VisionIOPhotonLib implements VisionIO {
 
         inputs.nearestTagDistanceMeters = shooterCameraResult.getBestTarget().getBestCameraToTarget().getTranslation().getDistance(new Translation3d());
 
-        Optional<EstimatedRobotPose> poseEstimatorResult = photonPoseEstimator.update();
+        Optional<EstimatedRobotPose> poseEstimatorResult = shooterPoseEstimator.update();
         if (poseEstimatorResult.isEmpty()) return;
         
         Pose2d estimatedPose2d = poseEstimatorResult.get().estimatedPose.toPose2d();
-
-        
-        Logger.recordOutput("vision/robotPose3d", estimatedPose2d);
-        Logger.recordOutput("vision/multiTagPoseAmbiguity", shooterCameraResult.getMultiTagResult().estimatedPose.ambiguity);
-
 
         //either use multitag or
         //if there's only one tag on the screen, only trust it if its pose ambiguity is below threshold
@@ -55,22 +60,41 @@ public class VisionIOPhotonLib implements VisionIO {
             inputs.robotFieldPose = estimatedPose2d;
             inputs.timestampSeconds = poseEstimatorResult.get().timestampSeconds;
         }
+    }
 
+    private void updateTrapCamera(VisionIOInputs inputs) {
+        PhotonPipelineResult trapCameraResult = trapCamera.getLatestResult();
+        if (!trapCameraResult.hasTargets()) return;
+
+        inputs.nearestTagDistanceMeters = trapCameraResult.getBestTarget().getBestCameraToTarget().getTranslation().getDistance(new Translation3d());
+
+        Optional<EstimatedRobotPose> poseEstimatorResult = trapPoseEstimator.update();
+        if (poseEstimatorResult.isEmpty()) return;
+        
+        Pose2d estimatedPose2d = poseEstimatorResult.get().estimatedPose.toPose2d();
+        //either use multitag or
+        //if there's only one tag on the screen, only trust it if its pose ambiguity is below threshold
+        //photonPoseEstimator automatically switches techniques when detecting different number of tags
+        if (trapCameraResult.targets.size() > 1 || (trapCameraResult.targets.size() == 1 && trapCameraResult.getBestTarget().getPoseAmbiguity() < 0.2)) {
+            inputs.robotFieldPose = estimatedPose2d;
+            inputs.timestampSeconds = poseEstimatorResult.get().timestampSeconds;
+        }
     }
 
     @Override
     public void updateInputs(VisionIOInputs inputs) {
 
         updateShooterCamera(inputs);
+        updateTrapCamera(inputs);
 
-        PhotonPipelineResult intakeCameraResult = intakeCamera.getLatestResult();
-        if (!intakeCameraResult.hasTargets()) {
+        PhotonPipelineResult noteCameraResult = noteCamera.getLatestResult();
+        if (!noteCameraResult.hasTargets()) {
             inputs.intakeSeesNote = false;
             inputs.nearestNoteYawDegrees = 0;
         }
         else {
             inputs.intakeSeesNote = true;
-            inputs.nearestNoteYawDegrees = -intakeCameraResult.getBestTarget().getYaw();
+            inputs.nearestNoteYawDegrees = -noteCameraResult.getBestTarget().getYaw();
         }
         
     };

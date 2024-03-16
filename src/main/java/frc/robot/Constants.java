@@ -259,9 +259,14 @@ public final class Constants {
 
         public final static AprilTagFieldLayout aprilTagFieldLayout = AprilTagFields.k2024Crescendo.loadAprilTagLayoutField();
     
-        public final static Transform3d robotToCamera = new Transform3d(
+        public final static Transform3d robotToShooterCamera = new Transform3d(
             new Translation3d(Units.inchesToMeters(8), 0, Units.inchesToMeters(11.5)), // 11.5 inches off the ground, and 8 inches forward from the center of the robot
             new Rotation3d(0, Math.toRadians(-28), 0) // tilted up 28 degrees to look at the tags.
+        );
+
+        public final static Transform3d robotToTrapCamera = new Transform3d(
+            new Translation3d(Units.inchesToMeters(-11), 0, Units.inchesToMeters(11.5)),
+            new Rotation3d(0, Math.toRadians(-35), Math.toRadians(180))
         );
     }
 
@@ -306,9 +311,6 @@ public final class Constants {
         
         /** Horizontal distance from the robot center to the pivot center */
         public final static double pivotOffsetMeters = 0.22; // 22 centimeters
-
-        public final static Translation2d redAmpLocation = new Translation2d(14.7, 8.2); // tag 5
-        public final static Translation2d blueAmpLocation = new Translation2d(1.84, 8.2); // tag 6
     }
 
     public final static class IntakeConstants {

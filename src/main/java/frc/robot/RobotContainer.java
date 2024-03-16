@@ -278,15 +278,6 @@ public class RobotContainer {
         return arm.setDesiredDegreesCommand(-15)
                .alongWith(shooter.setFlywheelSurfaceSpeedCommand(25));
     }
-
-    /** Intakes while the arm is at a higher angle and the flywheels are revved up.
-     * This speeds up our index marginally during auto, so that the arm doesn't have as far to travel for the shot.
-     */
-    Command autoIndexNote() {
-        return indexNote()
-            .alongWith(arm.setDesiredDegreesCommand(0))
-            .alongWith(shooter.setFlywheelSurfaceSpeedCommand(20));
-    }
     
     Command shart() {
         Command aim = arm.setDesiredDegreesCommand(-15)
@@ -304,10 +295,27 @@ public class RobotContainer {
                .finallyDo(() -> {ledFeedback.cancel();});
     }
 
+    Command lobShot() {
+        Command aim = arm.setDesiredDegreesCommand(45)
+                        .alongWith(shooter.setFlywheelSurfaceSpeedCommand(20, 25));
+        
+        Command waitForAlignment = new WaitUntilCommand(() -> {
+            return arm.isCloseToTarget() && shooter.flywheelsAtSetpoints();
+        });
+
+        Command ledFeedback = leds.playAimingAnimationCommand(arm::getErrorDegrees, shooter::getWorstError, () -> {return 0.0;});
+        Command startLEDs = new ScheduleCommand(ledFeedback);
+
+        return startLEDs.andThen(
+            aim.raceWith(waitForAlignment.andThen(fireNote()))
+            .finallyDo(() -> {ledFeedback.cancel();}));
+    }
+
     public Command fireNote() {
         return indexer.setOrangeWheelsSurfaceSpeedCommand(5).withTimeout(0.4)
                .alongWith(new ScheduleCommand(leds.playFireNoteAnimationCommand()));
     }
+
 
     public Command speakerShot(Supplier<ChassisSpeeds> howToTranslateWhileAiming) {
         AimEverythingAtSpeaker aim = new AimEverythingAtSpeaker(true, drivetrain, arm, shooter, howToTranslateWhileAiming, leds);
@@ -318,7 +326,6 @@ public class RobotContainer {
 
     public Command navigateToTrap() {
         return new InstantCommand(() -> {
-            //Trigger aButton = charlie.getXboxController().a();
             AimEverythingAtTrap dummy = new AimEverythingAtTrap(drivetrain);
             dummy.getPathFollowingCommand().schedule();
         });
@@ -351,8 +358,6 @@ public class RobotContainer {
 
 
         /** CLIMB **/
-        //climb routine should be tilt shooter back, drive chain over shooter arm, raise arm to amp shot, climb, score trap
-        //in other words, press up then left then right then down and then LB
         controller.povUp().onTrue(climb.raiseHooksCommand().alongWith(arm.setDesiredDegreesCommand(ArmConstants.armMaxAngleDegrees)));
         controller.povRight().onTrue(arm.setDesiredDegreesCommand(82));
         controller.povDown().whileTrue(climb.lowerHooksCommand().alongWith(prepTrapShot()));
