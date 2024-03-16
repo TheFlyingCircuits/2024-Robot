@@ -57,7 +57,7 @@ public class AimEverythingAtSpeaker extends Command {
     public void initialize() {
         if (testingWithoutTags) {
             Translation2d speakerLocation = FieldConstants.blueSpeakerTranslation2d;
-            Translation2d offset = new Translation2d(2, 0);
+            Translation2d offset = new Translation2d(2.5, 0);
             Translation2d inFrontOfSpeaker = speakerLocation.plus(offset);
 
             Rotation2d robotAngle = drivetrain.getPoseMeters().getRotation();
@@ -80,7 +80,7 @@ public class AimEverythingAtSpeaker extends Command {
 
         // Flywheels
         double leftFlywheelMetersPerSecond = 25;
-        double rightFlywheelMetersPerSecond = 15;
+        double rightFlywheelMetersPerSecond = 20;
         if (testingWithoutTags) {
             flywheels.setBothFlywheelsMetersPerSecond(0);
         } else {

@@ -60,10 +60,12 @@ public class Indexer extends SubsystemBase {
         indexerMotor.setVoltage(feedforwardOutput + pidOutput);
     }
 
+    /** max of 5.8 */
     public Command setBlackRollerSurfaceSpeedCommand(double metersPerSecond) {
         return this.run(() -> {this.setBlackRollerSurfaceSpeed(metersPerSecond);});
     }
 
+    /** max of 8.2 */
     public Command setOrangeWheelsSurfaceSpeedCommand(double metersPerSecond) {
         return this.run(() -> {this.setOrangeWheelsSurfaceSpeed(metersPerSecond);});
     }

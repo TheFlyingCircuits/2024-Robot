@@ -204,7 +204,8 @@ public class RobotContainer {
     public Command runIntake() {
         return new ScheduleCommand(leds.playIntakeAnimationCommand())
                .andThen(
-                    indexer.setBlackRollerSurfaceSpeedCommand(5)
+                    //indexer.setBlackRollerSurfaceSpeedCommand(5)
+                    indexer.setOrangeWheelsSurfaceSpeedCommand(2.5)
                     //indexer.run(() -> {indexer.setVolts(12);})
                     .alongWith(intake.setVoltsCommand(12))
                );
@@ -312,7 +313,7 @@ public class RobotContainer {
     }
 
     public Command fireNote() {
-        return indexer.setOrangeWheelsSurfaceSpeedCommand(5).withTimeout(0.4)
+        return indexer.setOrangeWheelsSurfaceSpeedCommand(8).withTimeout(0.4)
                .alongWith(new ScheduleCommand(leds.playFireNoteAnimationCommand()));
     }
 
@@ -347,6 +348,7 @@ public class RobotContainer {
         controller.rightBumper()
             .onTrue(this.speakerShot(charlie::getRequestedFieldOrientedVelocity).andThen(new ScheduleCommand(this.resetShooter())));
             // .onFalse(this.resetShooter());
+            //.onTrue(prepAutoSpeakerShot().alongWith(runIntake()));
         controller.leftBumper()
             .onTrue(prepAmpShot())
             .onFalse(this.fireNote().andThen(new ScheduleCommand(this.resetShooter())));

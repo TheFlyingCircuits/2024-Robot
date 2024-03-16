@@ -22,7 +22,7 @@ public class VisionIOPhotonLib implements VisionIO {
     PhotonPoseEstimator trapPoseEstimator;
 
     public VisionIOPhotonLib() {
-        shooterCamera = new PhotonCamera("frontCamera");
+        shooterCamera = new PhotonCamera("shooterCamera");
         trapCamera = new PhotonCamera("trapCamera");
         noteCamera = new PhotonCamera("noteCamera");
 
@@ -70,6 +70,7 @@ public class VisionIOPhotonLib implements VisionIO {
 
         Optional<EstimatedRobotPose> poseEstimatorResult = trapPoseEstimator.update();
         if (poseEstimatorResult.isEmpty()) return;
+
         
         Pose2d estimatedPose2d = poseEstimatorResult.get().estimatedPose.toPose2d();
         //either use multitag or
@@ -84,8 +85,9 @@ public class VisionIOPhotonLib implements VisionIO {
     @Override
     public void updateInputs(VisionIOInputs inputs) {
 
-        updateShooterCamera(inputs);
+        
         updateTrapCamera(inputs);
+        updateShooterCamera(inputs);
 
         PhotonPipelineResult noteCameraResult = noteCamera.getLatestResult();
         if (!noteCameraResult.hasTargets()) {

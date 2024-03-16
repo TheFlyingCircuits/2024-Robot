@@ -102,16 +102,6 @@ public class SwerveModuleIONeo implements SwerveModuleIO{
             * SwerveModuleConstants.wheelCircumferenceMeters
         );
 
-        // REVLibError err = driveMotor.setMeasurementPeriod(10);
-        // if (err == REVLibError.kOk) {
-        //     System.out.println("successfully set drive encoder measurement period");
-        // }
-        
-        // err = driveMotor.setAverageDepth(2);
-        // if (err == REVLibError.kOk) {
-        //     System.out.println("successfully set drive encoder window size");
-        // }
-
         driveMotor.burnFlash();
     }
 }

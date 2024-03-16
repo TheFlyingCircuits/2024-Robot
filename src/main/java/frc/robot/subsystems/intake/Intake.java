@@ -115,8 +115,8 @@ public class Intake extends SubsystemBase {
         frontIntakeMotor.setInverted(false);
         backIntakeMotor.setInverted(false);
 
-        frontIntakeMotor.setSmartCurrentLimit(60);
-        backIntakeMotor.setSmartCurrentLimit(60);
+        frontIntakeMotor.setSmartCurrentLimit(70);
+        backIntakeMotor.setSmartCurrentLimit(70);
 
         frontIntakeMotor.setIdleMode(IdleMode.kBrake);
         backIntakeMotor.setIdleMode(IdleMode.kBrake);
@@ -154,6 +154,8 @@ public class Intake extends SubsystemBase {
 
         Logger.recordOutput("intake/frontIntakeMotorRPM", frontIntakeMotor.getVelocity());
         Logger.recordOutput("intake/backIntakeMotorRPM", backIntakeMotor.getVelocity());
+        Logger.recordOutput("intake/frontMotorAmps", frontIntakeMotor.getOutputCurrent());
+        Logger.recordOutput("intake/backMotorAmps", backIntakeMotor.getOutputCurrent());
         Logger.recordOutput("intake/isRingInIntake", isRingInIntake());
     }
 

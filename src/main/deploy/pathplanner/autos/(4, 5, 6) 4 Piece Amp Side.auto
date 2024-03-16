@@ -28,6 +28,12 @@
                     {
                       "type": "named",
                       "data": {
+                        "name": "trackNote"
+                      }
+                    },
+                    {
+                      "type": "named",
+                      "data": {
                         "name": "intakeNote"
                       }
                     }
@@ -38,12 +44,6 @@
                 "type": "path",
                 "data": {
                   "pathName": "Starting Line to Ring 4"
-                }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "trackNote"
                 }
               }
             ]
