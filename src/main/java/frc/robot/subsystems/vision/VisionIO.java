@@ -1,19 +1,23 @@
 package frc.robot.subsystems.vision;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.List;
 
 import org.littletonrobotics.junction.AutoLog;
+import org.littletonrobotics.junction.LogTable;
+import org.littletonrobotics.junction.inputs.LoggableInputs;
 
 import edu.wpi.first.math.Matrix;
+import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
+import edu.wpi.first.util.struct.Struct;
 
 public interface VisionIO {
 
     public final class VisionMeasurement {
-
-
 
         /**
          * Pose of the robot in meters and degrees, relative to the field. The origin is always centered on the right edge of the blue side, 
@@ -58,7 +62,6 @@ public interface VisionIO {
 
     }
 
-    @AutoLog
     public class VisionIOInputs {
 
         /**
@@ -78,6 +81,59 @@ public interface VisionIO {
          */
         public double nearestNoteYawDegrees = 0.;
 
+    }
+
+    //AdvantageKit's AutoLog doesn't support logging array lists or custom objects,
+    //so we wrote our own logging methods. There is a better way of doing this using
+    //WPILib structs, but I'm not sure exactly how to go about doing it.
+    public class VisionIOInputsLogged extends VisionIOInputs implements LoggableInputs {
+        
+        public void toLog(LogTable table) {
+
+            for (int i = 0; i < visionMeasurements.size(); i++) {
+
+                VisionMeasurement meas = visionMeasurements.get(i);
+
+                String rootString = "VisionMeasurement"+Integer.toString(i);
+
+                table.put(rootString+"/RobotFieldPose", meas.robotFieldPose);
+                table.put(rootString+"/TimestampSeconds", meas.timestampSeconds);
+                table.put(rootString+"/NearestTagDistanceMeters", meas.nearestTagDistanceMeters);
+                table.put(rootString+"/StdDevX", meas.stdDevs.get(0, 0));
+                table.put(rootString+"/StdDevY", meas.stdDevs.get(1, 0));
+                table.put(rootString+"/StdDevRot", meas.stdDevs.get(2, 0));
+            }
+
+
+            table.put("IntakeSeesNote", intakeSeesNote);
+            table.put("NearestNoteYawDegrees", nearestNoteYawDegrees);
+        }
+
+        public void fromLog(LogTable table) {
+
+            for (int i = 0;;i++) {
+                String rootString = "VisionMeasurement" + Integer.toString(i);
+
+                //hacky way to check if this vision measurement doesn't exist
+                if (table.get(rootString+"/RobotFieldPose", 0) == 0)
+                    break;
+                
+                VisionMeasurement meas = new VisionMeasurement();
+
+                meas.robotFieldPose = table.get(rootString+"/RobotFieldPose", meas.robotFieldPose);
+                meas.timestampSeconds = table.get(rootString+"/TimestampSeconds", meas.timestampSeconds);
+                meas.nearestTagDistanceMeters = table.get(rootString+"/NearestTagDistanceMeters", meas.nearestTagDistanceMeters);
+                double stdDevX = table.get(rootString+"/StdDevX", meas.stdDevs.get(0, 0));
+                double stdDevY = table.get(rootString+"/StdDevY", meas.stdDevs.get(1, 0));
+                double stdDevRot = table.get(rootString+"/StdDevRot", meas.stdDevs.get(2, 0));
+
+                meas.stdDevs = VecBuilder.fill(stdDevX, stdDevY, stdDevRot);
+            }
+
+
+            intakeSeesNote = table.get("IntakeSeesNote", intakeSeesNote);
+            nearestNoteYawDegrees = table.get("NearestNoteYawDegrees", nearestNoteYawDegrees);
+        }
     }
 
     public default void updateInputs(VisionIOInputs inputs) {};

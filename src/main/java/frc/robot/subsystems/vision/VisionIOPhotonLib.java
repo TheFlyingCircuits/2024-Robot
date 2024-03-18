@@ -43,7 +43,7 @@ public class VisionIOPhotonLib implements VisionIO {
         trapPoseEstimator = new PhotonPoseEstimator(
             VisionConstants.aprilTagFieldLayout, 
             PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
-            shooterCamera,
+            trapCamera,
             VisionConstants.robotToTrapCamera
         );
     }

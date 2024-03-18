@@ -32,7 +32,7 @@ public class Robot extends LoggedRobot {
     private SendableChooser<Command> autoChooser;
 
 
-    public void initAdvantageKit() {
+    private void initAdvantageKit() {
         Logger.recordMetadata("projectName", "2024Robot");
         Logger.addDataReceiver(new NT4Publisher());
         //Logger.addDataReceiver(new WPILOGWriter()); // <- log to USB stick
@@ -48,6 +48,9 @@ public class Robot extends LoggedRobot {
      */
     @Override
     public void robotInit() {
+
+        initAdvantageKit();
+
         // Instantiate our RobotContainer.  This will perform all our button bindings, and put our
         // autonomous chooser on the dashboard.
         m_robotContainer = new RobotContainer();

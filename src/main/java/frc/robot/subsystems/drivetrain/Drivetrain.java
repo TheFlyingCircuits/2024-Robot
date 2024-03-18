@@ -36,7 +36,7 @@ import frc.robot.Constants.FieldConstants;
 import frc.robot.Constants.FieldElement;
 import frc.robot.Constants.VisionConstants;
 import frc.robot.subsystems.vision.VisionIO;
-import frc.robot.subsystems.vision.VisionIOInputsAutoLogged;
+import frc.robot.subsystems.vision.VisionIO.VisionIOInputsLogged;
 import frc.robot.subsystems.vision.VisionIO.VisionMeasurement;
 
 public class Drivetrain extends SubsystemBase {
@@ -45,7 +45,7 @@ public class Drivetrain extends SubsystemBase {
     private GyroIOInputsAutoLogged gyroInputs;
 
     private VisionIO visionIO;
-    private VisionIOInputsAutoLogged visionInputs;
+    private VisionIOInputsLogged visionInputs;
 
     private SwerveModule[] swerveModules;
 
@@ -71,7 +71,7 @@ public class Drivetrain extends SubsystemBase {
         gyroInputs = new GyroIOInputsAutoLogged();
 
         this.visionIO = visionIO;
-        visionInputs = new VisionIOInputsAutoLogged();
+        visionInputs = new VisionIOInputsLogged();
 
         swerveModules = new SwerveModule[] {
             new SwerveModule(flSwerveModuleIO, 0),

@@ -8,7 +8,6 @@ import frc.robot.subsystems.drivetrain.Drivetrain;
 import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.shooter.Indexer;
 
-/** Add your docs here. */
 public class NoteTrackingIndexNote extends Command {
 
 
@@ -18,6 +17,7 @@ public class NoteTrackingIndexNote extends Command {
 
     private Supplier<ChassisSpeeds> translationController;
 
+    //used for testing in teleop
     public NoteTrackingIndexNote(Intake intake, Indexer indexer, Drivetrain drivetrain, Supplier<ChassisSpeeds> translationController) {
         this.intake = intake;
         this.indexer = indexer;
