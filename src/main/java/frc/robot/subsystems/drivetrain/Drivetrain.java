@@ -6,6 +6,12 @@ import java.util.Optional;
 
 import org.littletonrobotics.junction.Logger;
 
+import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.controllers.PPHolonomicDriveController;
+import com.pathplanner.lib.util.HolonomicPathFollowerConfig;
+import com.pathplanner.lib.util.PIDConstants;
+import com.pathplanner.lib.util.ReplanningConfig;
+
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
@@ -100,6 +106,39 @@ public class Drivetrain extends SubsystemBase {
         angleController = new PIDController(6, 0, 0.);
         angleController.enableContinuousInput(-180, 180);
         angleController.setTolerance(3.0); // degrees. TODO: could be more precise? Calculate based on margin for error at range?
+
+        configPathPlanner();
+    }
+
+    private void configPathPlanner() {
+        AutoBuilder.configureHolonomic(
+            this::getPoseMeters, // Robot pose supplier
+            (Pose2d dummy) -> {}, // Method to reset odometry (will be called if your auto has a starting pose)
+                                  // Note: We never let PathPlanner set the pose, we always seed pose using cameras and apriltags.
+            () -> {return DrivetrainConstants.swerveKinematics.toChassisSpeeds(getModuleStates());}, // ChassisSpeeds supplier. MUST BE ROBOT RELATIVE
+            (ChassisSpeeds speeds) -> {this.robotOrientedDrive(speeds, true);}, // Method that will drive the robot given ROBOT RELATIVE ChassisSpeeds
+            new HolonomicPathFollowerConfig( // HolonomicPathFollowerConfig, this should likely live in your Constants class
+                    new PIDConstants(5.0, 0.0, 0.0), // Translation PID constants
+                    new PIDConstants(4.0, 0.0, 0.0), // Rotation PID constants // TODO: get from angleController? or do we want them to have different gains?
+                    DrivetrainConstants.maxAchievableVelocityMetersPerSecond, // Max module speed, in m/s // TODO: be more conservative? This is a theoretical max that's higher than the actual max.
+                    DrivetrainConstants.drivetrainRadiusMeters, // Drive base radius in meters. Distance from robot center to furthest module.
+                    new ReplanningConfig() // Default path replanning config. See the API for the options here
+            ),
+            () -> {
+              // Boolean supplier that controls when the path will be mirrored
+              // We by default draw the paths on the red side of the field, mirroring them if we are on the blue alliance.
+              // THE ORIGIN WILL REMAIN ON THE BLUE SIDE
+
+              var alliance = DriverStation.getAlliance();
+              if (alliance.isPresent()) {
+                return alliance.get() == DriverStation.Alliance.Blue;
+              }
+              return false;
+            },
+            this // Reference to this subsystem to set requirements
+        );
+
+        PPHolonomicDriveController.setRotationTargetOverride(this::getAutoRotationOverride);
     }
 
 
