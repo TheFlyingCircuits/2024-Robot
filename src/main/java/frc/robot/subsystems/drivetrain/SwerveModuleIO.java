@@ -2,6 +2,8 @@ package frc.robot.subsystems.drivetrain;
 
 import org.littletonrobotics.junction.AutoLog;
 
+import com.ctre.phoenix6.Orchestra;
+
 public interface SwerveModuleIO {
 
     @AutoLog
@@ -23,5 +25,7 @@ public interface SwerveModuleIO {
 
     /** Run the angle motor at the specified voltage. */
     public default void setAngleVoltage(double volts) {};
+
+    public default void configOrchestra(Orchestra orchestra) {};
 
 }

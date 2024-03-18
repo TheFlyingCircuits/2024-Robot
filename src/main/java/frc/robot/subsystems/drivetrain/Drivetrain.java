@@ -2,10 +2,17 @@
 package frc.robot.subsystems.drivetrain;
 
 import java.util.function.Supplier;
+import java.lang.reflect.Array;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 
 import org.littletonrobotics.junction.Logger;
 
+import com.ctre.phoenix6.Orchestra;
+import com.ctre.phoenix6.StatusCode;
+import com.ctre.phoenix6.hardware.TalonFX;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 import com.pathplanner.lib.util.HolonomicPathFollowerConfig;
@@ -55,6 +62,14 @@ public class Drivetrain extends SubsystemBase {
     public boolean isTrackingNote = false;
     public boolean isTrackingSpeakerInAuto = false;
 
+    private static Orchestra orchestra;
+    private String[] songs = {
+        "overworld.chrp",
+        "pokemon.chrp"
+    };
+    private String currentSong = "";
+    private String lastSong = "";
+
     /** error measured in degrees, output is in degrees per second. */
     private PIDController angleController;
 
@@ -66,6 +81,8 @@ public class Drivetrain extends SubsystemBase {
         SwerveModuleIO brSwerveModuleIO,
         VisionIO visionIO
     ) {
+
+        orchestra = new Orchestra();
 
         this.gyroIO = gyroIO;
         gyroInputs = new GyroIOInputsAutoLogged();
@@ -79,6 +96,7 @@ public class Drivetrain extends SubsystemBase {
             new SwerveModule(blSwerveModuleIO, 2),
             new SwerveModule(brSwerveModuleIO, 3)
         };
+
 
         gyroIO.setRobotYaw(0);
 
@@ -445,6 +463,43 @@ public class Drivetrain extends SubsystemBase {
         // when the robot tries to target the field element, it should
         // just stay in place, which seems like the safest thing to do.
         return getPoseMeters();
+    }
+
+    public void addInstrument(TalonFX kraken) {
+        orchestra.addInstrument(kraken);
+    }
+
+    public static Orchestra getOrchestra() {
+        return orchestra;
+    }
+
+    public StatusCode[] playOrchestra() {
+        List<String> shuffledMusicFiles = new ArrayList<String>(List.of(songs));
+        Collections.shuffle(shuffledMusicFiles);
+        currentSong = shuffledMusicFiles.get(0);
+        while(currentSong.equals(lastSong)) {
+            System.out.println("prev song: " + lastSong
+            +"\n== queued  : " + currentSong);
+            Collections.shuffle(shuffledMusicFiles);
+            currentSong = shuffledMusicFiles.get(0);
+        };
+        System.out.println("song queued: " + currentSong);
+        lastSong = currentSong;
+
+        StatusCode loadStatus = orchestra.loadMusic(currentSong);
+        StatusCode playStatus = orchestra.play();
+        StatusCode[] codes = {loadStatus, playStatus};
+        return codes;
+    }
+    public StatusCode stopOrchestra() {
+        StatusCode stopCode = orchestra.stop();
+        return stopCode;
+    }
+    public boolean isSongPlaying() {
+        return orchestra.isPlaying();
+    }
+    public int songTimestamp() {
+        return ((int)orchestra.getCurrentTime());
     }
 
 

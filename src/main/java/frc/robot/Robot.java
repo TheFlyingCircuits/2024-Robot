@@ -80,13 +80,21 @@ public class Robot extends LoggedRobot {
     /** This function is called once each time the robot enters Disabled mode. */
     @Override
     public void disabledInit() {
-
+        m_robotContainer.drivetrain.playOrchestra();
     }
-
 
     @Override
     public void disabledPeriodic() {
         m_robotContainer.drivetrain.setPoseToVisionMeasurement();
+        if(!m_robotContainer.drivetrain.isSongPlaying()) {
+            m_robotContainer.drivetrain.playOrchestra();
+        }
+
+    }
+
+    @Override
+    public void disabledExit() {
+        m_robotContainer.drivetrain.stopOrchestra();
     }
 
     /** This autonomous runs the autonomous command selected by your {@link RobotContainer} class. */
