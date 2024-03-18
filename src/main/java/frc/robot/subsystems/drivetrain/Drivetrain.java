@@ -10,6 +10,7 @@ import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 import com.pathplanner.lib.util.HolonomicPathFollowerConfig;
 import com.pathplanner.lib.util.PIDConstants;
+import com.pathplanner.lib.util.PathPlannerLogging;
 import com.pathplanner.lib.util.ReplanningConfig;
 
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
@@ -139,6 +140,14 @@ public class Drivetrain extends SubsystemBase {
         );
 
         PPHolonomicDriveController.setRotationTargetOverride(this::getAutoRotationOverride);
+
+        PathPlannerLogging.setLogActivePathCallback( (activePath) -> {
+            Logger.recordOutput("PathPlanner/Trajectory", activePath.toArray(new Pose2d[activePath.size()]));
+        });
+
+        PathPlannerLogging.setLogTargetPoseCallback( (targetPose) -> {
+            Logger.recordOutput("PathPlanner/TrajectorySetpoint", targetPose);
+        });
     }
 
 
