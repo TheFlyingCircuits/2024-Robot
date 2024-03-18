@@ -1,0 +1,84 @@
+{
+  "version": 1.0,
+  "waypoints": [
+    {
+      "anchor": {
+        "x": 11.69,
+        "y": 1.59
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 11.189999999999994,
+        "y": 1.59
+      },
+      "isLocked": true,
+      "linkedName": "Almost Wing Shot (Source Side)"
+    },
+    {
+      "anchor": {
+        "x": 10.42,
+        "y": 1.93
+      },
+      "prevControl": {
+        "x": 10.853012701892219,
+        "y": 1.6799999999999993
+      },
+      "nextControl": {
+        "x": 9.986987298107781,
+        "y": 2.18
+      },
+      "isLocked": true,
+      "linkedName": "Around Stage Left"
+    },
+    {
+      "anchor": {
+        "x": 9.49,
+        "y": 2.86
+      },
+      "prevControl": {
+        "x": 9.739999999999998,
+        "y": 2.4269872981077816
+      },
+      "nextControl": {
+        "x": 9.24,
+        "y": 3.2930127018922195
+      },
+      "isLocked": true,
+      "linkedName": "Ring 6 Pickup Prep (Source Side)"
+    },
+    {
+      "anchor": {
+        "x": 8.58,
+        "y": 3.88
+      },
+      "prevControl": {
+        "x": 8.985123136828218,
+        "y": 3.586955218428198
+      },
+      "nextControl": null,
+      "isLocked": true,
+      "linkedName": "Ring 6 Pickup (From Almost Wing Shot)"
+    }
+  ],
+  "rotationTargets": [],
+  "constraintZones": [],
+  "eventMarkers": [],
+  "globalConstraints": {
+    "maxVelocity": 3.0,
+    "maxAcceleration": 4.0,
+    "maxAngularVelocity": 360.0,
+    "maxAngularAcceleration": 360.0
+  },
+  "goalEndState": {
+    "velocity": 0.0,
+    "rotation": -35.879999999999995,
+    "rotateFast": true
+  },
+  "reversed": false,
+  "folder": "Starts at Almost Wing Shot",
+  "previewStartingState": {
+    "rotation": 39.0,
+    "velocity": 0
+  },
+  "useDefaultConstraints": false
+}

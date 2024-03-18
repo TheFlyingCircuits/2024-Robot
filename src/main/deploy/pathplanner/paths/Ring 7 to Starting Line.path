@@ -16,16 +16,16 @@
     },
     {
       "anchor": {
-        "x": 14.61,
-        "y": 3.265
+        "x": 14.65,
+        "y": 3.38
       },
       "prevControl": {
-        "x": 13.406797271985283,
-        "y": 2.177762609918664
+        "x": 13.446797271985284,
+        "y": 2.2927626099186638
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "Source Side Starting Line"
+      "linkedName": "Starting Line (Source Side)"
     }
   ],
   "rotationTargets": [],

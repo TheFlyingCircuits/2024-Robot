@@ -3,16 +3,16 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 14.61,
+        "x": 14.65,
         "y": 4.825
       },
       "prevControl": null,
       "nextControl": {
-        "x": 14.719592786697266,
+        "x": 14.759592786697267,
         "y": 4.600301488425207
       },
       "isLocked": true,
-      "linkedName": "Center Auto Starting Line"
+      "linkedName": "Starting Line (Between Ring 2 and 3)"
     },
     {
       "anchor": {
@@ -25,7 +25,7 @@
       },
       "nextControl": null,
       "isLocked": true,
-      "linkedName": "Ring 3 Pickup"
+      "linkedName": "Ring 3 Pickup (From Starting Line)"
     }
   ],
   "rotationTargets": [],

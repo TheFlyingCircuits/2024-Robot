@@ -3,29 +3,29 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 14.0,
-        "y": 4.28
+        "x": 10.71,
+        "y": 1.59
       },
       "prevControl": null,
       "nextControl": {
-        "x": 14.898794046299168,
-        "y": 4.718371146789078
+        "x": 10.000775877961935,
+        "y": 1.8339285647875903
       },
       "isLocked": true,
-      "linkedName": "Ring 3 Pickup (From Starting Line)"
+      "linkedName": "Wing Shot (Source Side)"
     },
     {
       "anchor": {
-        "x": 14.0,
-        "y": 5.55
+        "x": 8.63,
+        "y": 2.3
       },
       "prevControl": {
-        "x": 15.0,
-        "y": 5.55
+        "x": 9.339224122038068,
+        "y": 2.0560714352124094
       },
       "nextControl": null,
       "isLocked": true,
-      "linkedName": "Ring 2 Pickup (From Ring 3)"
+      "linkedName": "Ring 7 Pickup (From Wing Shot)"
     }
   ],
   "rotationTargets": [],
@@ -39,13 +39,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 0,
+    "rotation": -18.980000000000018,
     "rotateFast": true
   },
   "reversed": false,
-  "folder": "Starts at Frontline Rings",
+  "folder": "Starts at Wing Shot",
   "previewStartingState": {
-    "rotation": 26.0,
+    "rotation": 33.97,
     "velocity": 0
   },
   "useDefaultConstraints": true

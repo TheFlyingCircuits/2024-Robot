@@ -1,0 +1,49 @@
+{
+  "version": 1.0,
+  "startingPose": null,
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Starting Line to Ring 8"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Ring 8 to Almost Wing Shot"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Almost Wing Shot to Ring 7"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Ring 7 to Almost Wing Shot"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Almost Wing Shot to Ring 6 (Source Side)"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Ring 6 to Almost Wing Shot (Source Side)"
+          }
+        }
+      ]
+    }
+  },
+  "folder": null,
+  "choreoAuto": false
+}

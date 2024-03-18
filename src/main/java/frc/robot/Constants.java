@@ -98,7 +98,9 @@ public final class Constants {
         public static final double krakenFreeSpeedRPM = 5800;
         public static final double krakenFreeSpeedRotationsPerSecond = krakenFreeSpeedRPM / 60.;
         public static final double maxAchievableVelocityMetersPerSecond = krakenFreeSpeedRotationsPerSecond *
-            SwerveModuleConstants.driveGearReduction * SwerveModuleConstants.wheelCircumferenceMeters;
+            SwerveModuleConstants.driveGearReduction * SwerveModuleConstants.wheelCircumferenceMeters; // ~5.06 m/s
+                                                                                                       // actual top speed based on characterization is ~4.46 m/s (12 volts / 2.69 (volts / [meter / second]))
+                                                                                                       // top speed that seems controllable in auto is ~4.0 m/s
 
         /**
          * This is the max desired speed that will be achievable in teleop.
@@ -114,7 +116,11 @@ public final class Constants {
          * <br>
          * This is a measure of how fast the robot can rotate in place, based off of maxAchievableVelocityMetersPerSecond.
          */
-        public static final double maxAchievableAngularVelocityRadiansPerSecond = maxAchievableVelocityMetersPerSecond / drivetrainRadiusMeters;
+        public static final double maxAchievableAngularVelocityRadiansPerSecond = maxAchievableVelocityMetersPerSecond / drivetrainRadiusMeters; // Theoretical ~1.93 rotations per second
+                                                                                                                                                 // using 4.46 m/s for max linear speed yeilds ~1.7 rotations per second
+                                                                                                                                                 // using 4.0 m/s for max linear speed yeilds 1.52 rotations per second
+                                                                                                                                                 // we use 1.0 rotations per second in auto to be extra conservative
+                                                                                                                                                 // because any time you're rotating, you're taking away from your translational speed.
 
         /**
          * This is the max desired angular velocity that will be achievable in teleop.
@@ -159,7 +165,7 @@ public final class Constants {
         // Update: they don't sink as much as orignially, though, so now we subtract
         // 1/16 of an inch instead and odometry seems to agree with this.
         public static final double wheelRadiusMeters = Units.inchesToMeters(2.-1./16.);
-        public static final double wheelCircumferenceMeters = 2 * Math.PI * wheelRadiusMeters;
+        public static final double wheelCircumferenceMeters = 2 * Math.PI * wheelRadiusMeters; // ~0.31
 
         // PID + FEEDFORWARD CONSTANTS FOR MOTORS
         // PID for drive motors.

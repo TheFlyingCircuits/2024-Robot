@@ -3,79 +3,79 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 10.69,
+        "x": 10.71,
         "y": 6.62
       },
       "prevControl": null,
       "nextControl": {
-        "x": 11.69,
+        "x": 11.71,
         "y": 6.62
       },
-      "isLocked": false,
-      "linkedName": "Amp Side Wing Shot"
+      "isLocked": true,
+      "linkedName": "Wing Shot (Amp Side)"
     },
     {
       "anchor": {
-        "x": 12.65,
-        "y": 6.25
+        "x": 12.68,
+        "y": 5.78
       },
       "prevControl": {
-        "x": 11.65,
-        "y": 6.25
+        "x": 11.68,
+        "y": 5.78
       },
       "nextControl": {
-        "x": 13.65,
-        "y": 6.25
+        "x": 13.68,
+        "y": 5.78
       },
-      "isLocked": false,
-      "linkedName": "Amp Side Mid Shot"
+      "isLocked": true,
+      "linkedName": "Mid Shot (Amp Side)"
     },
     {
       "anchor": {
-        "x": 13.64,
+        "x": 13.68,
         "y": 7.003080254377342
       },
       "prevControl": {
-        "x": 12.741205953700833,
-        "y": 7.44145140116642
+        "x": 12.786158575848734,
+        "y": 7.451463470467375
       },
       "nextControl": {
-        "x": 14.538794046299168,
-        "y": 6.564709107588264
+        "x": 14.573841424151265,
+        "y": 6.554697038287309
       },
-      "isLocked": false,
+      "isLocked": true,
       "linkedName": "Ring 1"
     },
     {
       "anchor": {
-        "x": 13.64,
+        "x": 13.68,
         "y": 5.55
       },
       "prevControl": {
-        "x": 14.64,
+        "x": 14.68,
         "y": 5.55
       },
       "nextControl": {
-        "x": 12.64,
+        "x": 12.68,
         "y": 5.55
       },
-      "isLocked": false,
+      "isLocked": true,
       "linkedName": "Ring 2"
     },
     {
       "anchor": {
-        "x": 13.64,
+        "x": 13.68,
         "y": 4.101006107957202
       },
       "prevControl": {
-        "x": 14.538794046299168,
-        "y": 4.539377254746279
+        "x": 14.57501222418054,
+        "y": 4.547047718759831
       },
       "nextControl": {
-        "x": 12.741205953700833,
-        "y": 3.6626349611681253
+        "x": 12.78498777581946,
+        "y": 3.654964497154573
       },
-      "isLocked": false,
+      "isLocked": true,
       "linkedName": "Ring 3"
     },
     {
@@ -91,7 +91,7 @@
         "x": 7.27,
         "y": 7.46
       },
-      "isLocked": false,
+      "isLocked": true,
       "linkedName": "Ring 4"
     },
     {
@@ -107,23 +107,23 @@
         "x": 7.27,
         "y": 5.78
       },
-      "isLocked": false,
+      "isLocked": true,
       "linkedName": "Ring 5"
     },
     {
       "anchor": {
         "x": 8.27,
-        "y": 4.1
+        "y": 4.1046482092964185
       },
       "prevControl": {
         "x": 9.27,
-        "y": 4.1
+        "y": 4.1046482092964185
       },
       "nextControl": {
         "x": 7.27,
-        "y": 4.1
+        "y": 4.1046482092964185
       },
-      "isLocked": false,
+      "isLocked": true,
       "linkedName": "Ring 6"
     },
     {
@@ -144,15 +144,15 @@
     },
     {
       "anchor": {
-        "x": 8.270256540513081,
+        "x": 8.27,
         "y": 0.75
       },
       "prevControl": {
-        "x": 9.270256540513081,
+        "x": 9.27,
         "y": 0.7499999999999999
       },
       "nextControl": {
-        "x": 7.270256540513081,
+        "x": 7.27,
         "y": 0.7500000000000001
       },
       "isLocked": false,
@@ -160,98 +160,98 @@
     },
     {
       "anchor": {
-        "x": 10.69,
+        "x": 10.71,
         "y": 1.59
       },
       "prevControl": {
-        "x": 9.69,
+        "x": 9.71,
         "y": 1.59
       },
       "nextControl": {
-        "x": 11.69,
+        "x": 11.71,
         "y": 1.59
       },
       "isLocked": false,
-      "linkedName": "Source Side Wing Shot"
+      "linkedName": "Wing Shot (Source Side)"
     },
     {
       "anchor": {
-        "x": 12.65,
+        "x": 12.68,
         "y": 2.43
       },
       "prevControl": {
-        "x": 11.65,
+        "x": 11.68,
         "y": 2.43
       },
       "nextControl": {
+        "x": 13.68,
+        "y": 2.43
+      },
+      "isLocked": true,
+      "linkedName": "Mid Shot (Source Side)"
+    },
+    {
+      "anchor": {
+        "x": 14.65,
+        "y": 3.38
+      },
+      "prevControl": {
         "x": 13.65,
-        "y": 2.43
+        "y": 3.38
       },
-      "isLocked": false,
-      "linkedName": "Source Side Mid Shot"
+      "nextControl": {
+        "x": 15.65,
+        "y": 3.38
+      },
+      "isLocked": true,
+      "linkedName": "Starting Line (Source Side)"
     },
     {
       "anchor": {
-        "x": 14.61,
-        "y": 3.265
+        "x": 14.65,
+        "y": 4.83
       },
       "prevControl": {
-        "x": 13.61,
-        "y": 3.265
+        "x": 13.65,
+        "y": 4.83
       },
       "nextControl": {
-        "x": 15.61,
-        "y": 3.265
+        "x": 15.65,
+        "y": 4.83
       },
-      "isLocked": false,
-      "linkedName": "Source Side Starting Line"
+      "isLocked": true,
+      "linkedName": "Starting Line (Between Ring 2 and 3)"
     },
     {
       "anchor": {
-        "x": 14.61,
-        "y": 4.825
+        "x": 14.65,
+        "y": 6.28
       },
       "prevControl": {
-        "x": 13.61,
-        "y": 4.825
+        "x": 13.65,
+        "y": 6.28
       },
       "nextControl": {
-        "x": 15.61,
-        "y": 4.825
+        "x": 15.65,
+        "y": 6.28
       },
-      "isLocked": false,
-      "linkedName": "Center Auto Starting Line"
-    },
-    {
-      "anchor": {
-        "x": 14.61,
-        "y": 6.25
-      },
-      "prevControl": {
-        "x": 13.61,
-        "y": 6.25
-      },
-      "nextControl": {
-        "x": 15.61,
-        "y": 6.25
-      },
-      "isLocked": false,
-      "linkedName": "Amp Side Starting Line"
+      "isLocked": true,
+      "linkedName": "Starting Line (Amp Side)"
     },
     {
       "anchor": {
         "x": 11.68,
-        "y": 4.098792791023527
+        "y": 4.11
       },
       "prevControl": {
         "x": 12.68,
-        "y": 4.098792791023527
+        "y": 4.11
       },
       "nextControl": {
         "x": 10.68,
-        "y": 4.098792791023527
+        "y": 4.11
       },
-      "isLocked": false,
+      "isLocked": true,
       "linkedName": "Under Stage"
     },
     {

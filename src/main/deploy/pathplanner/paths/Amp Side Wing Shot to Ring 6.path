@@ -3,25 +3,25 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 10.69,
+        "x": 10.71,
         "y": 6.62
       },
       "prevControl": null,
       "nextControl": {
-        "x": 9.335886364080421,
+        "x": 9.355886364080423,
         "y": 5.910298743674411
       },
       "isLocked": false,
-      "linkedName": "Amp Side Wing Shot"
+      "linkedName": "Wing Shot (Amp Side)"
     },
     {
       "anchor": {
         "x": 8.27,
-        "y": 4.1
+        "y": 4.1046482092964185
       },
       "prevControl": {
         "x": 9.57269299153983,
-        "y": 4.943338348215159
+        "y": 4.9479865575115785
       },
       "nextControl": null,
       "isLocked": false,

@@ -3,45 +3,29 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 14.61,
-        "y": 4.825
+        "x": 11.69,
+        "y": 1.59
       },
       "prevControl": null,
       "nextControl": {
-        "x": 13.61,
-        "y": 4.825
+        "x": 10.718740957390729,
+        "y": 1.8280249401842632
       },
       "isLocked": true,
-      "linkedName": "Center Auto Starting Line"
+      "linkedName": "Almost Wing Shot (Source Side)"
     },
     {
       "anchor": {
-        "x": 11.44,
-        "y": 4.465
+        "x": 8.64,
+        "y": 2.34
       },
       "prevControl": {
-        "x": 12.147106781186547,
-        "y": 5.172106781186547
-      },
-      "nextControl": {
-        "x": 10.732893218813452,
-        "y": 3.7578932188134533
-      },
-      "isLocked": true,
-      "linkedName": "Stage Passthrough"
-    },
-    {
-      "anchor": {
-        "x": 8.27,
-        "y": 4.1
-      },
-      "prevControl": {
-        "x": 9.27,
-        "y": 4.1
+        "x": 9.611259042609273,
+        "y": 2.1019750598157363
       },
       "nextControl": null,
       "isLocked": true,
-      "linkedName": "Ring 6"
+      "linkedName": "Ring 7 Pickup (From Almost Wing Shot)"
     }
   ],
   "rotationTargets": [],
@@ -55,13 +39,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 0,
+    "rotation": -13.769999999999982,
     "rotateFast": true
   },
   "reversed": false,
-  "folder": "Starts at Starting Line",
+  "folder": "Starts at Almost Wing Shot",
   "previewStartingState": {
-    "rotation": 0,
+    "rotation": 39.0,
     "velocity": 0
   },
   "useDefaultConstraints": true

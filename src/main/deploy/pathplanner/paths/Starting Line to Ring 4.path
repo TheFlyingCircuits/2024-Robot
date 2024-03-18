@@ -3,16 +3,16 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 14.61,
-        "y": 6.25
+        "x": 14.65,
+        "y": 6.28
       },
       "prevControl": null,
       "nextControl": {
-        "x": 11.61,
-        "y": 6.25
+        "x": 11.65,
+        "y": 6.28
       },
       "isLocked": true,
-      "linkedName": "Amp Side Starting Line"
+      "linkedName": "Starting Line (Amp Side)"
     },
     {
       "anchor": {

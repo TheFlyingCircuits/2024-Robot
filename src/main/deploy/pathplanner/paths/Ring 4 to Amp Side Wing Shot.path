@@ -16,16 +16,16 @@
     },
     {
       "anchor": {
-        "x": 10.69,
+        "x": 10.71,
         "y": 6.62
       },
       "prevControl": {
-        "x": 9.523358277485787,
+        "x": 9.543358277485789,
         "y": 6.9660616244309415
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "Amp Side Wing Shot"
+      "linkedName": "Wing Shot (Amp Side)"
     }
   ],
   "rotationTargets": [],

@@ -3,16 +3,16 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 8.6,
+        "x": 8.65,
         "y": 4.1
       },
       "prevControl": null,
       "nextControl": {
-        "x": 9.6,
+        "x": 9.65,
         "y": 4.1
       },
       "isLocked": true,
-      "linkedName": "Ring 6 Pickup"
+      "linkedName": "Ring 6 Pickup (From Center Stage)"
     },
     {
       "anchor": {
@@ -28,20 +28,20 @@
         "y": 4.953513268955458
       },
       "isLocked": true,
-      "linkedName": "Stage Right"
+      "linkedName": "Stage Right Passthrough"
     },
     {
       "anchor": {
-        "x": 14.61,
+        "x": 14.65,
         "y": 4.825
       },
       "prevControl": {
-        "x": 13.61,
+        "x": 13.65,
         "y": 4.825
       },
       "nextControl": null,
       "isLocked": true,
-      "linkedName": "Center Auto Starting Line"
+      "linkedName": "Starting Line (Between Ring 2 and 3)"
     }
   ],
   "rotationTargets": [],

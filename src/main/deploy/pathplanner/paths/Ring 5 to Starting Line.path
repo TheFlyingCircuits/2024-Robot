@@ -16,16 +16,16 @@
     },
     {
       "anchor": {
-        "x": 14.61,
-        "y": 6.25
+        "x": 14.65,
+        "y": 6.28
       },
       "prevControl": {
-        "x": 11.635447517371496,
-        "y": 6.589614259827663
+        "x": 11.675447517371497,
+        "y": 6.619614259827663
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "Amp Side Starting Line"
+      "linkedName": "Starting Line (Amp Side)"
     }
   ],
   "rotationTargets": [],

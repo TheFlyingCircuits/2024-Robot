@@ -66,7 +66,7 @@
                     {
                       "type": "path",
                       "data": {
-                        "pathName": "Ring 8 to Source Side Wing Shot"
+                        "pathName": "Ring 8 to Almost Wing Shot"
                       }
                     }
                   ]
@@ -113,7 +113,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "Source Side Speaker to Ring 7"
+                  "pathName": "Almost Wing Shot to Ring 7"
                 }
               },
               {
@@ -136,7 +136,7 @@
                     {
                       "type": "path",
                       "data": {
-                        "pathName": "Ring 7 to Source Side Wing Shot"
+                        "pathName": "Ring 7 to Almost Wing Shot"
                       }
                     },
                     {
@@ -189,7 +189,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "Source Side Wing Shot to Ring 6"
+                  "pathName": "Almost Wing Shot to Ring 6 (Source Side)"
                 }
               },
               {
@@ -214,7 +214,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "Ring 6 to Stage Shot"
+                  "pathName": "Ring 6 to Stage Shot (After Source Side Pickup)"
                 }
               },
               {
