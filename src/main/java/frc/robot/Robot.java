@@ -122,7 +122,6 @@ public class Robot extends LoggedRobot {
     @Override
     public void testInit() {
         // Cancels all running commands at the start of test mode.
-        // TODO: should we put this in disabledInit() too?
         CommandScheduler.getInstance().cancelAll();
     }
 

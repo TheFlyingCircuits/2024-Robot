@@ -37,6 +37,7 @@ import frc.robot.Constants.FieldElement;
 import frc.robot.Constants.VisionConstants;
 import frc.robot.subsystems.vision.VisionIO;
 import frc.robot.subsystems.vision.VisionIOInputsAutoLogged;
+import frc.robot.subsystems.vision.VisionIO.VisionMeasurement;
 
 public class Drivetrain extends SubsystemBase {
 
@@ -106,7 +107,7 @@ public class Drivetrain extends SubsystemBase {
 
         angleController = new PIDController(6, 0, 0.);
         angleController.enableContinuousInput(-180, 180);
-        angleController.setTolerance(3.0); // degrees. TODO: could be more precise? Calculate based on margin for error at range?
+        angleController.setTolerance(3.0); // degrees.
 
         configPathPlanner();
     }
@@ -120,7 +121,7 @@ public class Drivetrain extends SubsystemBase {
             (ChassisSpeeds speeds) -> {this.robotOrientedDrive(speeds, true);}, // Method that will drive the robot given ROBOT RELATIVE ChassisSpeeds
             new HolonomicPathFollowerConfig( // HolonomicPathFollowerConfig, this should likely live in your Constants class
                     new PIDConstants(5.0, 0.0, 0.0), // Translation PID constants
-                    new PIDConstants(4.0, 0.0, 0.0), // Rotation PID constants // TODO: get from angleController? or do we want them to have different gains?
+                    new PIDConstants(4.0, 0.0, 0.0), // Rotation PID constants // These are different from our angleController gain(s), after testing.
                     DrivetrainConstants.maxAchievableVelocityMetersPerSecond, // Max module speed, in m/s // TODO: be more conservative? This is a theoretical max that's higher than the actual max.
                     DrivetrainConstants.drivetrainRadiusMeters, // Drive base radius in meters. Distance from robot center to furthest module.
                     new ReplanningConfig() // Default path replanning config. See the API for the options here
@@ -166,9 +167,11 @@ public class Drivetrain extends SubsystemBase {
 
 
     /**
-     * TODO: Documentation
-     * @param desiredChassisSpeeds
-     * @param closedLoop
+     * Drives the robot at a desired chassis speeds. The coordinate system
+     * is the same as the one as the one for setPoseMeters().
+     * 
+     * @param desiredChassisSpeeds - Field relative chassis speeds, in m/s and rad/s. 
+     * @param closedLoop - Whether or not to drive the drive wheels with using feedback control.
      */
     public void fieldOrientedDrive(ChassisSpeeds desiredChassisSpeeds, boolean closedLoop) {
         Rotation2d currentOrientation = fusedPoseEstimator.getEstimatedPosition().getRotation();
@@ -178,21 +181,26 @@ public class Drivetrain extends SubsystemBase {
 
 
     /**
-     * TODO: documentation
-     * @param desiredTranslationalSpeeds
-     * @param desiredAngleDegrees
+     * Drives the robot at a desired chassis speeds, while automatically aiming
+     * at a rotation target. The coordinate system is the same as the one as the 
+     * one for setPoseMeters().
+     * 
+     * @param desiredTranslationalSpeeds - Field relative chassis speeds, in m/s. The rotation speed target is not used. 
+     * @param desiredAngle - Rotation2d of the target angle to aim at. This angle is CCW positive, with 0 
+     * pointing away from the blue alliance wall.
      */
     public void fieldOrientedDriveWhileAiming(ChassisSpeeds desiredTranslationalSpeeds, Rotation2d desiredAngle) {
         // Use PID controller to generate a desired angular velocity based on the desired angle
         double measuredAngle = fusedPoseEstimator.getEstimatedPosition().getRotation().getDegrees();
         double desiredAngleDegrees = desiredAngle.getDegrees();
-        double desiredDegreesPerSecond = angleController.calculate(measuredAngle, desiredAngleDegrees);
-        double desiredRadiansPerSecond = Math.toRadians(desiredDegreesPerSecond);
+        double desiredRadiansPerSecond = Math.toRadians(angleController.calculate(measuredAngle, desiredAngleDegrees));
 
-        ChassisSpeeds desiredSpeeds = new ChassisSpeeds();
-        desiredSpeeds.vxMetersPerSecond = desiredTranslationalSpeeds.vxMetersPerSecond;
-        desiredSpeeds.vyMetersPerSecond = desiredTranslationalSpeeds.vyMetersPerSecond;
-        desiredSpeeds.omegaRadiansPerSecond = desiredRadiansPerSecond;
+        ChassisSpeeds desiredSpeeds = new ChassisSpeeds(
+            desiredTranslationalSpeeds.vxMetersPerSecond,
+            desiredTranslationalSpeeds.vyMetersPerSecond,
+            desiredRadiansPerSecond
+        );
+
         this.fieldOrientedDrive(desiredSpeeds, true);
     }
 
@@ -245,8 +253,8 @@ public class Drivetrain extends SubsystemBase {
     /**
      * Sets the current position of the robot on the field in meters.
      * <p>
-     * A positive X value brings the robot towards the opposing alliance,
-     * and a positive Y value brings the robot left as viewed by your alliance.
+     * A positive X value brings the robot towards the red alliance,
+     * and a positive Y value brings the robot left as viewed by the blue alliance.
      * Rotations are counter-clockwise positive, with an angle of 0 facing away from the blue alliance wall.
      * @param pose
      */
@@ -258,13 +266,12 @@ public class Drivetrain extends SubsystemBase {
     /**
      * Gets the current position of the robot on the field in meters, 
      * based off of our odometry and vision estimation.
-     * This value considers the origin to be the right side of the robot's current alliance.
+     * This value considers the origin to be the right side of the blue alliance.
      * <p>
-     * A positive X value brings the robot towards the opposing alliance,
-     * and a positive Y value brings the robot left as viewed by your alliance.
+     * A positive X value brings the robot towards the red alliance, and a positive Y value
+     * brings the robot towards the left side as viewed from the blue alliance.
      * Rotations are counter-clockwise positive, with an angle of 0 facing away from the blue alliance wall.
      * @return The current position of the robot on the field in meters.
-     * TODO: OUT OF DATE DOCUMENTATION?
      */ 
     public Pose2d getPoseMeters() {
         return fusedPoseEstimator.getEstimatedPosition();
@@ -272,34 +279,12 @@ public class Drivetrain extends SubsystemBase {
 
 
     /**
-     * Takes the estimated pose from the vision, and sets our current poseEstimator pose to this one.
+     * Takes the best estimated pose from the vision, and sets our current poseEstimator pose to this one.
      */
     public void setPoseToVisionMeasurement() {
-        setPoseMeters(visionInputs.robotFieldPose);
+        if (visionInputs.visionMeasurements.size() > 0)
+            setPoseMeters(visionInputs.visionMeasurements.get(0).robotFieldPose);
     }
-
-    /**
-     * Calculates a matrix of standard deviations of the vision pose estimate, in meters and degrees. 
-     * This is a function of the distance from the camera to the april tag.
-     * @param distToTargetMeters - Distance from the camera to the apriltag.
-     */
-    private Matrix<N3, N1> getVisionStdDevs(double distToTargetMeters) {
-
-        //commented values are empirically found
-        double slopeStdDevMetersPerMeterX = 0.5;//0.001;
-        double slopeStdDevMetersPerMeterY = 0.5;//0.003;
-        // TODO: maybe just calculate based on last couple seconds instead of as a funciton of distance?
-
-        double slopeStdDevRadiansPerMeter = 1000;
-
-        //corresponds to x, y, and rotation standard deviations (meters and radians)
-        return VecBuilder.fill(
-            slopeStdDevMetersPerMeterX*distToTargetMeters,
-            slopeStdDevMetersPerMeterY*distToTargetMeters,
-            slopeStdDevRadiansPerMeter*distToTargetMeters
-        );
-    }
-
 
     /**
      * Sets the angle of the robot's pose so that it is facing forward, away from your alliance wall. 
@@ -359,18 +344,19 @@ public class Drivetrain extends SubsystemBase {
         fusedPoseEstimator.update(gyroInputs.robotYawRotation2d, getModulePositions());
         wheelsOnlyPoseEstimator.update(gyroInputs.robotYawRotation2d, getModulePositions());
 
+        for (VisionMeasurement visionMeasurement : visionInputs.visionMeasurements) {
+            Translation2d visionTranslation = visionMeasurement.robotFieldPose.getTranslation();
+            Translation2d estimatedTranslation = fusedPoseEstimator.getEstimatedPosition().getTranslation();
 
-        Translation2d visionTranslation = visionInputs.robotFieldPose.getTranslation();
-        Translation2d estimatedTranslation = fusedPoseEstimator.getEstimatedPosition().getTranslation();
-
-        // don't add vision measurements that are too far away
-        // for reference: it is 6 meters from speaker tags to wing.
-        if (visionTranslation.getDistance(estimatedTranslation) < 1. && visionInputs.nearestTagDistanceMeters < 4) {
-            fusedPoseEstimator.addVisionMeasurement(
-                visionInputs.robotFieldPose, 
-                visionInputs.timestampSeconds, 
-                getVisionStdDevs(visionInputs.nearestTagDistanceMeters)
-            );
+            // don't add vision measurements that are too far away
+            // for reference: it is 6 meters from speaker tags to wing.
+            if (visionTranslation.getDistance(estimatedTranslation) < 1.) {
+                fusedPoseEstimator.addVisionMeasurement(
+                    visionMeasurement.robotFieldPose, 
+                    visionMeasurement.timestampSeconds, 
+                    visionMeasurement.stdDevs
+                );
+            }
         }
     }
 

@@ -1,5 +1,8 @@
 package frc.robot.subsystems.vision;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Optional;
 
 import org.littletonrobotics.junction.Logger;
@@ -9,8 +12,12 @@ import org.photonvision.PhotonPoseEstimator;
 import org.photonvision.PhotonPoseEstimator.PoseStrategy;
 import org.photonvision.targeting.PhotonPipelineResult;
 
+import edu.wpi.first.math.Matrix;
+import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation3d;
+import edu.wpi.first.math.numbers.N1;
+import edu.wpi.first.math.numbers.N3;
 import frc.robot.Constants.VisionConstants;
 
 public class VisionIOPhotonLib implements VisionIO {
@@ -41,53 +48,96 @@ public class VisionIOPhotonLib implements VisionIO {
         );
     }
 
+    /**
+     * Calculates a matrix of standard deviations of the vision pose estimate, in meters and degrees. 
+     * This is a function of the distance from the camera to the april tag.
+     * @param distToTargetMeters - Distance from the camera to the apriltag.
+     */
+    private Matrix<N3, N1> getVisionStdDevs(double distToTargetMeters, boolean useMultitag) {
 
-    private void updateShooterCamera(VisionIOInputs inputs) {
-        PhotonPipelineResult shooterCameraResult = shooterCamera.getLatestResult();
-        if (!shooterCameraResult.hasTargets()) return;
+        double slopeStdDevMetersPerMeterX;
+        double slopeStdDevMetersPerMeterY;
 
-        inputs.nearestTagDistanceMeters = shooterCameraResult.getBestTarget().getBestCameraToTarget().getTranslation().getDistance(new Translation3d());
 
-        Optional<EstimatedRobotPose> poseEstimatorResult = shooterPoseEstimator.update();
-        if (poseEstimatorResult.isEmpty()) return;
-        
-        Pose2d estimatedPose2d = poseEstimatorResult.get().estimatedPose.toPose2d();
-
-        //either use multitag or
-        //if there's only one tag on the screen, only trust it if its pose ambiguity is below threshold
-        //photonPoseEstimator automatically switches techniques when detecting different number of tags
-        if (shooterCameraResult.targets.size() > 1 || (shooterCameraResult.targets.size() == 1 && shooterCameraResult.getBestTarget().getPoseAmbiguity() < 0.2)) {
-            inputs.robotFieldPose = estimatedPose2d;
-            inputs.timestampSeconds = poseEstimatorResult.get().timestampSeconds;
+        if (useMultitag) {
+            slopeStdDevMetersPerMeterX = 0.001;
+            slopeStdDevMetersPerMeterY = 0.003;
         }
+
+        else {
+            slopeStdDevMetersPerMeterX = 0.5;
+            slopeStdDevMetersPerMeterY = 0.5;
+        }
+
+        double slopeStdDevRadiansPerMeter = 1000;
+
+        //corresponds to x, y, and rotation standard deviations (meters and radians)
+        return VecBuilder.fill(
+            slopeStdDevMetersPerMeterX*distToTargetMeters,
+            slopeStdDevMetersPerMeterY*distToTargetMeters,
+            slopeStdDevRadiansPerMeter*distToTargetMeters
+        );
     }
 
-    private void updateTrapCamera(VisionIOInputs inputs) {
-        PhotonPipelineResult trapCameraResult = trapCamera.getLatestResult();
-        if (!trapCameraResult.hasTargets()) return;
 
-        inputs.nearestTagDistanceMeters = trapCameraResult.getBestTarget().getBestCameraToTarget().getTranslation().getDistance(new Translation3d());
+    /**
+     * Generates a VisionMeasurement object based off of a camera and its pose estimator.
+     * @param camera - PhotonCamera object of the camera you want a result from.
+     * @param estimator - PhotonPoseEstimator that MUST correspond to the PhotonCamera.
+     * @return - Optional VisionMeasurement. This is empty if the camera does not see a reliable target.
+     */
+    private Optional<VisionMeasurement> updateCamera(PhotonCamera camera, PhotonPoseEstimator estimator) {
+        VisionMeasurement output = new VisionMeasurement();
 
-        Optional<EstimatedRobotPose> poseEstimatorResult = trapPoseEstimator.update();
-        if (poseEstimatorResult.isEmpty()) return;
 
-        
-        Pose2d estimatedPose2d = poseEstimatorResult.get().estimatedPose.toPose2d();
+        PhotonPipelineResult shooterCameraResult = camera.getLatestResult();
+        if (!shooterCameraResult.hasTargets())
+            return Optional.empty();
+
+        Optional<EstimatedRobotPose> poseEstimatorResult = estimator.update();
+        if (poseEstimatorResult.isEmpty())
+            return Optional.empty();
+
         //either use multitag or
         //if there's only one tag on the screen, only trust it if its pose ambiguity is below threshold
         //photonPoseEstimator automatically switches techniques when detecting different number of tags
-        if (trapCameraResult.targets.size() > 1 || (trapCameraResult.targets.size() == 1 && trapCameraResult.getBestTarget().getPoseAmbiguity() < 0.2)) {
-            inputs.robotFieldPose = estimatedPose2d;
-            inputs.timestampSeconds = poseEstimatorResult.get().timestampSeconds;
-        }
+        if (shooterCameraResult.targets.size() == 1 && shooterCameraResult.getBestTarget().getPoseAmbiguity() > 0.2)
+            return Optional.empty();
+
+        output.nearestTagDistanceMeters = shooterCameraResult.getBestTarget().getBestCameraToTarget().getTranslation().getDistance(new Translation3d());
+        
+        if (output.nearestTagDistanceMeters > 4)
+            return Optional.empty();
+
+
+        output.robotFieldPose = poseEstimatorResult.get().estimatedPose.toPose2d();
+        output.timestampSeconds = poseEstimatorResult.get().timestampSeconds;
+        output.stdDevs = getVisionStdDevs(output.nearestTagDistanceMeters, (shooterCameraResult.targets.size() > 1));  //different standard devs for different methods of detecting apriltags
+
+        return Optional.of(output);
     }
 
     @Override
     public void updateInputs(VisionIOInputs inputs) {
-
+        inputs.visionMeasurements = new ArrayList<VisionMeasurement>();
         
-        updateTrapCamera(inputs);
-        updateShooterCamera(inputs);
+        Optional<VisionMeasurement> shooterResult = updateCamera(shooterCamera, shooterPoseEstimator);
+        if (shooterResult.isPresent())
+            inputs.visionMeasurements.add(shooterResult.get());
+
+        Optional<VisionMeasurement> trapResult = updateCamera(trapCamera, trapPoseEstimator);
+        if (trapResult.isPresent())
+            inputs.visionMeasurements.add(trapResult.get());
+
+
+        //sorts visionMeasurements by standard deviations in the x direction
+        Collections.sort(inputs.visionMeasurements, new Comparator<VisionMeasurement>() {
+            @Override
+            public int compare(VisionMeasurement o1, VisionMeasurement o2) {
+                return Double.compare(o1.stdDevs.get(0,0), o2.stdDevs.get(0,0));
+            }
+        });
+
 
         PhotonPipelineResult noteCameraResult = noteCamera.getLatestResult();
         if (!noteCameraResult.hasTargets()) {
