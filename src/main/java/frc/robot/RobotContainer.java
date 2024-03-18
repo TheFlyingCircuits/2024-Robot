@@ -125,12 +125,6 @@ public class RobotContainer {
         indexer = new Indexer();
         climb = new Climb();
         leds = new LEDs();
-
-        
-        /**** ADVANTAGE KIT LOGGER  *****/
-        Logger.recordMetadata("projectName", "2024Robot");
-        Logger.addDataReceiver(new NT4Publisher());
-        Logger.start();
         
         
         drivetrain.setDefaultCommand(drivetrain.fieldOrientedDriveCommand(charlie::getRequestedFieldOrientedVelocity));

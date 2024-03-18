@@ -6,24 +6,18 @@ package frc.robot;
 
 import org.littletonrobotics.junction.LoggedRobot;
 import org.littletonrobotics.junction.Logger;
+import org.littletonrobotics.junction.inputs.LoggedSystemStats;
 import org.littletonrobotics.junction.networktables.NT4Publisher;
 import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 
 import com.pathplanner.lib.auto.AutoBuilder;
-import com.pathplanner.lib.controllers.PPHolonomicDriveController;
-import com.pathplanner.lib.util.HolonomicPathFollowerConfig;
-import com.pathplanner.lib.util.PIDConstants;
-import com.pathplanner.lib.util.ReplanningConfig;
 
-import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import frc.robot.Constants.DrivetrainConstants;
-import frc.robot.subsystems.drivetrain.Drivetrain;
 
 /**
  * The VM is configured to automatically run this class, and to call the functions corresponding to
@@ -35,13 +29,19 @@ public class Robot extends LoggedRobot {
     private Command m_autonomousCommand;
 
     private RobotContainer m_robotContainer;
-    private Drivetrain drivetrain;
 
     private SendableChooser<Command> autoChooser;
 
 
-
-
+    public void initAdvantageKit() {
+        Logger.recordMetadata("projectName", "2024Robot");
+        Logger.addDataReceiver(new NT4Publisher());
+        //Logger.addDataReceiver(new WPILOGWriter()); // <- log to USB stick
+        new PowerDistribution(); // Apparently just constructing a PDH
+                                 // will allow it's values to be logged? 
+                                 // This is what the advantage kit docs imply at least.
+        Logger.start();
+    }
 
     /**
      * This function is run when the robot is first started up and should be used for any
@@ -52,9 +52,7 @@ public class Robot extends LoggedRobot {
         // Instantiate our RobotContainer.  This will perform all our button bindings, and put our
         // autonomous chooser on the dashboard.
         m_robotContainer = new RobotContainer();
-        drivetrain = m_robotContainer.drivetrain;
         
-
         autoChooser = AutoBuilder.buildAutoChooser();
         SmartDashboard.putData("Auto Chooser", autoChooser);
 
