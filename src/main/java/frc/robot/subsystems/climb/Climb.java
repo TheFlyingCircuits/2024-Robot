@@ -27,7 +27,7 @@ public class Climb extends SubsystemBase{
     }
 
     public Command lowerHooksCommand() {
-        return this.run(() -> {this.setVoltsClosedLoop(-7);});
+        return this.run(() -> {this.setVoltsClosedLoop(-10);});
     }
 
     /**
@@ -63,7 +63,7 @@ public class Climb extends SubsystemBase{
             return;
         }
 
-        double positionSyncKpVoltsPerMeter = 0.04;
+        double positionSyncKpVoltsPerMeter = 6;
         double leftError = rightMotor.getPosition() - leftMotor.getPosition();
         double rightError = -leftError;
 

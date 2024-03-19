@@ -39,14 +39,14 @@ public class Indexer extends SubsystemBase {
     }
 
     public void setBlackRollerSurfaceSpeed(double metersPerSecond) {
-        // theoretical max of 5.80 meters per second of surface speed based on motor and gearing
+        // theoretical max of 5.65 meters per second of surface speed based on motor and gearing
         double blackRollerRotationsPerSecond = metersPerSecond * (1.0 / ShooterConstants.blackRollerCircumferenceMeters);
         double desiredMotorRotationsPerSecond = blackRollerRotationsPerSecond * (1.0 / ShooterConstants.indexerBlackRollerGearRatio);
         setMotorRotationsPerSecond(desiredMotorRotationsPerSecond);
     }
 
     public void setOrangeWheelsSurfaceSpeed(double metersPerSecond) {
-        // theoretical max of 8.20 meters per second of surface speed based on motor and gearing
+        // theoretical max of 7.97 meters per second of surface speed based on motor and gearing
         double orangeWheelsRotationsPerSecond = metersPerSecond * (1.0 / ShooterConstants.orangeWheelsCircumferenceMeters);
         double desiredMotorRotationsPerSecond = orangeWheelsRotationsPerSecond * (1.0 / ShooterConstants.indexerOrangeWheelsGearRatio);
         setMotorRotationsPerSecond(desiredMotorRotationsPerSecond);
@@ -60,12 +60,12 @@ public class Indexer extends SubsystemBase {
         indexerMotor.setVoltage(feedforwardOutput + pidOutput);
     }
 
-    /** max of 5.8 */
+    /** max of 5.65 */
     public Command setBlackRollerSurfaceSpeedCommand(double metersPerSecond) {
         return this.run(() -> {this.setBlackRollerSurfaceSpeed(metersPerSecond);});
     }
 
-    /** max of 8.2 */
+    /** max of 7.97 */
     public Command setOrangeWheelsSurfaceSpeedCommand(double metersPerSecond) {
         return this.run(() -> {this.setOrangeWheelsSurfaceSpeed(metersPerSecond);});
     }

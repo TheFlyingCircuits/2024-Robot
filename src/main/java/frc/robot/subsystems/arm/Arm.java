@@ -50,6 +50,7 @@ public class Arm extends SubsystemBase {
 
     private SysIdRoutine.Mechanism sysIdMech;
     private SysIdRoutine sysIdRoutine;
+    private boolean disableSetpointChecking = false;
     
 
     public Arm(ArmIO armIO) {
@@ -212,6 +213,10 @@ public class Arm extends SubsystemBase {
     public Command generateSysIdDynamic(SysIdRoutine.Direction direction) {
         return sysIdRoutine.dynamic(direction);
     }
+
+    public void setDisableSetpointChecking(boolean isDisabled) {
+        disableSetpointChecking = isDisabled;
+    }
     
     @Override
     public void periodic() {
@@ -221,7 +226,20 @@ public class Arm extends SubsystemBase {
 
         io.updateInputs(inputs);
 
-        followTrapezoidProfile();
+        if(disableSetpointChecking) {
+            io.setCoast(true);
+        }
+        else {
+            io.setCoast(false);
+        }
+
+        if(!io.isCoast()) {
+            followTrapezoidProfile();
+        }
+        else {
+            io.setArmMotorVolts(0);
+        }
+
         mechLigament.setAngle(inputs.armAngleDegrees);
 
 

@@ -41,6 +41,7 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ScheduleCommand;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -262,7 +263,7 @@ public class RobotContainer {
     }
 
     public Command fireNote() {
-        return indexer.setOrangeWheelsSurfaceSpeedCommand(8).withTimeout(0.4)
+        return indexer.setOrangeWheelsSurfaceSpeedCommand(7).withTimeout(0.4)
                .alongWith(new ScheduleCommand(leds.playFireNoteAnimationCommand()));
     }
 
@@ -310,15 +311,20 @@ public class RobotContainer {
 
 
         /** CLIMB **/
-        controller.povUp().onTrue(climb.raiseHooksCommand().alongWith(arm.setDesiredDegreesCommand(ArmConstants.armMaxAngleDegrees)));
+        controller.povUp().onTrue(climb.raiseHooksCommand().alongWith(arm.setDesiredDegreesCommand(ArmConstants.armMaxAngleDegrees)
+                                                                      .raceWith((new WaitCommand(0.2)).andThen(new WaitUntilCommand(arm::isCloseToTarget)))
+                                                                      .andThen(new InstantCommand(() -> {arm.setDisableSetpointChecking(true);}))
+                                                                      .andThen(arm.holdCurrentPositionCommand().until(() -> {return arm.getDegrees() <= 76;}))
+                                                                      .andThen(new InstantCommand(() -> {arm.setDisableSetpointChecking(false);}))));
         controller.povRight().onTrue(arm.setDesiredDegreesCommand(82));
         controller.povDown().whileTrue(climb.lowerHooksCommand().alongWith(prepTrapShot()));
-        controller.start().onTrue(this.fireNote().andThen(shooter.setFlywheelSurfaceSpeedCommand(0)));
+        controller.povLeft().whileTrue(climb.raiseHooksCommand());
+        controller.start().onTrue(this.fireNote().andThen(new ScheduleCommand(shooter.setFlywheelSurfaceSpeedCommand(0)))); // allow fire note to finish so default of stopping takes over.
 
         /** MISC **/
         controller.y().onTrue(new InstantCommand(() -> drivetrain.setRobotFacingForward()));
 
-        controller.x().onTrue(resetShooter());
+        controller.x().onTrue(new InstantCommand(() -> arm.setDisableSetpointChecking(false)).andThen(resetShooter()));
 
         /** Driver Feedback **/
         ringJustEnteredIntake.onTrue(charlie.rumbleController(0.25, 0.5)); // lol this happens even during auto

@@ -21,6 +21,7 @@ public class ArmIONeo implements ArmIO {
     private Neo rightMotor;
     private CANcoder leftAbsoluteEncoder;
     private CANcoder rightAbsoluteEncoder;
+    private boolean isCoast = false;
 
     public ArmIONeo() {
 
@@ -60,6 +61,8 @@ public class ArmIONeo implements ArmIO {
             inputs.atLowerLimit = false;
             inputs.atUpperLimit = false;
         }
+
+
     }
 
     @Override
@@ -86,6 +89,24 @@ public class ArmIONeo implements ArmIO {
         leftMotor.setInverted(true);
         leftMotor.setIdleMode(IdleMode.kBrake);
         leftMotor.burnFlash();
+    }
+
+    @Override
+    public void setCoast(boolean makeCoast) {
+        if(makeCoast && !isCoast) {
+            rightMotor.setIdleMode(IdleMode.kCoast);
+            leftMotor.setIdleMode(IdleMode.kCoast);
+            isCoast = true;
+        }
+        else if ((!makeCoast) && isCoast) {
+            rightMotor.setIdleMode(IdleMode.kBrake);
+            leftMotor.setIdleMode(IdleMode.kBrake);
+            isCoast = false;
+        }
+    }
+    @Override
+    public boolean isCoast() {
+        return isCoast;
     }
 
     private void configCANCoders() {
