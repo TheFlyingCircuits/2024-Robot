@@ -32,19 +32,19 @@ public class TrapRoutine extends SequentialCommandGroup {
             
             //while we are driving, do this sequence
             new AimEverythingAtTrap(drivetrain, translationController)
-                .raceWith(new SequentialCommandGroup(
+                .raceWith(
+                new SequentialCommandGroup(
                     //raise the hooks and lean the arm back
                     new ParallelCommandGroup(
-                        climb.raiseHooksCommand(),
-                        new ParallelRaceGroup(
-                            arm.setDesiredDegreesCommand(ArmConstants.armMaxAngleDegrees),
-                            new WaitCommand(0.2).andThen(new WaitUntilCommand(arm::isCloseToTarget))
-                        )
+                        climb.raiseHooksCommand().until(climb::climbArmsUp),
+                        arm.setDesiredDegreesCommand(ArmConstants.armMaxAngleDegrees)
+                            .raceWith(
+                                new WaitCommand(0.2).andThen(new WaitUntilCommand(arm::isCloseToTarget)))
                     ),
                     //go into coast mode, spin the flywheels to move the chain over them
                     new InstantCommand(() -> {arm.setDisableSetpointChecking(true);}),
                     new ParallelRaceGroup(
-                        arm.holdCurrentPositionCommand().until(() -> {return arm.getDegrees() <= 76;}),
+                        arm.holdCurrentPositionCommand().until(() -> {return arm.getDegrees() <= 80;}),
                         shooter.setFlywheelSurfaceSpeedCommand(1, 1)
                     ),
                     new InstantCommand(() -> {arm.setDisableSetpointChecking(false);})
@@ -54,17 +54,18 @@ public class TrapRoutine extends SequentialCommandGroup {
             //once we are on the chain, start climbing
             new ParallelRaceGroup(
                 climb.lowerHooksCommand().until(climb::climbArmsDown),
-                arm.setDesiredDegreesCommand(90),
+                arm.setDesiredDegreesCommand(95),
                 shooter.setFlywheelSurfaceSpeedCommand(10)
             ),
 
+            new WaitCommand(0.5),
+
             //fire the note at the top
-            indexer.setOrangeWheelsSurfaceSpeedCommand(7).withTimeout(0.4)
-               .alongWith(new ScheduleCommand(leds.playFireNoteAnimationCommand())),
+            indexer.setOrangeWheelsSurfaceSpeedCommand(7).withTimeout(1)
+                .raceWith(shooter.setFlywheelSurfaceSpeedCommand(10))
+                .alongWith(new ScheduleCommand(leds.playFireNoteAnimationCommand())),
 
-            new WaitCommand(1),
-
-            climb.raiseHooksCommand(2).withTimeout(0.5)
+            climb.raiseHooksCommand(4).withTimeout(0.5)
         );
     }
 }

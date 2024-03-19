@@ -11,7 +11,7 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.LEDConstants;
 
@@ -45,27 +45,27 @@ public class LEDs extends SubsystemBase {
     }
 
     private void wipeToNewColor(double progress, Color colorThatEnters) {
-        double maxPositionToKeep = LEDConstants.stripLengthMeters + (LEDConstants.metersPerLed/2) - (LEDConstants.stripLengthMeters/2)*progress;
-        double minPositionToKeep = 0 - (LEDConstants.metersPerLed/2) + (LEDConstants.stripLengthMeters/2)*progress;
+        double maxPositionOfOldColor = LEDConstants.stripLengthMeters + (LEDConstants.metersPerLed/2) - (LEDConstants.stripLengthMeters/2)*progress;
+        double minPositionOfOldColor = 0 - (LEDConstants.metersPerLed/2) + (LEDConstants.stripLengthMeters/2)*progress;
 
         for (int i = 0; i < buffer.getLength(); i += 1) {
             double position = (i + 1) * LEDConstants.metersPerLed;
 
-            if (position > maxPositionToKeep || position < minPositionToKeep) {
+            if (position > maxPositionOfOldColor || position < minPositionOfOldColor) {
                 buffer.setLED(i, colorThatEnters);
             }
         }
         leds.setData(buffer);
     }
 
-    private void showArmProgress(double progress) {
+    private void showProgressOnTopThird(double progress) {
         // Show arm progress on the top 3rd of the LED strip
         double progressBarStartLocation = LEDConstants.stripLengthMeters + (LEDConstants.metersPerLed/2);
         double progressBarEndLocation = LEDConstants.topThirdBreakpoint;
         this.showProgressAsTrafficLight(progressBarStartLocation, progressBarEndLocation, progress);
     }
 
-    private void showFlywheelProgress(double progress) {
+    private void showProgressNearFlywheels(double progress) {
         // Show flywheel progress on the middle 3rd of the LED strip (building progress towards the middle)
         double topHalfStartLocation = LEDConstants.topThirdBreakpoint;
         double bottomHalfStartLocation = LEDConstants.bottomThirdBreakpoint;
@@ -74,7 +74,7 @@ public class LEDs extends SubsystemBase {
         this.showProgressAsTrafficLight(bottomHalfStartLocation, endLocation, progress);
     }
 
-    private void showDrivetrainProgress(double progress) {
+    private void showProgressOnBottomThird(double progress) {
         // Show drivetrain progress on the bottom 3rd of the led strips
         double progressBarStartLocation = 0 - (LEDConstants.metersPerLed/2);
         double progressBarEndLocation = LEDConstants.bottomThirdBreakpoint;
@@ -133,11 +133,10 @@ public class LEDs extends SubsystemBase {
         leds.setData(buffer);
     }
 
-    private void loadingPattern(Color colorOfBlobs) {
+    private void loadingPattern(int numBlobs, Color colorOfEvenBlobs, Color colorOfOddBlobs) {
         // use negative speed to move from the top of the strip to the bottom of the strip.
         double patternSpeedMetersPerSecond = -1.0;
-        int numBlobs = 3;
-        double blobLength = (LEDConstants.stripLengthMeters/4) / numBlobs; // a quarter of the strip will be lit up at any given moment.
+        double blobLength = (LEDConstants.stripLengthMeters/12);
         double blobRadius = blobLength / 2;
 
         // Start with a blank strip
@@ -149,6 +148,12 @@ public class LEDs extends SubsystemBase {
         // blob position is updated at the end of the outer for loop.
         double blobCenter = this.wrapPosition(patternSpeedMetersPerSecond * Timer.getFPGATimestamp());
         for (int blobIndex = 0; blobIndex < numBlobs; blobIndex += 1) {
+
+            Color colorOfBlob = colorOfEvenBlobs;
+            if (blobIndex % 2 == 1) {
+                colorOfBlob = colorOfOddBlobs;
+            }
+
             double upperBound = this.wrapPosition(blobCenter + blobRadius);
             double lowerBound = this.wrapPosition(blobCenter - blobRadius);
 
@@ -162,7 +167,7 @@ public class LEDs extends SubsystemBase {
                 partOfBlob |= (upperBound < lowerBound) && ( (position >= lowerBound) || (position <= upperBound) );
 
                 if (partOfBlob) {
-                    buffer.setLED(ledIndex, colorOfBlobs);
+                    buffer.setLED(ledIndex, colorOfBlob);
                 }
             }
 
@@ -182,13 +187,6 @@ public class LEDs extends SubsystemBase {
         return wrappedPosition;
     }
 
-    // public Command showAimProgressCommand(DoubleSupplier flywheelProgress, DoubleSupplier armProgress, DoubleSupplier drivetrainProgress) {
-    //     return this.run(() -> {
-    //         this.showFlywheelProgress(flywheelProgress.getAsDouble());
-    //         this.showArmProgress(armProgress.getAsDouble());
-    //         this.showDrivetrainProgress(drivetrainProgress.getAsDouble());
-    //     });
-    // }
 
     public int getAllianceHue() {
         Optional<Alliance> alliance = DriverStation.getAlliance();
@@ -229,10 +227,19 @@ public class LEDs extends SubsystemBase {
         });
     }
 
-    public Command playIntakeAnimationCommand() {
+    public Command playIntakeAnimationCommand(Supplier<Boolean> intakeCamSeesNote) {
         Color orange = Color.fromHSV(LEDConstants.Hues.orangeSignalLight, 255, 255);
-        return super.run(() -> {this.loadingPattern(orange);});
+        Color green = new Color(0, 255, 0);
+        return super.run(() -> {
+            if (intakeCamSeesNote.get().booleanValue()) {
+                this.loadingPattern(6, orange, green);
+            }
+            else {
+                this.loadingPattern(3, orange, orange);
+            }
+        });
     }
+
 
     public Command solidColorCommand(Color color) {
         return super.run(() -> {this.solidColor(color);});
@@ -251,10 +258,10 @@ public class LEDs extends SubsystemBase {
         double onTime = (totalRuntimeSeconds / numFlashes) / 2.0;
         double offTime = onTime;
 
-        Command output = new InstantCommand();
+        SequentialCommandGroup output = new SequentialCommandGroup();
         for (int i = 0; i < numFlashes; i += 1) {
-            output = output.andThen(this.solidColorCommand(color).withTimeout(onTime))
-                           .andThen(this.turnOffCommand().withTimeout(offTime));
+            output.addCommands(this.solidColorCommand(color).withTimeout(onTime),
+                               this.turnOffCommand().withTimeout(offTime));
         }
 
         return output;
@@ -279,9 +286,9 @@ public class LEDs extends SubsystemBase {
             double drivetrainProgress = 1.0 - ( Math.abs(drivetrainErrorDegrees.get()) / maxDrivetrainErrorToShow );
             drivetrainProgress = MathUtil.clamp(drivetrainProgress, 0.0, 1.0);
 
-            this.showArmProgress(armProgress);
-            this.showFlywheelProgress(flywheelProgress);
-            this.showDrivetrainProgress(drivetrainProgress);
+            this.showProgressOnTopThird(armProgress);
+            this.showProgressNearFlywheels(flywheelProgress);
+            this.showProgressOnBottomThird(drivetrainProgress);
         });
     }
 
@@ -310,10 +317,6 @@ public class LEDs extends SubsystemBase {
         double timeForEachSegment = 1./5.;
         Color orange = Color.fromHSV(LEDConstants.Hues.orangeSignalLight, 255, 255);
         Color green = new Color(0, 255, 0);
-        // return this.playWipeToColorCommand(timeForEachSegment, Color.kBlack)
-        //        .andThen(this.playWipeToColorCommand(timeForEachSegment, orange))
-        //        .andThen(this.playWipeToColorCommand(timeForEachSegment, Color.kBlack))
-        //        .andThen(this.playWipeToAllianceColorCommand(timeForEachSegment));
 
         return this.solidColorCommand(green).withTimeout(0.05)
                .andThen(this.playWipeToColorCommand(timeForEachSegment, orange))

@@ -9,6 +9,7 @@ import frc.robot.commands.AimEverythingAtAmp;
 import frc.robot.commands.AimEverythingAtSpeaker;
 import frc.robot.commands.AimEverythingAtTrap;
 import frc.robot.commands.NoteTrackingIndexNote;
+import frc.robot.commands.TrapRoutine;
 import frc.robot.subsystems.HumanDriver;
 import frc.robot.subsystems.arm.Arm;
 import frc.robot.subsystems.arm.ArmIONeo;
@@ -152,7 +153,7 @@ public class RobotContainer {
     //since wpilib requires a new instance of a command to be used in each
     //composition (the same instance of a command cannot be used in multiple compositions).
     public Command runIntake() {
-        return new ScheduleCommand(leds.playIntakeAnimationCommand())
+        return new ScheduleCommand(leds.playIntakeAnimationCommand(drivetrain::shouldTrackNote))
                .andThen(
                     //indexer.setBlackRollerSurfaceSpeedCommand(5)
                     indexer.setOrangeWheelsSurfaceSpeedCommand(2.5)
@@ -307,22 +308,24 @@ public class RobotContainer {
         controller.b().onTrue(shart().andThen(new ScheduleCommand(this.resetShooter())));
         //controller.a().onTrue(this.fireNote());
         //controller.a().whileTrue(navigateToTrap());
-        controller.a().whileTrue(new AimEverythingAtTrap(drivetrain, charlie::getRequestedFieldOrientedVelocity));
-
 
         /** CLIMB **/
         
         //deprecated, moved to TrapRoutine.java
-        controller.povUp().onTrue(climb.raiseHooksCommand().alongWith(arm.setDesiredDegreesCommand(ArmConstants.armMaxAngleDegrees)
-                                                                      .raceWith((new WaitCommand(0.2)).andThen(new WaitUntilCommand(arm::isCloseToTarget)))
-                                                                      .raceWith(shooter.setFlywheelSurfaceSpeedCommand(1, 1))
-                                                                      .andThen(new InstantCommand(() -> {arm.setDisableSetpointChecking(true);}))
-                                                                      .andThen(arm.holdCurrentPositionCommand().until(() -> {return arm.getDegrees() <= 76;}))
-                                                                      .andThen(new InstantCommand(() -> {arm.setDisableSetpointChecking(false);}))));
-        controller.povRight().onTrue(arm.setDesiredDegreesCommand(82));
-        controller.povDown().whileTrue(climb.lowerHooksCommand().alongWith(prepTrapShot()));
-        controller.povLeft().whileTrue(climb.raiseHooksCommand());
-        controller.start().onTrue(this.fireNote().andThen(new ScheduleCommand(shooter.setFlywheelSurfaceSpeedCommand(0)))); // allow fire note to finish so default of stopping takes over.
+        // controller.povUp().onTrue(climb.raiseHooksCommand().alongWith(arm.setDesiredDegreesCommand(ArmConstants.armMaxAngleDegrees)
+        //                                                               .raceWith((new WaitCommand(0.2)).andThen(new WaitUntilCommand(arm::isCloseToTarget)))
+        //                                                               .raceWith(shooter.setFlywheelSurfaceSpeedCommand(1, 1))
+        //                                                               .andThen(new InstantCommand(() -> {arm.setDisableSetpointChecking(true);}))
+        //                                                               .andThen(arm.holdCurrentPositionCommand().until(() -> {return arm.getDegrees() <= 76;}))
+        //                                                               .andThen(new InstantCommand(() -> {arm.setDisableSetpointChecking(false);}))));
+        // controller.povRight().onTrue(arm.setDesiredDegreesCommand(82));
+        // controller.povDown().whileTrue(climb.lowerHooksCommand().alongWith(prepTrapShot()));
+        // controller.povLeft().whileTrue(climb.raiseHooksCommand());
+        // controller.start().onTrue(this.fireNote().andThen(new ScheduleCommand(shooter.setFlywheelSurfaceSpeedCommand(0)))); // allow fire note to finish so default of stopping takes over.
+
+        controller.povUp().onTrue(climb.raiseHooksCommand());
+        controller.povDown().onTrue(climb.lowerHooksCommand().until(climb::climbArmsZero));
+        controller.a().whileTrue(new TrapRoutine(charlie::getRequestedFieldOrientedVelocity, climb, arm, shooter, indexer, leds, drivetrain));
 
         /** MISC **/
         controller.y().onTrue(new InstantCommand(() -> drivetrain.setRobotFacingForward()));
@@ -334,25 +337,5 @@ public class RobotContainer {
         ringJustEnteredIntake.onTrue(this.signalNoteInIntake().ignoringDisable(true));
         // TODO: prevent flash on reverse? Either condition with positive wheel speeds,
         //       or no seperate scheudle command?
-    }
-
-    private void testBindings() {
-        CommandXboxController controller = charlie.getXboxController();
-
-        controller.rightTrigger().whileTrue(indexNote());
-        controller.leftTrigger().whileTrue(reverseIntake());
-
-        // controller.povRight().onTrue(aimShooterAtAngle(0));
-        // controller.povUp().onTrue(aimShooterAtAngle(20));
-        // controller.povLeft().onTrue(aimShooterAtAngle(30));
-        // controller.povDown().onTrue(aimShooterAtAngle(45));
-
-        /** SYSID BINDINGS **/
-        // controller.a().whileTrue(arm.generateSysIdQuasistatic(SysIdRoutine.Direction.kForward));
-        // controller.b().whileTrue(arm.generateSysIdQuasistatic(SysIdRoutine.Direction.kReverse));
-        
-        // controller.x().whileTrue(arm.generateSysIdDynamic(SysIdRoutine.Direction.kForward));
-        // controller.y().whileTrue(arm.generateSysIdDynamic(SysIdRoutine.Direction.kReverse));
-    
     }
 }

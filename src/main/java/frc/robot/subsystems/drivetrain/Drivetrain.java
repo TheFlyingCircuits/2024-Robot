@@ -125,7 +125,7 @@ public class Drivetrain extends SubsystemBase {
         angleController.enableContinuousInput(-180, 180);
         angleController.setTolerance(3.0); // degrees.
 
-        translationController = new PIDController(1.0, 0, 0); // kP has units of metersPerSecond per meter of error.
+        translationController = new PIDController(4.0, 0, 0); // kP has units of metersPerSecond per meter of error.
         translationController.setTolerance(0.05); // 5 centimeters
 
         configPathPlanner();
@@ -397,6 +397,10 @@ public class Drivetrain extends SubsystemBase {
 
     public boolean intakeSeesNote() {
         return visionInputs.intakeSeesNote;
+    }
+
+    public boolean shouldTrackNote() {
+        return visionInputs.intakeSeesNote && isTrackingNote;
     }
 
     /**

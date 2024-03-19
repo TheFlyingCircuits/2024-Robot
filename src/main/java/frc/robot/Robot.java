@@ -81,21 +81,25 @@ public class Robot extends LoggedRobot {
     /** This function is called once each time the robot enters Disabled mode. */
     @Override
     public void disabledInit() {
-        m_robotContainer.drivetrain.playOrchestra();
+        //m_robotContainer.drivetrain.playOrchestra();
     }
 
     @Override
     public void disabledPeriodic() {
         m_robotContainer.drivetrain.setPoseToVisionMeasurement();
         if(!m_robotContainer.drivetrain.isSongPlaying()) {
-            m_robotContainer.drivetrain.playOrchestra();
+            //m_robotContainer.drivetrain.playOrchestra();
         }
 
+        m_autonomousCommand = autoChooser.getSelected();
+        if (m_autonomousCommand != null) {
+            SmartDashboard.putString("Chosen Auto", m_autonomousCommand.getName());
+        }
     }
 
     @Override
     public void disabledExit() {
-        m_robotContainer.drivetrain.stopOrchestra();
+        //m_robotContainer.drivetrain.stopOrchestra();
     }
 
     /** This autonomous runs the autonomous command selected by your {@link RobotContainer} class. */
@@ -103,7 +107,7 @@ public class Robot extends LoggedRobot {
     public void autonomousInit() {
         m_robotContainer.drivetrain.setPoseToVisionMeasurement();
 
-        m_autonomousCommand = autoChooser.getSelected();
+        //m_autonomousCommand = autoChooser.getSelected();
 
         // schedule the autonomous command (example)
         if (m_autonomousCommand != null) {

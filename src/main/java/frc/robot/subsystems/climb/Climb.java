@@ -121,8 +121,16 @@ public class Climb extends SubsystemBase{
         return rightMotor.getPosition() >= ClimbConstants.climbMaxPosMeters;
     }
 
+    public boolean climbArmsZero() {
+        return Math.abs(rightMotor.getPosition()) < 0.02 && Math.abs(leftMotor.getPosition()) < 0.02;
+    }
+
     public boolean climbArmsDown() {
         return leftArmDown() && rightArmDown();
+    }
+
+    public boolean climbArmsUp() {
+        return leftArmUp() && rightArmUp();
     }
     
     @Override
