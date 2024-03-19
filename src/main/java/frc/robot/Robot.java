@@ -54,7 +54,8 @@ public class Robot extends LoggedRobot {
         // Instantiate our RobotContainer.  This will perform all our button bindings, and put our
         // autonomous chooser on the dashboard.
         m_robotContainer = new RobotContainer();
-        
+
+        // Must buildAutoChooser() only after NamedCommmands have been registered in the RobotContainer constructor!
         autoChooser = AutoBuilder.buildAutoChooser();
         SmartDashboard.putData("Auto Chooser", autoChooser);
 

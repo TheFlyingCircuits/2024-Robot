@@ -7,6 +7,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj2.command.Command;
+import frc.robot.FlyingCircuitUtils;
 import frc.robot.Constants.FieldConstants;
 import frc.robot.Constants.FieldElement;
 import frc.robot.subsystems.arm.Arm;
@@ -75,7 +76,8 @@ public class AimEverythingAtSpeaker extends Command {
         // Drivetrain
         if (useAutoRotate) {
             ChassisSpeeds desiredTranslationalSpeeds = translationController.get();
-            drivetrain.fieldOrientedDriveWhileAiming(desiredTranslationalSpeeds, drivetrain.getAngleFromDriveToFieldElement(FieldElement.SPEAKER));
+            Rotation2d desiredAngle = FlyingCircuitUtils.getAngleToFieldElement(FieldElement.SPEAKER, drivetrain.getPoseMeters());
+            drivetrain.fieldOrientedDriveWhileAiming(desiredTranslationalSpeeds, desiredAngle);
         }
 
         // Flywheels
@@ -91,7 +93,7 @@ public class AimEverythingAtSpeaker extends Command {
         // Arm
         //arm.setDesiredDegrees(this.getSimpleArmDesiredDegrees());
         double estimatedExitVelocity = (leftFlywheelMetersPerSecond + rightFlywheelMetersPerSecond) / 2.0;
-        arm.setDesiredDegrees(drivetrain.getGravCompensatedArmDesiredDegrees(estimatedExitVelocity));
+        arm.setDesiredDegrees(getGravCompensatedArmDesiredDegrees(estimatedExitVelocity));
         // TODO: use measured avg of flywheel speed?
 
         setpointsAreFresh = true;
@@ -105,6 +107,54 @@ public class AimEverythingAtSpeaker extends Command {
     public void end(boolean isInterrupted) {
         ledFeedbackCommand.cancel();
     }
+
+
+
+
+
+
+
+/** Calculates the horizontal translational distance from the center of the robot to the central apriltag of the speaker.*/
+public double driveDistToSpeakerBaseMeters() {
+    Translation2d speakerLocation = FlyingCircuitUtils.getLocationOfFieldElement(FieldElement.SPEAKER).getTranslation();
+    Translation2d robotLocation = drivetrain.getPoseMeters().getTranslation();
+    return robotLocation.getDistance(speakerLocation);
+}
+
+public double armDistToSpeakerBaseMeters() {
+    return this.driveDistToSpeakerBaseMeters() + FieldConstants.pivotOffsetMeters;
+}
+
+/** Calculates the angle the arm would aim at to make a straight line to the speaker target. */
+public double getSimpleArmDesiredDegrees() {
+    double horizontalDistance = this.armDistToSpeakerBaseMeters();
+    double verticalDistance = FieldConstants.speakerHeightMeters - FieldConstants.pivotHeightMeters;
+    double radians = Math.atan2(verticalDistance, horizontalDistance); // prob don't need arctan2 here, regular arctan will do.
+    return Math.toDegrees(radians);
+}
+
+/**
+ * Gets the angle that the shooter needs to aim at in order for a note to make it into the speaker.
+ * This accounts for distance and gravity.
+ * @return - Angle in degrees, with 0 being straight forward and a positive angle being pointed upwards.
+*/
+public double getGravCompensatedArmDesiredDegrees(double exitVelocityMetersPerSecond) {
+    
+    //see https://www.desmos.com/calculator/czxwosgvbz
+
+    double h = FieldConstants.speakerHeightMeters-FieldConstants.pivotHeightMeters;
+    double d = this.armDistToSpeakerBaseMeters();
+    double v = exitVelocityMetersPerSecond;
+    double g = 9.81;
+
+    double a = (h*h)/(d*d)+1;
+    double b = -2*(h*h)*(v*v)/(d*d) - (v*v) - g*h;
+    double c = (h*h)*Math.pow(v, 4)/(d*d) + (g*g)*(d*d)/4 + g*h*(v*v);
+
+    double vy = Math.sqrt((-b-Math.sqrt(b*b-4*a*c))/(2*a));
+
+    return Math.toDegrees(Math.asin(vy/v));
+}
 
 
 

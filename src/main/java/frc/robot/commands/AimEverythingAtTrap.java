@@ -1,6 +1,8 @@
 package frc.robot.commands;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.function.Supplier;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.path.GoalEndState;
@@ -10,16 +12,20 @@ import com.pathplanner.lib.path.PathPlannerPath;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj2.command.Command;
+import frc.robot.FlyingCircuitUtils;
 import frc.robot.Constants.FieldElement;
 import frc.robot.subsystems.drivetrain.Drivetrain;
 
 public class AimEverythingAtTrap extends Command {
 
-    Drivetrain drivetrain;
+    private Drivetrain drivetrain;
+    private Supplier<ChassisSpeeds> translationController;
 
-    public AimEverythingAtTrap(Drivetrain drivetrain) {
+    public AimEverythingAtTrap(Drivetrain drivetrain, Supplier<ChassisSpeeds> translationController) {
         this.drivetrain = drivetrain;
+        this.translationController = translationController;
         
         super.addRequirements(drivetrain);
     }
@@ -55,25 +61,15 @@ public class AimEverythingAtTrap extends Command {
         return pathToTrap;
     }
 
+    public void execute() {
+        drivetrain.fieldOrientedDriveOnALine(translationController.get(), getClosestTrap());
+    }
+
     public Pose2d getClosestTrap() {
-        Translation2d robotPosition = drivetrain.getPoseMeters().getTranslation();
+        Pose2d[] trapLocaitons = {FlyingCircuitUtils.getLocationOfFieldElement(FieldElement.STAGE_LEFT),
+                                  FlyingCircuitUtils.getLocationOfFieldElement(FieldElement.STAGE_RIGHT),
+                                  FlyingCircuitUtils.getLocationOfFieldElement(FieldElement.CENTER_STAGE)};
 
-        Pose2d[] trapLocaitons = {drivetrain.getLocationOfFieldElement(FieldElement.STAGE_LEFT),
-                                  drivetrain.getLocationOfFieldElement(FieldElement.STAGE_RIGHT),
-                                  drivetrain.getLocationOfFieldElement(FieldElement.CENTER_STAGE)};
-
-        Pose2d closestTrap = trapLocaitons[0];
-        for (int i = 1; i < trapLocaitons.length; i += 1) {
-            Pose2d currentTrap = trapLocaitons[i];
-
-            double distanceToCurrent = robotPosition.getDistance(currentTrap.getTranslation());
-            double distanceToClosest = robotPosition.getDistance(closestTrap.getTranslation());
-
-            if (distanceToCurrent < distanceToClosest) {
-                closestTrap = currentTrap;
-            }
-        }
-
-        return closestTrap;
+        return drivetrain.getPoseMeters().nearest(Arrays.asList(trapLocaitons));
     }
 }

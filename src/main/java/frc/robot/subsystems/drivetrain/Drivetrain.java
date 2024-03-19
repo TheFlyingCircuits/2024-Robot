@@ -1,8 +1,6 @@
 
 package frc.robot.subsystems.drivetrain;
 
-import java.util.function.Supplier;
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -21,12 +19,14 @@ import com.pathplanner.lib.util.PathPlannerLogging;
 import com.pathplanner.lib.util.ReplanningConfig;
 
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
@@ -38,6 +38,7 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.FlyingCircuitUtils;
 import frc.robot.Constants.DrivetrainConstants;
 import frc.robot.Constants.FieldConstants;
 import frc.robot.Constants.FieldElement;
@@ -72,6 +73,9 @@ public class Drivetrain extends SubsystemBase {
 
     /** error measured in degrees, output is in degrees per second. */
     private PIDController angleController;
+
+    /** error measured in meters, output is in meters per second. */
+    private PIDController translationController;
 
     public Drivetrain(
         GyroIO gyroIO, 
@@ -123,9 +127,12 @@ public class Drivetrain extends SubsystemBase {
             getModulePositions(), 
             new Pose2d());
 
-        angleController = new PIDController(6, 0, 0.);
+        angleController = new PIDController(6, 0, 0.); // kP has units of degreesPerSecond per degree of error.
         angleController.enableContinuousInput(-180, 180);
         angleController.setTolerance(3.0); // degrees.
+
+        translationController = new PIDController(1.0, 0, 0);
+        translationController.setTolerance(0.05); // 5 centimeters
 
         configPathPlanner();
     }
@@ -158,16 +165,27 @@ public class Drivetrain extends SubsystemBase {
             this // Reference to this subsystem to set requirements
         );
 
+        // Enable custom rotation targets during auto for note & speaker tracking
         PPHolonomicDriveController.setRotationTargetOverride(this::getAutoRotationOverride);
 
+        // Register logging callbacks so that PathPlanner data shows up in advantage scope.
         PathPlannerLogging.setLogActivePathCallback( (activePath) -> {
             Logger.recordOutput("PathPlanner/Trajectory", activePath.toArray(new Pose2d[activePath.size()]));
         });
 
         PathPlannerLogging.setLogTargetPoseCallback( (targetPose) -> {
+            // update the desired angle in the angle controller
+            // this is only to allow the LEDs to show progress in auto.
+            // The actual angle controller that sends commands in auto is the one from PathPlanner.
+            double measuredAngleDegrees = getPoseMeters().getRotation().getDegrees();
+            double desiredAngleDegrees = targetPose.getRotation().getDegrees();
+            angleController.calculate(measuredAngleDegrees, desiredAngleDegrees);
             Logger.recordOutput("PathPlanner/TrajectorySetpoint", targetPose);
         });
     }
+
+
+    //**************** DRIVING ****************/
 
 
     /**
@@ -179,7 +197,6 @@ public class Drivetrain extends SubsystemBase {
     */
     public void robotOrientedDrive(ChassisSpeeds desiredChassisSpeeds, boolean closedLoop) {
         SwerveModuleState[] swerveModuleStates = DrivetrainConstants.swerveKinematics.toSwerveModuleStates(desiredChassisSpeeds);
-
         setModuleStates(swerveModuleStates, closedLoop);
     }
 
@@ -192,7 +209,7 @@ public class Drivetrain extends SubsystemBase {
      * @param closedLoop - Whether or not to drive the drive wheels with using feedback control.
      */
     public void fieldOrientedDrive(ChassisSpeeds desiredChassisSpeeds, boolean closedLoop) {
-        Rotation2d currentOrientation = fusedPoseEstimator.getEstimatedPosition().getRotation();
+        Rotation2d currentOrientation = getPoseMeters().getRotation();
         ChassisSpeeds robotOrientedSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(desiredChassisSpeeds, currentOrientation);
         this.robotOrientedDrive(robotOrientedSpeeds, closedLoop);
     }
@@ -209,7 +226,7 @@ public class Drivetrain extends SubsystemBase {
      */
     public void fieldOrientedDriveWhileAiming(ChassisSpeeds desiredTranslationalSpeeds, Rotation2d desiredAngle) {
         // Use PID controller to generate a desired angular velocity based on the desired angle
-        double measuredAngle = fusedPoseEstimator.getEstimatedPosition().getRotation().getDegrees();
+        double measuredAngle = getPoseMeters().getRotation().getDegrees();
         double desiredAngleDegrees = desiredAngle.getDegrees();
         double desiredRadiansPerSecond = Math.toRadians(angleController.calculate(measuredAngle, desiredAngleDegrees));
 
@@ -222,12 +239,51 @@ public class Drivetrain extends SubsystemBase {
         this.fieldOrientedDrive(desiredSpeeds, true);
     }
 
+    /**
+     * A drive function that's useful for aligning to different field elements.
+     * The robot will snap to the line on the field that passes through
+     * {@code lineToDriveOn.getTranslation()} and points in the direction of
+     * {@code lineToDriveOn.getRotation()}. The driver can still move
+     * the robot along this line.
+     * @param rawSpeedRequest
+     * @param lineToDriveOn
+     */
+    public void fieldOrientedDriveOnALine(ChassisSpeeds rawSpeedRequest, Pose2d lineToDriveOn) {
+        // 0) Extract some data for calculations
+        Translation2d pointOnLine = lineToDriveOn.getTranslation();
+        Translation2d directionVectorAlongLine = new Translation2d(lineToDriveOn.getRotation().getCos(), lineToDriveOn.getRotation().getSin());
 
-    public Command fieldOrientedDriveCommand(Supplier<ChassisSpeeds> sourceOfDesiredSpeeds) {
-        return this.run(() -> {
-            ChassisSpeeds desiredSpeeds = sourceOfDesiredSpeeds.get();
-            this.fieldOrientedDrive(desiredSpeeds, true);
-        });
+        // 1) Find the vector from the robot's current position on the field to a point on the line
+        Translation2d vectorFromRobotToAnchor = pointOnLine.minus(getPoseMeters().getTranslation());
+
+        // 2) Split this vector into 2 components, one along the line, and one perpendicular to the line
+        double projectionOntoLine = vectorFromRobotToAnchor.getX() * directionVectorAlongLine.getX() + vectorFromRobotToAnchor.getY() * directionVectorAlongLine.getY();
+        Translation2d componentAlongLine = directionVectorAlongLine.times(projectionOntoLine);
+        Translation2d componentTowardsLine = vectorFromRobotToAnchor.minus(componentAlongLine);
+        double distanceFromRobotToLine = componentTowardsLine.getNorm();
+
+        // 3) Use a proportional controller to decide how quickly we should drive
+        //    towards the line based on our perpendicular distance to the line.
+        double speedTowardsLine = Math.abs(translationController.calculate(distanceFromRobotToLine, 0));
+
+        // 4) Find the direction we should travel when driving at that speed
+        ChassisSpeeds directionTowardsLine = new ChassisSpeeds();
+        if (distanceFromRobotToLine > 0) {
+            directionTowardsLine.vxMetersPerSecond = componentTowardsLine.getX() / distanceFromRobotToLine;
+            directionTowardsLine.vyMetersPerSecond = componentTowardsLine.getY() / distanceFromRobotToLine;
+        }
+        
+        // 5) Start building the desiredVelocity by moving towards the line
+        ChassisSpeeds desiredVelocity = directionTowardsLine.times(speedTowardsLine);
+
+        // 6) Incorporate the driver's requested speeds along the line,
+        //    ignoring any requested speeds that are perpendicular to the line.
+        projectionOntoLine = rawSpeedRequest.vxMetersPerSecond * directionVectorAlongLine.getX() + rawSpeedRequest.vyMetersPerSecond * directionVectorAlongLine.getY();
+        desiredVelocity.vxMetersPerSecond += projectionOntoLine * directionVectorAlongLine.getX();
+        desiredVelocity.vyMetersPerSecond += projectionOntoLine * directionVectorAlongLine.getY();
+
+        // 7) Now rotate the robot so it's facing in the same direction as the line
+        this.fieldOrientedDriveWhileAiming(desiredVelocity, lineToDriveOn.getRotation());
     }
 
 
@@ -261,12 +317,7 @@ public class Drivetrain extends SubsystemBase {
         return swerveStates;
     }
 
-
-    /** Gets robot relative chassis speeds. */
-    public ChassisSpeeds getChassisSpeeds() {
-        return DrivetrainConstants.swerveKinematics.toChassisSpeeds(getModuleStates());
-    }
-
+    //**************** ODOMETRY / POSE ESTIMATION ****************/
 
     /**
      * Sets the current position of the robot on the field in meters.
@@ -295,6 +346,26 @@ public class Drivetrain extends SubsystemBase {
         return fusedPoseEstimator.getEstimatedPosition();
     }
 
+    /**
+     * Sets the angle of the robot's pose so that it is facing forward, away from your alliance wall. 
+     * This allows the driver to realign the drive direction and other calls to our angle.
+     */
+    public void setRobotFacingForward() {
+        Optional<Alliance> alliance = DriverStation.getAlliance();
+        if (alliance.isEmpty()) {
+            return;
+        }
+
+        Rotation2d newAngle = Rotation2d.fromDegrees(0);
+        if (alliance.get() == Alliance.Red) {
+            newAngle = Rotation2d.fromDegrees(180);
+        }
+
+        Translation2d location = getPoseMeters().getTranslation();
+
+        setPoseMeters(new Pose2d(location, newAngle));
+    }
+
 
     /**
      * Takes the best estimated pose from the vision, and sets our current poseEstimator pose to this one.
@@ -304,58 +375,6 @@ public class Drivetrain extends SubsystemBase {
             setPoseMeters(visionInputs.visionMeasurements.get(0).robotFieldPose);
     }
 
-    /**
-     * Sets the angle of the robot's pose so that it is facing forward, away from your alliance wall. 
-     * This allows the driver to realign the drive direction and other calls to our angle.
-     */
-    public void setRobotFacingForward() {
-        Rotation2d rotation = (DriverStation.getAlliance().get() == Alliance.Blue) ?
-            Rotation2d.fromDegrees(0) : Rotation2d.fromDegrees(180);
-
-        Translation2d location = fusedPoseEstimator.getEstimatedPosition().getTranslation();
-
-        setPoseMeters(new Pose2d(location, rotation));
-    }
-
-    public double getAngleError() {
-        if (isTrackingSpeakerInAuto) {
-            Rotation2d desiredAngle = getAngleFromDriveToFieldElement(FieldElement.SPEAKER);
-            Rotation2d measuredAngle = getPoseMeters().getRotation();
-            return measuredAngle.minus(desiredAngle).getDegrees();
-            // TODO: add leds for not tracking too?
-            // maybe see if we can pass in our own angle controller to path planner?
-        }
-        return angleController.getPositionError();
-    }
-
-    public boolean intakeSeesNote() {
-        return visionInputs.intakeSeesNote;
-    }
-
-    /**
-     * Gets the angle that the robot needs to aim at in order to intake the nearest ring
-     * seen on the intake camera. This is used for the rotation override during auto.
-     */
-    public Rotation2d getFieldRelativeRotationToNote() {
-        Rotation2d currentAngle = fusedPoseEstimator.getEstimatedPosition().getRotation();
-        return currentAngle.plus(Rotation2d.fromDegrees(visionInputs.nearestNoteYawDegrees));
-    }
-
-    public Optional<Rotation2d> getAutoRotationOverride() {
-        if (isTrackingSpeakerInAuto) {
-            return Optional.of(getAngleFromDriveToFieldElement(FieldElement.SPEAKER));
-        }
-        if (isTrackingNote && visionInputs.intakeSeesNote) {
-            return Optional.of(getFieldRelativeRotationToNote());
-        }
-        else {
-            return Optional.empty();
-        }
-    }
-
-    public boolean isAligned() {
-        return angleController.atSetpoint();
-    }
 
     private void updatePoseEstimator() {
 
@@ -379,91 +398,38 @@ public class Drivetrain extends SubsystemBase {
     }
 
 
-    /** Calculates the horizontal translational distance from the center of the robot to the central apriltag of the speaker.*/
-    public double driveDistToSpeakerBaseMeters() {
-        Translation2d speakerLocation = getLocationOfFieldElement(FieldElement.SPEAKER).getTranslation();
-        Translation2d robotLocation = this.getPoseMeters().getTranslation();
-        return robotLocation.getDistance(speakerLocation);
-    }
+    //**************** TARGET TRACKING (Speaker, Note, etc.) ****************/
 
-    public double armDistToSpeakerBaseMeters() {
-        return this.driveDistToSpeakerBaseMeters() + FieldConstants.pivotOffsetMeters;
-    }
 
-    /** Calculates the angle the arm would aim at to make a straight line to the speaker target. */
-    public double getSimpleArmDesiredDegrees() {
-        double horizontalDistance = this.armDistToSpeakerBaseMeters();
-        double verticalDistance = FieldConstants.speakerHeightMeters - FieldConstants.pivotHeightMeters;
-        double radians = Math.atan2(verticalDistance, horizontalDistance); // prob don't need arctan2 here, regular arctan will do.
-        return Math.toDegrees(radians);
+    public boolean intakeSeesNote() {
+        return visionInputs.intakeSeesNote;
     }
 
     /**
-     * Gets the angle that the shooter needs to aim at in order for a note to make it into the speaker.
-     * This accounts for distance and gravity.
-     * @return - Angle in degrees, with 0 being straight forward and a positive angle being pointed upwards.
-    */
-    public double getGravCompensatedArmDesiredDegrees(double exitVelocityMetersPerSecond) {
-        
-        //see https://www.desmos.com/calculator/czxwosgvbz
-
-        double h = FieldConstants.speakerHeightMeters-FieldConstants.pivotHeightMeters;
-        double d = this.armDistToSpeakerBaseMeters();
-        double v = exitVelocityMetersPerSecond;
-        double g = 9.81;
-
-        double a = (h*h)/(d*d)+1;
-        double b = -2*(h*h)*(v*v)/(d*d) - (v*v) - g*h;
-        double c = (h*h)*Math.pow(v, 4)/(d*d) + (g*g)*(d*d)/4 + g*h*(v*v);
-
-        double vy = Math.sqrt((-b-Math.sqrt(b*b-4*a*c))/(2*a));
-
-        return Math.toDegrees(Math.asin(vy/v));
-    }
-
-    /**
-     * Computes the vector that points from the drivetrain's current location to the given target,
-     * then returns the angle of that vector relative to the x axis of the field coordinate system.
-     * @param targetLocationOnField The tip of the vector, as measured in the field coordinate system.
-     * @return
+     * Gets the angle that the robot needs to aim at in order to intake the nearest ring
+     * seen on the intake camera. This is used for the rotation override during auto.
      */
-    public Rotation2d getAngleFromDriveToTarget(Translation2d targetLocationOnField) {
-        Translation2d vector = targetLocationOnField.minus(getPoseMeters().getTranslation());
-        return vector.getAngle();
+    public Rotation2d getFieldRelativeRotationToNote() {
+        Rotation2d currentAngle = getPoseMeters().getRotation();
+        return currentAngle.plus(Rotation2d.fromDegrees(visionInputs.nearestNoteYawDegrees));
     }
 
-    public Rotation2d getAngleFromDriveToFieldElement(FieldElement element) {
-        Pose2d pose = getLocationOfFieldElement(element);
-        return getAngleFromDriveToTarget(pose.getTranslation());
-    }
 
-    public Pose2d getLocationOfFieldElement(FieldElement element) {
-
-        Optional<Alliance> alliance = DriverStation.getAlliance();
-        AprilTagFieldLayout fieldLayout = VisionConstants.aprilTagFieldLayout;
-
-        if (alliance.isPresent() && alliance.get() == Alliance.Blue) {
-            if (element == FieldElement.SPEAKER) { return fieldLayout.getTagPose(7).get().toPose2d(); }
-            if (element == FieldElement.AMP) { return fieldLayout.getTagPose(6).get().toPose2d(); }
-            if (element == FieldElement.STAGE_LEFT) { return fieldLayout.getTagPose(15).get().toPose2d(); }
-            if (element == FieldElement.STAGE_RIGHT) { return fieldLayout.getTagPose(16).get().toPose2d(); }
-            if (element == FieldElement.CENTER_STAGE) { return fieldLayout.getTagPose(14).get().toPose2d(); }
+    public Optional<Rotation2d> getAutoRotationOverride() {
+        if (isTrackingSpeakerInAuto) {
+            Rotation2d angle = FlyingCircuitUtils.getAngleToFieldElement(FieldElement.SPEAKER, getPoseMeters());
+            return Optional.of(angle);
         }
-
-        if (alliance.isPresent() && alliance.get() == Alliance.Red) {
-            if (element == FieldElement.SPEAKER) { return fieldLayout.getTagPose(4).get().toPose2d(); }
-            if (element == FieldElement.AMP) { return fieldLayout.getTagPose(5).get().toPose2d(); }
-            if (element == FieldElement.STAGE_LEFT) { return fieldLayout.getTagPose(11).get().toPose2d(); }
-            if (element == FieldElement.STAGE_RIGHT) { return fieldLayout.getTagPose(12).get().toPose2d(); }
-            if (element == FieldElement.CENTER_STAGE) { return fieldLayout.getTagPose(13).get().toPose2d(); }
+        if (isTrackingNote && visionInputs.intakeSeesNote) {
+            return Optional.of(getFieldRelativeRotationToNote());
         }
-
-        // If we don't have comms and can't tell what alliance we're on,
-        // then just return the pose of the robot. This will make it so
-        // when the robot tries to target the field element, it should
-        // just stay in place, which seems like the safest thing to do.
-        return getPoseMeters();
+        else {
+            return Optional.empty();
+        }
     }
+
+
+    //**************** MUSIC ****************/
 
     public void addInstrument(TalonFX kraken) {
         orchestra.addInstrument(kraken);
@@ -500,6 +466,15 @@ public class Drivetrain extends SubsystemBase {
     }
     public int songTimestamp() {
         return ((int)orchestra.getCurrentTime());
+    }
+
+    public boolean isAligned() {
+        return angleController.atSetpoint();
+    }
+
+    public double getAngleError() {
+        // TODO: add LEDs for note tracking.
+        return angleController.getPositionError();
     }
 
 

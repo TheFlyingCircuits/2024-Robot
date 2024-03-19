@@ -69,6 +69,12 @@ public class HumanDriver {
 
         // Get desired rotation speed from right stick
         double angularThrottle = -controller.getRightX();
+        if (Math.abs(angularThrottle) < ControllerConstants.controllerDeadzone) {
+            angularThrottle = 0;
+        }
+        if (Math.abs(angularThrottle) > 1.0) {
+            angularThrottle = Math.signum(angularThrottle) * 1.0;
+        }
         angularThrottle = Math.signum(angularThrottle) * Math.pow(Math.abs(angularThrottle), 2.3);
         double desiredAngularSpeed = angularThrottle * DrivetrainConstants.maxDesiredTeleopAngularVelocityRadiansPerSecond;
 

@@ -115,7 +115,7 @@ public class RobotContainer {
         leds = new LEDs();
         
         
-        drivetrain.setDefaultCommand(drivetrain.fieldOrientedDriveCommand(charlie::getRequestedFieldOrientedVelocity));
+        drivetrain.setDefaultCommand(drivetrain.run(() -> {drivetrain.fieldOrientedDrive(charlie.getRequestedFieldOrientedVelocity(), true);}));
         leds.setDefaultCommand(leds.heartbeatCommand().ignoringDisable(true));
         intake.setDefaultCommand(Commands.run(() -> {intake.setVolts(0);}, intake));
         indexer.setDefaultCommand(indexer.setBlackRollerSurfaceSpeedCommand(0));
@@ -276,7 +276,7 @@ public class RobotContainer {
 
     public Command navigateToTrap() {
         return new InstantCommand(() -> {
-            AimEverythingAtTrap dummy = new AimEverythingAtTrap(drivetrain);
+            AimEverythingAtTrap dummy = new AimEverythingAtTrap(drivetrain, null);
             dummy.getPathFollowingCommand().schedule();
         });
     }
@@ -305,7 +305,8 @@ public class RobotContainer {
         //controller.b().whileTrue(shart());
         controller.b().onTrue(shart().andThen(new ScheduleCommand(this.resetShooter())));
         //controller.a().onTrue(this.fireNote());
-        controller.a().whileTrue(navigateToTrap());
+        //controller.a().whileTrue(navigateToTrap());
+        controller.a().whileTrue(new AimEverythingAtTrap(drivetrain, charlie::getRequestedFieldOrientedVelocity));
 
 
         /** CLIMB **/
