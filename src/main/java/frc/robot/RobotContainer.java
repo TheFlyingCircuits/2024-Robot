@@ -294,7 +294,7 @@ public class RobotContainer {
         
         
         /** SCORING **/
-        //control scheme is rb/lb toggle preps a shot, and then a is fire
+        
         controller.rightBumper()
             .onTrue(this.speakerShot(charlie::getRequestedFieldOrientedVelocity).andThen(new ScheduleCommand(this.resetShooter())));
             // .onFalse(this.resetShooter());
@@ -311,8 +311,11 @@ public class RobotContainer {
 
 
         /** CLIMB **/
+        
+        //deprecated, moved to TrapRoutine.java
         controller.povUp().onTrue(climb.raiseHooksCommand().alongWith(arm.setDesiredDegreesCommand(ArmConstants.armMaxAngleDegrees)
                                                                       .raceWith((new WaitCommand(0.2)).andThen(new WaitUntilCommand(arm::isCloseToTarget)))
+                                                                      .raceWith(shooter.setFlywheelSurfaceSpeedCommand(1, 1))
                                                                       .andThen(new InstantCommand(() -> {arm.setDisableSetpointChecking(true);}))
                                                                       .andThen(arm.holdCurrentPositionCommand().until(() -> {return arm.getDegrees() <= 76;}))
                                                                       .andThen(new InstantCommand(() -> {arm.setDisableSetpointChecking(false);}))));

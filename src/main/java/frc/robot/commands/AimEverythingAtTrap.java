@@ -47,7 +47,7 @@ public class AimEverythingAtTrap extends Command {
         // away from the trap as well because we approach using the back of the robot.
         Rotation2d desiredRotation = this.getClosestTrap().getRotation();
 
-        double safetyFactor = 1./1.;
+        double safetyFactor = 1./2.;
         double maxSpeed = 4.0 * safetyFactor;
         double maxAccel = 4.0 * safetyFactor;
         double maxAngularSpeed = 2 * Math.PI * safetyFactor;
@@ -66,10 +66,10 @@ public class AimEverythingAtTrap extends Command {
     }
 
     public Pose2d getClosestTrap() {
-        Pose2d[] trapLocaitons = {FlyingCircuitUtils.getLocationOfFieldElement(FieldElement.STAGE_LEFT),
+        Pose2d[] trapLocations = {FlyingCircuitUtils.getLocationOfFieldElement(FieldElement.STAGE_LEFT),
                                   FlyingCircuitUtils.getLocationOfFieldElement(FieldElement.STAGE_RIGHT),
                                   FlyingCircuitUtils.getLocationOfFieldElement(FieldElement.CENTER_STAGE)};
 
-        return drivetrain.getPoseMeters().nearest(Arrays.asList(trapLocaitons));
+        return drivetrain.getPoseMeters().nearest(Arrays.asList(trapLocations));
     }
 }

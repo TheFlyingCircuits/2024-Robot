@@ -26,6 +26,10 @@ public class Climb extends SubsystemBase{
         return this.run(() -> {this.setVoltsClosedLoop(4);});
     }
 
+    public Command raiseHooksCommand(double volts) {
+        return this.run(() -> {this.setVoltsClosedLoop(volts);});
+    }
+
     public Command lowerHooksCommand() {
         return this.run(() -> {this.setVoltsClosedLoop(-10);});
     }
@@ -115,6 +119,10 @@ public class Climb extends SubsystemBase{
 
     public boolean rightArmUp() {
         return rightMotor.getPosition() >= ClimbConstants.climbMaxPosMeters;
+    }
+
+    public boolean climbArmsDown() {
+        return leftArmDown() && rightArmDown();
     }
     
     @Override
