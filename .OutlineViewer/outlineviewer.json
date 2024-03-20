@@ -1,0 +1,18 @@
+{
+  "NetworkTables Settings": {
+    "mode": "Client (NT4)"
+  },
+  "Persistent Values": {
+    "open": false
+  },
+  "retained": {
+    "SmartDashboard": {
+      "open": true
+    }
+  },
+  "transitory": {
+    "SmartDashboard": {
+      "open": true
+    }
+  }
+}

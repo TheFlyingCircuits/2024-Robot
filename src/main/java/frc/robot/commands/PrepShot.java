@@ -4,6 +4,7 @@ import java.util.function.Supplier;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants.FieldConstants;
 import frc.robot.Constants.FieldElement;
@@ -94,6 +95,10 @@ public class PrepShot extends Command {
         // Flywheels
         double leftFlywheelMetersPerSecond = 25;
         double rightFlywheelMetersPerSecond = 20;
+        if (target == FieldElement.AMP) {
+            leftFlywheelMetersPerSecond = SmartDashboard.getNumber("leftLob", 20);
+            rightFlywheelMetersPerSecond = SmartDashboard.getNumber("rightLob", 15);
+        }
         flywheels.setLeftFlywheelsMetersPerSecond(leftFlywheelMetersPerSecond);
         flywheels.setRightFlywheelsMetersPerSecond(rightFlywheelMetersPerSecond);
         // TODO: use measured avg of flywheel speed?
@@ -109,7 +114,7 @@ public class PrepShot extends Command {
         }
         if (target == FieldElement.AMP) {
             // lob shot
-            desiredArmAngle = getGravCompensatedArmDesiredDegrees(horizontalDistance, verticalDistance, estimatedExitVelocity, true);
+            desiredArmAngle = SmartDashboard.getNumber("lobAngle", 40);//= getGravCompensatedArmDesiredDegrees(horizontalDistance, verticalDistance, estimatedExitVelocity, true);
         }
         if (target == FieldElement.RIGHT_IN_FRONT_OF_YOU) {
             // shart

@@ -181,7 +181,9 @@ public class RobotContainer {
      * @return
      */
     public Command intakeNote() {
-        return this.runIntake().until(intake::ringJustEnteredIntake);
+        return this.runIntake().until(() -> {
+            return intake.ringJustEnteredIntake() || indexer.isNoteIndexed();
+        });
     }
 
     public Command indexNote() {
@@ -268,7 +270,8 @@ public class RobotContainer {
         /** SCORING **/
         
         controller.rightBumper()
-            .onTrue(this.speakerShot().andThen(new ScheduleCommand(this.resetShooter())));
+            // .onTrue(this.speakerShot().andThen(new ScheduleCommand(this.resetShooter())));
+            .onTrue(this.lobShot().andThen(new ScheduleCommand(this.resetShooter())));
             // .onFalse(this.resetShooter());
             //.onTrue(prepAutoSpeakerShot().alongWith(runIntake()));
         controller.leftBumper()

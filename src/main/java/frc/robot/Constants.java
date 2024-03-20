@@ -277,7 +277,7 @@ public final class Constants {
     }
 
     public static enum FieldElement {
-        SPEAKER, AMP, STAGE_LEFT, STAGE_RIGHT, CENTER_STAGE, RIGHT_IN_FRONT_OF_YOU
+        SPEAKER, AMP, STAGE_LEFT, STAGE_RIGHT, CENTER_STAGE, RIGHT_IN_FRONT_OF_YOU // TODO: maybe rename to carpet, which is an actual field element?
     }
 
 

@@ -60,8 +60,8 @@ public class VisionIOPhotonLib implements VisionIO {
 
 
         if (useMultitag) {
-            slopeStdDevMetersPerMeterX = 0.001;
-            slopeStdDevMetersPerMeterY = 0.003;
+            slopeStdDevMetersPerMeterX = 0.004;
+            slopeStdDevMetersPerMeterY = 0.009;
         }
 
         else {
@@ -106,7 +106,7 @@ public class VisionIOPhotonLib implements VisionIO {
 
         output.nearestTagDistanceMeters = pipelineResult.getBestTarget().getBestCameraToTarget().getTranslation().getDistance(new Translation3d());
         
-        if (output.nearestTagDistanceMeters > 4)
+        if (output.nearestTagDistanceMeters > 5)
             return Optional.empty();
 
 
