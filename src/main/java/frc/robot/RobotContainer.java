@@ -124,8 +124,8 @@ public class RobotContainer {
         
         NamedCommands.registerCommand("prepShot", prepAutoSpeakerShot());
         NamedCommands.registerCommand("shootFromAnywhere", speakerShot());
-        NamedCommands.registerCommand("indexNote", indexNote().withTimeout(3.0));
-        NamedCommands.registerCommand("intakeNote", intakeNote().withTimeout(3.0));
+        NamedCommands.registerCommand("indexNote", indexNote().withTimeout(2));
+        NamedCommands.registerCommand("intakeNote", intakeNote().withTimeout(1.5));
         NamedCommands.registerCommand("rapidFire", prepAutoSpeakerShot().alongWith(runIntake()));
         NamedCommands.registerCommand("trackNote", new InstantCommand(() -> {drivetrain.isTrackingNote = true;}));
         NamedCommands.registerCommand("resetShooter", resetShooter());
@@ -235,6 +235,10 @@ public class RobotContainer {
     Command shootAtTarget(FieldElement target) {
         PrepShot aim = new PrepShot(true, drivetrain, arm, shooter, charlie::getRequestedFieldOrientedVelocity, leds, target);
         Command waitForAlignment = new WaitUntilCommand(aim::readyToShoot);
+        Command fire = fireNote();
+        if (target == FieldElement.SPEAKER) {
+            fire = fire.withTimeout(0.2);
+        }
         return aim.raceWith(waitForAlignment.andThen(fireNote()));
     }
 
@@ -270,8 +274,8 @@ public class RobotContainer {
         /** SCORING **/
         
         controller.rightBumper()
-            // .onTrue(this.speakerShot().andThen(new ScheduleCommand(this.resetShooter())));
-            .onTrue(this.lobShot().andThen(new ScheduleCommand(this.resetShooter())));
+             .onTrue(this.speakerShot().andThen(new ScheduleCommand(this.resetShooter())));
+            //.onTrue(this.lobShot().andThen(new ScheduleCommand(this.resetShooter())));
             // .onFalse(this.resetShooter());
             //.onTrue(prepAutoSpeakerShot().alongWith(runIntake()));
         controller.leftBumper()

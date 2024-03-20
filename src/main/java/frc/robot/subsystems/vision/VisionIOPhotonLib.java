@@ -65,8 +65,8 @@ public class VisionIOPhotonLib implements VisionIO {
         }
 
         else {
-            slopeStdDevMetersPerMeterX = 0.5;
-            slopeStdDevMetersPerMeterY = 0.5;
+            slopeStdDevMetersPerMeterX = 0.008;
+            slopeStdDevMetersPerMeterY = 0.008;
         }
 
         double slopeStdDevRadiansPerMeter = 1000;
