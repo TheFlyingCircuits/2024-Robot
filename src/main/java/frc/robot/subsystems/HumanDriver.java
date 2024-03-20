@@ -47,6 +47,13 @@ public class HumanDriver {
     }
 
     private ChassisSpeeds getRequestedRobotVelocity(boolean fieldRelative) {
+        if (DriverStation.isAutonomous()) {
+            // make sure no spurrious inputs are sent during auto.
+            // this could effect commands used in auto which
+            // normally use the controller in teleop (e.g. translationController in speakerShot())
+            return new ChassisSpeeds();
+        }
+
         double rawThrottleY = -controller.getLeftX(); // Positive robot y is to the left, which is negative controller x
         double rawThrottleX = -controller.getLeftY(); // positive robot x is forward, which is negative controller y (for aircraft reasons)
         double angle = Math.atan2(rawThrottleY, rawThrottleX);

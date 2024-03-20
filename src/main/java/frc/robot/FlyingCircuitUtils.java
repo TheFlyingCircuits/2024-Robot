@@ -1,5 +1,6 @@
 package frc.robot;
 
+import java.util.Arrays;
 import java.util.Optional;
 
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
@@ -40,6 +41,11 @@ public class FlyingCircuitUtils {
     }
 
     public static Translation2d getVectorToFieldElement(FieldElement element, Pose2d yourPoseOnTheField) {
+        if (element == FieldElement.RIGHT_IN_FRONT_OF_YOU) {
+            // delta between you and right in front of you
+            // is just a unit vector that points in the direction you're facing.
+            return new Translation2d(yourPoseOnTheField.getRotation().getCos(), yourPoseOnTheField.getRotation().getSin());
+        }
         Translation2d elementLocaiton = getLocationOfFieldElement(element).getTranslation();
         Translation2d yourLocation = yourPoseOnTheField.getTranslation();
         return elementLocaiton.minus(yourLocation);
@@ -59,5 +65,13 @@ public class FlyingCircuitUtils {
 
     public static double getDistanceToFieldElement(FieldElement element, Pose2d yourPoseOnTheField) {
         return getVectorToFieldElement(element, yourPoseOnTheField).getNorm();
+    }
+
+    public static Pose2d getClosestTrap(Pose2d yourPoseOnTheField) {
+        Pose2d[] trapLocations = {FlyingCircuitUtils.getLocationOfFieldElement(FieldElement.STAGE_LEFT),
+                                  FlyingCircuitUtils.getLocationOfFieldElement(FieldElement.STAGE_RIGHT),
+                                  FlyingCircuitUtils.getLocationOfFieldElement(FieldElement.CENTER_STAGE)};
+
+        return yourPoseOnTheField.nearest(Arrays.asList(trapLocations));
     }
 }

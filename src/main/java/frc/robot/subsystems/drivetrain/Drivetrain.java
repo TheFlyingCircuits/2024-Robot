@@ -311,6 +311,7 @@ public class Drivetrain extends SubsystemBase {
         return swerveStates;
     }
 
+
     //**************** ODOMETRY / POSE ESTIMATION ****************/
 
     /**
@@ -381,7 +382,8 @@ public class Drivetrain extends SubsystemBase {
 
             // don't add vision measurements that are too far away
             // for reference: it is 6 meters from speaker tags to wing.
-            if (visionTranslation.getDistance(estimatedTranslation) < 1.) {
+            double teleportToleranceMeters = 1.0;
+            if (visionTranslation.getDistance(estimatedTranslation) <= teleportToleranceMeters) {
                 fusedPoseEstimator.addVisionMeasurement(
                     visionMeasurement.robotFieldPose, 
                     visionMeasurement.timestampSeconds, 
@@ -424,6 +426,36 @@ public class Drivetrain extends SubsystemBase {
         else {
             return Optional.empty();
         }
+    }
+
+    public void driveTowardsNote() {
+        double maxAccel = 4.0; // [meters per second per second] (emperically determined)
+
+        double distanceToNote = 0; // TODO: Have Ben get a pitch measurement from the camera
+                                   //       then use PhotonUtils.calculateDistanceToTargetMeters()
+                                   //       make sure to test while disabled first to verify
+                                   //       distance measurements seem reasonable.
+                                   //       Make sure that FOV of camera is correct!
+                                   //       It should be on the camera's datasheet.
+
+        // Physics 101: under constant accel -> v_final^2 = v_initial^2 + 2 * accel * displacement
+        // displacement = finalDistanceToNote - currentDistanceToNote = 0 - currentDistanceToNote
+        // accel = maxAccel
+        // v_final = 0 (because we want to come to a controlled stop to pickup the note)
+        // after some algebra -> v_initial = sqrt(-2 * accel * displacement)
+
+        double desiredSpeed = Math.sqrt(-2 * maxAccel * (0 - distanceToNote));
+
+        // direction to drive is opposite of the direction to point because the
+        // intake is in the back of the robot.
+        Rotation2d directionToPoint = this.getFieldRelativeRotationToNote();
+        Rotation2d directionToDrive = directionToPoint.rotateBy(Rotation2d.fromDegrees(180));
+
+        ChassisSpeeds desiredVelocity = new ChassisSpeeds();
+        desiredVelocity.vxMetersPerSecond = desiredSpeed * directionToDrive.getCos();
+        desiredVelocity.vyMetersPerSecond = desiredSpeed * directionToDrive.getSin();
+
+        this.fieldOrientedDriveWhileAiming(desiredVelocity, directionToPoint);
     }
 
 
@@ -471,7 +503,6 @@ public class Drivetrain extends SubsystemBase {
     }
 
     public double getAngleError() {
-        // TODO: add LEDs for note tracking.
         return angleController.getPositionError();
     }
 

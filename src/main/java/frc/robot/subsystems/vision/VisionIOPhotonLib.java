@@ -90,8 +90,8 @@ public class VisionIOPhotonLib implements VisionIO {
         VisionMeasurement output = new VisionMeasurement();
 
 
-        PhotonPipelineResult shooterCameraResult = camera.getLatestResult();
-        if (!shooterCameraResult.hasTargets())
+        PhotonPipelineResult pipelineResult = camera.getLatestResult();
+        if (!pipelineResult.hasTargets())
             return Optional.empty();
 
         Optional<EstimatedRobotPose> poseEstimatorResult = estimator.update();
@@ -101,10 +101,10 @@ public class VisionIOPhotonLib implements VisionIO {
         //either use multitag or
         //if there's only one tag on the screen, only trust it if its pose ambiguity is below threshold
         //photonPoseEstimator automatically switches techniques when detecting different number of tags
-        if (shooterCameraResult.targets.size() == 1 && shooterCameraResult.getBestTarget().getPoseAmbiguity() > 0.2)
+        if (pipelineResult.targets.size() == 1 && pipelineResult.getBestTarget().getPoseAmbiguity() > 0.2)
             return Optional.empty();
 
-        output.nearestTagDistanceMeters = shooterCameraResult.getBestTarget().getBestCameraToTarget().getTranslation().getDistance(new Translation3d());
+        output.nearestTagDistanceMeters = pipelineResult.getBestTarget().getBestCameraToTarget().getTranslation().getDistance(new Translation3d());
         
         if (output.nearestTagDistanceMeters > 4)
             return Optional.empty();
@@ -112,7 +112,7 @@ public class VisionIOPhotonLib implements VisionIO {
 
         output.robotFieldPose = poseEstimatorResult.get().estimatedPose.toPose2d();
         output.timestampSeconds = poseEstimatorResult.get().timestampSeconds;
-        output.stdDevs = getVisionStdDevs(output.nearestTagDistanceMeters, (shooterCameraResult.targets.size() > 1));  //different standard devs for different methods of detecting apriltags
+        output.stdDevs = getVisionStdDevs(output.nearestTagDistanceMeters, (pipelineResult.targets.size() > 1));  //different standard devs for different methods of detecting apriltags
 
         return Optional.of(output);
     }

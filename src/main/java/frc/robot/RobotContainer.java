@@ -5,10 +5,10 @@
 package frc.robot;
 
 import frc.robot.Constants.ArmConstants;
+import frc.robot.Constants.FieldElement;
 import frc.robot.commands.AimEverythingAtAmp;
-import frc.robot.commands.AimEverythingAtSpeaker;
-import frc.robot.commands.AimEverythingAtTrap;
 import frc.robot.commands.NoteTrackingIndexNote;
+import frc.robot.commands.PrepShot;
 import frc.robot.commands.TrapRoutine;
 import frc.robot.subsystems.HumanDriver;
 import frc.robot.subsystems.arm.Arm;
@@ -30,13 +30,10 @@ import frc.robot.subsystems.vision.VisionIO;
 import frc.robot.subsystems.vision.VisionIOPhotonLib;
 
 import edu.wpi.first.wpilibj.util.Color;
-import java.util.Optional;
-import java.util.function.Supplier;
 
 import com.pathplanner.lib.auto.NamedCommands;
 
 import edu.wpi.first.wpilibj.RobotBase;
-import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -126,16 +123,23 @@ public class RobotContainer {
         arm.setDefaultCommand(arm.holdCurrentPositionCommand().ignoringDisable(true));
         
         NamedCommands.registerCommand("prepShot", prepAutoSpeakerShot());
-        NamedCommands.registerCommand("shootFromAnywhere", speakerShot(() -> {return new ChassisSpeeds();}));
-        NamedCommands.registerCommand("indexNote", indexNote().withTimeout(5.0));
-        NamedCommands.registerCommand("intakeNote", intakeNote().withTimeout(5.0));
+        NamedCommands.registerCommand("shootFromAnywhere", speakerShot());
+        NamedCommands.registerCommand("indexNote", indexNote().withTimeout(3.0));
+        NamedCommands.registerCommand("intakeNote", intakeNote().withTimeout(3.0));
         NamedCommands.registerCommand("rapidFire", prepAutoSpeakerShot().alongWith(runIntake()));
         NamedCommands.registerCommand("trackNote", new InstantCommand(() -> {drivetrain.isTrackingNote = true;}));
         NamedCommands.registerCommand("resetShooter", resetShooter());
+        NamedCommands.registerCommand("neverMissPickup", neverMissPickup());
         ringJustEnteredIntake = new Trigger(intake::ringJustEnteredIntake);
         ringJustEnteredIntake.onTrue(new InstantCommand(() -> {drivetrain.isTrackingNote = false;}));
 
         realBindings();
+    }
+
+    Command neverMissPickup() {
+        return drivetrain.run(drivetrain::driveTowardsNote)
+               .raceWith(intakeNote())
+               .withTimeout(3.0);
     }
 
     /**
@@ -144,7 +148,7 @@ public class RobotContainer {
      */
     Command prepAutoSpeakerShot() {
         return new InstantCommand(() -> {drivetrain.isTrackingSpeakerInAuto = true;})
-                .andThen(new AimEverythingAtSpeaker(false, drivetrain, arm, shooter, null, leds))
+                .andThen(new PrepShot(false, drivetrain, arm, shooter, null, leds, FieldElement.SPEAKER))
                 .finallyDo(() -> {drivetrain.isTrackingSpeakerInAuto = false;});
 
     }
@@ -182,7 +186,7 @@ public class RobotContainer {
 
     public Command indexNote() {
         return this.runIntake().until(indexer::isNoteIndexed)
-               .andThen(new InstantCommand(() -> {indexer.setVolts(0); intake.setVolts(0);}))
+               .andThen(new InstantCommand(() -> {indexer.setVolts(0); intake.setVolts(0);})) // TODO: remember why we need this.
                .andThen(new ScheduleCommand(leds.solidOrangeCommand()));
     }
 
@@ -226,41 +230,22 @@ public class RobotContainer {
                .alongWith(shooter.setFlywheelSurfaceSpeedCommand(10));
     }
 
-    Command prepShart() {
-        return arm.setDesiredDegreesCommand(-15)
-               .alongWith(shooter.setFlywheelSurfaceSpeedCommand(25));
+    Command shootAtTarget(FieldElement target) {
+        PrepShot aim = new PrepShot(true, drivetrain, arm, shooter, charlie::getRequestedFieldOrientedVelocity, leds, target);
+        Command waitForAlignment = new WaitUntilCommand(aim::readyToShoot);
+        return aim.raceWith(waitForAlignment.andThen(fireNote()));
     }
-    
+
     Command shart() {
-        Command aim = arm.setDesiredDegreesCommand(-15)
-                      .alongWith(shooter.setFlywheelSurfaceSpeedCommand(25));
-        
-        Command waitForAlignment = new WaitUntilCommand(() -> {
-            return arm.isCloseToTarget() && shooter.flywheelsAtSetpoints();
-        });
-
-        Command ledFeedback = leds.playAimingAnimationCommand(arm::getErrorDegrees, shooter::getWorstError, () -> {return 0.0;});
-        Command startLEDs = new ScheduleCommand(ledFeedback);
-
-        return startLEDs.andThen(
-               aim.raceWith(waitForAlignment.andThen(fireNote())))
-               .finallyDo(() -> {ledFeedback.cancel();});
+        return shootAtTarget(FieldElement.RIGHT_IN_FRONT_OF_YOU);
     }
 
     Command lobShot() {
-        Command aim = arm.setDesiredDegreesCommand(45)
-                        .alongWith(shooter.setFlywheelSurfaceSpeedCommand(20, 25));
-        
-        Command waitForAlignment = new WaitUntilCommand(() -> {
-            return arm.isCloseToTarget() && shooter.flywheelsAtSetpoints();
-        });
+        return shootAtTarget(FieldElement.AMP);
+    }
 
-        Command ledFeedback = leds.playAimingAnimationCommand(arm::getErrorDegrees, shooter::getWorstError, () -> {return 0.0;});
-        Command startLEDs = new ScheduleCommand(ledFeedback);
-
-        return startLEDs.andThen(
-            aim.raceWith(waitForAlignment.andThen(fireNote()))
-            .finallyDo(() -> {ledFeedback.cancel();}));
+    public Command speakerShot() {
+        return shootAtTarget(FieldElement.SPEAKER);
     }
 
     public Command fireNote() {
@@ -268,20 +253,6 @@ public class RobotContainer {
                .alongWith(new ScheduleCommand(leds.playFireNoteAnimationCommand()));
     }
 
-
-    public Command speakerShot(Supplier<ChassisSpeeds> howToTranslateWhileAiming) {
-        AimEverythingAtSpeaker aim = new AimEverythingAtSpeaker(true, drivetrain, arm, shooter, howToTranslateWhileAiming, leds);
-        Command waitForAlignment = new WaitUntilCommand(aim::readyToShoot);
-        Command fire = this.fireNote();
-        return aim.raceWith(waitForAlignment.andThen(fire));
-    }
-
-    public Command navigateToTrap() {
-        return new InstantCommand(() -> {
-            AimEverythingAtTrap dummy = new AimEverythingAtTrap(drivetrain, null);
-            dummy.getPathFollowingCommand().schedule();
-        });
-    }
 
     private void realBindings() {
         CommandXboxController controller = charlie.getXboxController();
@@ -297,7 +268,7 @@ public class RobotContainer {
         /** SCORING **/
         
         controller.rightBumper()
-            .onTrue(this.speakerShot(charlie::getRequestedFieldOrientedVelocity).andThen(new ScheduleCommand(this.resetShooter())));
+            .onTrue(this.speakerShot().andThen(new ScheduleCommand(this.resetShooter())));
             // .onFalse(this.resetShooter());
             //.onTrue(prepAutoSpeakerShot().alongWith(runIntake()));
         controller.leftBumper()

@@ -6,6 +6,7 @@ package frc.robot.commands;
 
 import java.util.function.Supplier;
 
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
@@ -15,6 +16,7 @@ import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 import frc.robot.Constants.ArmConstants;
+import frc.robot.FlyingCircuitUtils;
 import frc.robot.subsystems.arm.Arm;
 import frc.robot.subsystems.climb.Climb;
 import frc.robot.subsystems.drivetrain.Drivetrain;
@@ -31,8 +33,11 @@ public class TrapRoutine extends SequentialCommandGroup {
         addCommands(
             
             //while we are driving, do this sequence
-            new AimEverythingAtTrap(drivetrain, translationController)
-                .raceWith(
+            drivetrain.run(() -> {
+                Pose2d nearestTrap = FlyingCircuitUtils.getClosestTrap(drivetrain.getPoseMeters());
+                drivetrain.fieldOrientedDriveOnALine(translationController.get(), nearestTrap);
+            })
+            .raceWith(
                 new SequentialCommandGroup(
                     //raise the hooks and lean the arm back
                     new ParallelCommandGroup(
@@ -58,7 +63,7 @@ public class TrapRoutine extends SequentialCommandGroup {
                 shooter.setFlywheelSurfaceSpeedCommand(10)
             ),
 
-            new WaitCommand(0.5),
+            new WaitCommand(0.5), // TODO: are we sinking here because the climb command finishes when arms are down?
 
             //fire the note at the top
             indexer.setOrangeWheelsSurfaceSpeedCommand(7).withTimeout(1)
@@ -68,4 +73,6 @@ public class TrapRoutine extends SequentialCommandGroup {
             climb.raiseHooksCommand(4).withTimeout(0.5)
         );
     }
+
+
 }
