@@ -226,7 +226,7 @@ public class Arm extends SubsystemBase {
 
         io.updateInputs(inputs);
 
-        if(disableSetpointChecking && false) {
+        if(disableSetpointChecking) {
             io.setCoast(true);
         }
         else {

@@ -8,20 +8,20 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 9.611259042609271,
-        "y": 2.101975059815737
+        "x": 9.886351983830927,
+        "y": 1.8971555204166035
       },
       "isLocked": true,
       "linkedName": "Ring 7 Pickup (From Almost Wing Shot)"
     },
     {
       "anchor": {
-        "x": 11.69,
-        "y": 1.59
+        "x": 12.181675946804104,
+        "y": 2.0376855589659812
       },
       "prevControl": {
-        "x": 10.718740957390729,
-        "y": 1.8280249401842625
+        "x": 11.221387350050021,
+        "y": 1.7097821356840999
       },
       "nextControl": null,
       "isLocked": true,

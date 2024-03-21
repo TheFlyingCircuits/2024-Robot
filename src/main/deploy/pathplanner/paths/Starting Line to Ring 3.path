@@ -16,15 +16,15 @@
     },
     {
       "anchor": {
-        "x": 14.0,
-        "y": 4.28
+        "x": 14.113963976858052,
+        "y": 4.356431195030721
       },
       "prevControl": {
-        "x": 14.224698511574791,
-        "y": 4.3895927866972695
+        "x": 14.338662488432844,
+        "y": 4.46602398172799
       },
       "nextControl": null,
-      "isLocked": true,
+      "isLocked": false,
       "linkedName": "Ring 3 Pickup (From Starting Line)"
     }
   ],

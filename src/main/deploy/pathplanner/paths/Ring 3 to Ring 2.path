@@ -3,13 +3,13 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 14.0,
-        "y": 4.28
+        "x": 14.113963976858052,
+        "y": 4.356431195030721
       },
       "prevControl": null,
       "nextControl": {
-        "x": 14.898794046299168,
-        "y": 4.718371146789078
+        "x": 15.01275802315722,
+        "y": 4.794802341819799
       },
       "isLocked": true,
       "linkedName": "Ring 3 Pickup (From Starting Line)"

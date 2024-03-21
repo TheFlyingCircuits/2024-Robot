@@ -125,9 +125,9 @@ public class RobotContainer {
         
         NamedCommands.registerCommand("prepShot", prepAutoSpeakerShot());
         NamedCommands.registerCommand("shootFromAnywhere", speakerShot());
-        NamedCommands.registerCommand("indexNote", indexNote().withTimeout(2));
-        NamedCommands.registerCommand("intakeNote", intakeNote().withTimeout(1.5));
-        NamedCommands.registerCommand("rapidFire", prepAutoSpeakerShot().alongWith(runIntake()));
+        NamedCommands.registerCommand("indexNote", indexNote().withTimeout(2).finallyDo(() -> {drivetrain.isTrackingNote = false;}));
+        NamedCommands.registerCommand("intakeNote", intakeNote().withTimeout(1.5).finallyDo(() -> {drivetrain.isTrackingNote = false;}));
+        NamedCommands.registerCommand("rapidFire", prepAutoSpeakerShot().alongWith(runIntake(true)));
         NamedCommands.registerCommand("trackNote", new InstantCommand(() -> {drivetrain.isTrackingNote = true;}));
         NamedCommands.registerCommand("resetShooter", resetShooter());
         NamedCommands.registerCommand("neverMissPickup", neverMissPickup());
@@ -157,12 +157,14 @@ public class RobotContainer {
     //these command compositions must be separated into their own methods
     //since wpilib requires a new instance of a command to be used in each
     //composition (the same instance of a command cannot be used in multiple compositions).
-    public Command runIntake() {
+
+    /**
+     * @param rapidFire - whether or not we are rapid firing (in auto); if we are, we want to run the indexer faster.
+     */
+    public Command runIntake(boolean rapidFire) {
         return new ScheduleCommand(leds.playIntakeAnimationCommand(drivetrain::shouldTrackNote))
                .andThen(
-                    //indexer.setBlackRollerSurfaceSpeedCommand(5)
-                    indexer.setOrangeWheelsSurfaceSpeedCommand(2.5)
-                    //indexer.run(() -> {indexer.setVolts(12);})
+                    indexer.setOrangeWheelsSurfaceSpeedCommand(rapidFire ? 4 : 2.5)
                     .alongWith(intake.setVoltsCommand(12))
                );
     }
@@ -182,13 +184,13 @@ public class RobotContainer {
      * @return
      */
     public Command intakeNote() {
-        return this.runIntake().until(() -> {
+        return this.runIntake(false).until(() -> {
             return intake.ringJustEnteredIntake() || indexer.isNoteIndexed();
         });
     }
 
     public Command indexNote() {
-        return this.runIntake().until(indexer::isNoteIndexed)
+        return this.runIntake(false).until(indexer::isNoteIndexed)
                .andThen(new InstantCommand(() -> {indexer.setVolts(0); intake.setVolts(0);})) // TODO: remember why we need this.
                .andThen(new ScheduleCommand(leds.solidOrangeCommand()));
     }

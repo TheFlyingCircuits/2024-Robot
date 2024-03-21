@@ -16,15 +16,15 @@
     },
     {
       "anchor": {
-        "x": 11.69,
-        "y": 1.59
+        "x": 12.181675946804104,
+        "y": 2.0376855589659812
       },
       "prevControl": {
-        "x": 10.718740957390727,
-        "y": 1.3519750598157374
+        "x": 11.210416904194831,
+        "y": 1.7996606187817186
       },
       "nextControl": null,
-      "isLocked": true,
+      "isLocked": false,
       "linkedName": "Almost Wing Shot (Source Side)"
     }
   ],

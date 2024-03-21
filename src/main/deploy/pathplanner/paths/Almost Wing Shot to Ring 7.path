@@ -3,15 +3,15 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 11.69,
-        "y": 1.59
+        "x": 12.181675946804104,
+        "y": 2.0376855589659812
       },
       "prevControl": null,
       "nextControl": {
-        "x": 10.718740957390729,
-        "y": 1.8280249401842632
+        "x": 10.811508070947667,
+        "y": 1.7449146453214444
       },
-      "isLocked": true,
+      "isLocked": false,
       "linkedName": "Almost Wing Shot (Source Side)"
     },
     {
@@ -20,8 +20,8 @@
         "y": 2.34
       },
       "prevControl": {
-        "x": 9.611259042609273,
-        "y": 2.1019750598157363
+        "x": 10.073216057801309,
+        "y": 1.9887639739107972
       },
       "nextControl": null,
       "isLocked": true,

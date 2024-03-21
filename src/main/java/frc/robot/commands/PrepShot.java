@@ -96,8 +96,8 @@ public class PrepShot extends Command {
         double leftFlywheelMetersPerSecond = 25;
         double rightFlywheelMetersPerSecond = 20;
         if (target == FieldElement.AMP) {
-            leftFlywheelMetersPerSecond = SmartDashboard.getNumber("leftLob", 20);
-            rightFlywheelMetersPerSecond = SmartDashboard.getNumber("rightLob", 15);
+            leftFlywheelMetersPerSecond = 15; //13 and 9 was too low
+            rightFlywheelMetersPerSecond = 10;
         }
         flywheels.setLeftFlywheelsMetersPerSecond(leftFlywheelMetersPerSecond);
         flywheels.setRightFlywheelsMetersPerSecond(rightFlywheelMetersPerSecond);
@@ -114,7 +114,7 @@ public class PrepShot extends Command {
         }
         if (target == FieldElement.AMP) {
             // lob shot
-            desiredArmAngle = SmartDashboard.getNumber("lobAngle", 40);//= getGravCompensatedArmDesiredDegrees(horizontalDistance, verticalDistance, estimatedExitVelocity, true);
+            desiredArmAngle = 35;//getGravCompensatedArmDesiredDegrees(horizontalDistance, verticalDistance, estimatedExitVelocity, true);
         }
         if (target == FieldElement.RIGHT_IN_FRONT_OF_YOU) {
             // shart

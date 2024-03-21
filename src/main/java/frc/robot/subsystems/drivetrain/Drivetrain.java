@@ -139,7 +139,7 @@ public class Drivetrain extends SubsystemBase {
             () -> {return DrivetrainConstants.swerveKinematics.toChassisSpeeds(getModuleStates());}, // ChassisSpeeds supplier. MUST BE ROBOT RELATIVE
             (ChassisSpeeds speeds) -> {this.robotOrientedDrive(speeds, true);}, // Method that will drive the robot given ROBOT RELATIVE ChassisSpeeds
             new HolonomicPathFollowerConfig( // HolonomicPathFollowerConfig, this should likely live in your Constants class
-                    new PIDConstants(5.0, 0.0, 0.0), // Translation PID constants
+                    new PIDConstants(3.0, 0.0, 0.0), // Translation PID constants
                     new PIDConstants(4.0, 0.0, 0.0), // Rotation PID constants // These are different from our angleController gain(s), after testing.
                     DrivetrainConstants.maxAchievableVelocityMetersPerSecond, // Max module speed, in m/s // TODO: be more conservative? This is a theoretical max that's higher than the actual max.
                     DrivetrainConstants.drivetrainRadiusMeters, // Drive base radius in meters. Distance from robot center to furthest module.
@@ -438,12 +438,16 @@ public class Drivetrain extends SubsystemBase {
     public Optional<Rotation2d> getAutoRotationOverride() {
         if (isTrackingSpeakerInAuto) {
             Rotation2d angle = FlyingCircuitUtils.getAngleToFieldElement(FieldElement.SPEAKER, getPoseMeters());
+            Logger.recordOutput("PathPlanner/rotationTargetOverride", angle);
             return Optional.of(angle);
         }
         if (isTrackingNote && visionInputs.intakeSeesNote) {
-            return Optional.of(getFieldRelativeRotationToNote());
+            Rotation2d angle = getFieldRelativeRotationToNote();
+            Logger.recordOutput("PathPlanner/rotationTargetOverride", angle);
+            return Optional.of(angle);
         }
         else {
+            Logger.recordOutput("PathPlanner/rotationTargetOverride", new Rotation2d(0));
             return Optional.empty();
         }
     }

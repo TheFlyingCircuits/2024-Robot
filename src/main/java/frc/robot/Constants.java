@@ -202,7 +202,7 @@ public final class Constants {
         public final static double armMinAngleDegrees = -25.8;
 
         /**Maximum angle of the arm, in degrees. This value should be positive and greater than 90, as it is beyond the vertical. */
-        public final static double armMaxAngleDegrees = 137.; // old value was 137, has to be 120 to pass inspection.
+        public final static double armMaxAngleDegrees = 129.; // old value was 137, has to be 129 to pass inspection.
 
         public final static double armMaxVelDegreesPerSecond = 360.;
 
@@ -299,7 +299,7 @@ public final class Constants {
          *  Either way, it works for now, and we'll probably just stick with the fudge factor
          *  in the interest of time.
          */
-        public final static double speakerHeightFudgeFactorMeters = Units.inchesToMeters(-3); // accounts for difference in height between actuall note exit point and the pivot point. exit point is above the pivot, so effective vertical distance is less
+        public final static double speakerHeightFudgeFactorMeters = Units.inchesToMeters(-3.5); // accounts for difference in height between actuall note exit point and the pivot point. exit point is above the pivot, so effective vertical distance is less
         public final static double speakerHeightMeters = actualSpeakerHeightMeters + speakerHeightFudgeFactorMeters;
 
         /** X-Y position of the april tag at the center of the red speaker.  
