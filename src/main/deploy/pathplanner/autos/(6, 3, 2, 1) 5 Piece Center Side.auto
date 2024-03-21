@@ -28,12 +28,6 @@
                     {
                       "type": "named",
                       "data": {
-                        "name": "trackNote"
-                      }
-                    },
-                    {
-                      "type": "named",
-                      "data": {
                         "name": "intakeNote"
                       }
                     }
