@@ -393,6 +393,26 @@ public class Drivetrain extends SubsystemBase {
         }
     }
 
+    public boolean inSpeakerShotRange() {
+        Optional<Alliance> alliance = DriverStation.getAlliance();
+        if (alliance.isEmpty()) {
+            return true; //dummy value, should never happen
+        }
+
+        //this position marks a little past the midline (closer to the far alliance)
+
+
+        if (alliance.get() == Alliance.Blue) {
+            return getPoseMeters().getX() < 10;
+        }
+
+        if (alliance.get() == Alliance.Blue) {
+            return getPoseMeters().getX() > 7;
+        }
+
+        return true;
+    }
+
 
     //**************** TARGET TRACKING (Speaker, Note, etc.) ****************/
 

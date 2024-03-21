@@ -37,6 +37,7 @@ import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ScheduleCommand;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
@@ -273,40 +274,34 @@ public class RobotContainer {
         
         /** SCORING **/
         
-        controller.rightBumper()
-             .onTrue(this.speakerShot().andThen(new ScheduleCommand(this.resetShooter())));
+        controller.rightBumper().onTrue(
+            new ConditionalCommand(
+                this.speakerShot(), 
+                this.lobShot(),
+                drivetrain::inSpeakerShotRange)
+            .andThen(new ScheduleCommand(this.resetShooter())));
+
+            //.onTrue(this.speakerShot().andThen(new ScheduleCommand(this.resetShooter())));
             //.onTrue(this.lobShot().andThen(new ScheduleCommand(this.resetShooter())));
-            // .onFalse(this.resetShooter());
             //.onTrue(prepAutoSpeakerShot().alongWith(runIntake()));
+
         controller.leftBumper()
             .onTrue(prepAmpShot())
             .onFalse(this.fireNote().andThen(new ScheduleCommand(this.resetShooter())));
             // use a schedule command so the onFalse sequence doesn't cancel the aiming while the note is being shot.
-        //controller.b().whileTrue(shart());
+            
         controller.b().onTrue(shart().andThen(new ScheduleCommand(this.resetShooter())));
-        //controller.a().onTrue(this.fireNote());
-        //controller.a().whileTrue(navigateToTrap());
 
         /** CLIMB **/
         
         //deprecated, moved to TrapRoutine.java
-        // controller.povUp().onTrue(climb.raiseHooksCommand().alongWith(arm.setDesiredDegreesCommand(ArmConstants.armMaxAngleDegrees)
-        //                                                               .raceWith((new WaitCommand(0.2)).andThen(new WaitUntilCommand(arm::isCloseToTarget)))
-        //                                                               .raceWith(shooter.setFlywheelSurfaceSpeedCommand(1, 1))
-        //                                                               .andThen(new InstantCommand(() -> {arm.setDisableSetpointChecking(true);}))
-        //                                                               .andThen(arm.holdCurrentPositionCommand().until(() -> {return arm.getDegrees() <= 76;}))
-        //                                                               .andThen(new InstantCommand(() -> {arm.setDisableSetpointChecking(false);}))));
-        // controller.povRight().onTrue(arm.setDesiredDegreesCommand(82));
-        // controller.povDown().whileTrue(climb.lowerHooksCommand().alongWith(prepTrapShot()));
-        // controller.povLeft().whileTrue(climb.raiseHooksCommand());
-        // controller.start().onTrue(this.fireNote().andThen(new ScheduleCommand(shooter.setFlywheelSurfaceSpeedCommand(0)))); // allow fire note to finish so default of stopping takes over.
-
         controller.povUp().onTrue(climb.raiseHooksCommand());
         controller.povDown().onTrue(climb.lowerHooksCommand().until(climb::climbArmsZero));
         controller.a().whileTrue(new TrapRoutine(charlie::getRequestedFieldOrientedVelocity, climb, arm, shooter, indexer, leds, drivetrain));
 
         /** MISC **/
-        controller.y().onTrue(new InstantCommand(() -> drivetrain.setRobotFacingForward()));
+        controller.y().onTrue(new InstantCommand(() -> drivetrain.setPoseToVisionMeasurement()));
+        //controller.y().onTrue(new InstantCommand(() -> drivetrain.setRobotFacingForward()));
 
         controller.x().onTrue(new InstantCommand(() -> arm.setDisableSetpointChecking(false)).andThen(resetShooter()));
 
