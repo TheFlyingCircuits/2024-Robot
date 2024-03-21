@@ -35,7 +35,7 @@ public class Robot extends LoggedRobot {
     private void initAdvantageKit() {
         Logger.recordMetadata("projectName", "2024Robot");
         Logger.addDataReceiver(new NT4Publisher());
-        //Logger.addDataReceiver(new WPILOGWriter()); // <- log to USB stick
+        Logger.addDataReceiver(new WPILOGWriter()); // <- log to USB stick
         new PowerDistribution(); // Apparently just constructing a PDH
                                  // will allow it's values to be logged? 
                                  // This is what the advantage kit docs imply at least.
