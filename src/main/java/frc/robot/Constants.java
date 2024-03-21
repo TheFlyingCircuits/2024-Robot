@@ -202,7 +202,7 @@ public final class Constants {
         public final static double armMinAngleDegrees = -25.8;
 
         /**Maximum angle of the arm, in degrees. This value should be positive and greater than 90, as it is beyond the vertical. */
-        public final static double armMaxAngleDegrees = 137.;
+        public final static double armMaxAngleDegrees = 137.; // old value was 137, has to be 120 to pass inspection.
 
         public final static double armMaxVelDegreesPerSecond = 360.;
 
@@ -272,7 +272,7 @@ public final class Constants {
 
         public final static Transform3d robotToTrapCamera = new Transform3d(
             new Translation3d(Units.inchesToMeters(-11), 0, Units.inchesToMeters(11.5)),
-            new Rotation3d(0, Math.toRadians(-35), Math.toRadians(180))
+            new Rotation3d(0, Math.toRadians(-33), Math.toRadians(180))
         );
     }
 

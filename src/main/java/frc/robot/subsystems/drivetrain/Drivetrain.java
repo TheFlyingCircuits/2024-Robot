@@ -403,11 +403,11 @@ public class Drivetrain extends SubsystemBase {
 
 
         if (alliance.get() == Alliance.Blue) {
-            return getPoseMeters().getX() < 10;
+            return getPoseMeters().getX() <= 7.05; // half way between blue wing and center line
         }
 
-        if (alliance.get() == Alliance.Blue) {
-            return getPoseMeters().getX() > 7;
+        if (alliance.get() == Alliance.Red) {
+            return getPoseMeters().getX() >= 9.49; // half way between red wing and center line
         }
 
         return true;
