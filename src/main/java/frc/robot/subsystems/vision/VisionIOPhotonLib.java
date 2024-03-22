@@ -13,12 +13,18 @@ import org.photonvision.PhotonUtils;
 import org.photonvision.PhotonPoseEstimator.PoseStrategy;
 import org.photonvision.targeting.PhotonPipelineResult;
 
+
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
+import edu.wpi.first.math.Vector;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
+import edu.wpi.first.math.util.Units;
 import frc.robot.Constants.VisionConstants;
 
 public class VisionIOPhotonLib implements VisionIO {
@@ -87,7 +93,7 @@ public class VisionIOPhotonLib implements VisionIO {
      * @param estimator - PhotonPoseEstimator that MUST correspond to the PhotonCamera.
      * @return - Optional VisionMeasurement. This is empty if the camera does not see a reliable target.
      */
-    private Optional<VisionMeasurement> updateCamera(PhotonCamera camera, PhotonPoseEstimator estimator) {
+    private Optional<VisionMeasurement> updateTagCamera(PhotonCamera camera, PhotonPoseEstimator estimator) {
         VisionMeasurement output = new VisionMeasurement();
 
 
@@ -122,11 +128,11 @@ public class VisionIOPhotonLib implements VisionIO {
     public void updateInputs(VisionIOInputs inputs) {
         inputs.visionMeasurements = new ArrayList<VisionMeasurement>();
         
-        Optional<VisionMeasurement> shooterResult = updateCamera(shooterCamera, shooterPoseEstimator);
+        Optional<VisionMeasurement> shooterResult = updateTagCamera(shooterCamera, shooterPoseEstimator);
         if (shooterResult.isPresent())
             inputs.visionMeasurements.add(shooterResult.get());
 
-        Optional<VisionMeasurement> trapResult = updateCamera(trapCamera, trapPoseEstimator);
+        Optional<VisionMeasurement> trapResult = updateTagCamera(trapCamera, trapPoseEstimator);
         if (trapResult.isPresent())
             inputs.visionMeasurements.add(trapResult.get());
 
@@ -147,8 +153,53 @@ public class VisionIOPhotonLib implements VisionIO {
         }
         else {
             inputs.intakeSeesNote = true;
-            inputs.nearestNoteYawDegrees = -noteCameraResult.getBestTarget().getYaw();
+            double nearestNoteYawDegrees = -noteCameraResult.getBestTarget().getYaw();
+            double notePitchDegrees = -noteCameraResult.getBestTarget().getPitch();
+
+
+            //rotation to rotate a unit X vector in the camera frame to point at the note
+            Rotation3d cameraToNoteRotation = new Rotation3d(
+                0,
+                Math.toRadians(notePitchDegrees),
+                Math.toRadians(nearestNoteYawDegrees));
+
+            //unit vector that points at the note, by rotating the unit vector in the camera frame by the rotation
+            Vector<N3> unitTowardsNote = new Translation3d(1, 0, 0)
+                .rotateBy(cameraToNoteRotation).toVector();
+
+            //height of the camera above the note
+            double h = VisionConstants.robotToNoteCamera.getZ();
+
+            //pitch of the camera (positive is counterclockwise about the robot y axis)
+            double cameraPitchRadians = VisionConstants.robotToNoteCamera.getRotation().getY();
+
+            //distance from the camera to the floor (pointed straight out of the camera)
+            double d = Units.inchesToMeters(30);//h/Math.sin(cameraPitchRadians);
+
+            //vector pointing out of the camera and ending on the floor
+            Vector<N3> anchorPoint = VecBuilder.fill(d, 0, 0);
+
+
+            //normal vector of the floor in the camera frame, done by rotating
+            //a negative unit x vector by the camera's pitch
+            Vector<N3> floorNormal = 
+                new Translation3d(-1, 0, 0)
+                    .rotateBy(
+                        new Rotation3d(0, Math.PI/2-cameraPitchRadians, 0)).toVector();
+                        
+            //distance from the camera to the note, in full 3d
+            double t = anchorPoint.dot(floorNormal)/unitTowardsNote.dot(floorNormal);
+
+            Translation3d cameraToNoteTranslation = new Translation3d(unitTowardsNote.times(t));
+
+            //transform to bring a vector in the note camera frame into the robot frame
+            Transform3d noteCameraToRobot = VisionConstants.robotToNoteCamera.inverse();
+
+            //position of the note relative to the robot
+            inputs.nearestNote = cameraToNoteTranslation.rotateBy(noteCameraToRobot.getRotation())
+                .plus(noteCameraToRobot.getTranslation());
+
+            //inputs.nearestNote = (new Pose3d(cameraToNoteTranslation, new Rotation3d())).transformBy(noteCameraToRobot).getTranslation();
         }
-        
     };
 }

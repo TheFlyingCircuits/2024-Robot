@@ -95,9 +95,9 @@ public class PrepShot extends Command {
         // Flywheels
         double leftFlywheelMetersPerSecond = 25;
         double rightFlywheelMetersPerSecond = 20;
-        if (target == FieldElement.AMP) {
-            leftFlywheelMetersPerSecond = 15; //13 and 9 was too low
-            rightFlywheelMetersPerSecond = 10;
+        if (target == FieldElement.LOB_TARGET) {
+            leftFlywheelMetersPerSecond = 18; //13 and 9 was too low
+            rightFlywheelMetersPerSecond = 13;
         }
         flywheels.setLeftFlywheelsMetersPerSecond(leftFlywheelMetersPerSecond);
         flywheels.setRightFlywheelsMetersPerSecond(rightFlywheelMetersPerSecond);
@@ -112,7 +112,7 @@ public class PrepShot extends Command {
         if (target == FieldElement.SPEAKER) {
             desiredArmAngle = getGravCompensatedArmDesiredDegrees(horizontalDistance, verticalDistance, estimatedExitVelocity, false);
         }
-        if (target == FieldElement.AMP) {
+        if (target == FieldElement.LOB_TARGET) {
             // lob shot
             desiredArmAngle = 35;//getGravCompensatedArmDesiredDegrees(horizontalDistance, verticalDistance, estimatedExitVelocity, true);
         }

@@ -274,10 +274,15 @@ public final class Constants {
             new Translation3d(Units.inchesToMeters(-11), 0, Units.inchesToMeters(11.5)),
             new Rotation3d(0, Math.toRadians(-33), Math.toRadians(180))
         );
+
+        public final static Transform3d robotToNoteCamera = new Transform3d(
+            new Translation3d(Units.inchesToMeters(-(10. + 5./16.)), 0, Units.inchesToMeters(15.25)),
+            new Rotation3d(0, Math.toRadians(25), Math.toRadians(180))
+        );
     }
 
     public static enum FieldElement {
-        SPEAKER, AMP, STAGE_LEFT, STAGE_RIGHT, CENTER_STAGE, RIGHT_IN_FRONT_OF_YOU // TODO: maybe rename to carpet, which is an actual field element?
+        SPEAKER, AMP, STAGE_LEFT, STAGE_RIGHT, CENTER_STAGE, LOB_TARGET, RIGHT_IN_FRONT_OF_YOU // TODO: maybe rename to carpet, which is an actual field element?
     }
 
 

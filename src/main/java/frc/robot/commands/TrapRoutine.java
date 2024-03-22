@@ -34,8 +34,10 @@ public class TrapRoutine extends SequentialCommandGroup {
             
             //while we are driving, do this sequence
             drivetrain.run(() -> {
-                Pose2d nearestTrap = FlyingCircuitUtils.getClosestTrap(drivetrain.getPoseMeters());
-                drivetrain.fieldOrientedDriveOnALine(translationController.get(), nearestTrap);
+                // Pose2d nearestTrap = FlyingCircuitUtils.getClosestTrap(drivetrain.getPoseMeters());
+                // drivetrain.fieldOrientedDriveOnALine(translationController.get(), nearestTrap);
+
+                drivetrain.fieldOrientedDrive(translationController.get(), true);
             })
             .raceWith(
                 new SequentialCommandGroup(

@@ -11,6 +11,7 @@ import org.littletonrobotics.junction.inputs.LoggableInputs;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.util.struct.Struct;
@@ -70,6 +71,8 @@ public interface VisionIO {
          */
         public ArrayList<VisionMeasurement> visionMeasurements = new ArrayList<VisionMeasurement>();
 
+        public Translation3d nearestNote = new Translation3d();
+
         /**
          * Whether or not the intake camera currently sees a note to target.
          */
@@ -93,7 +96,7 @@ public interface VisionIO {
             for (int i = 0; i < visionMeasurements.size(); i++) {
 
                 VisionMeasurement meas = visionMeasurements.get(i);
-
+                
                 String rootString = "VisionMeasurement"+Integer.toString(i);
 
                 table.put(rootString+"/RobotFieldPose", meas.robotFieldPose);
@@ -107,6 +110,7 @@ public interface VisionIO {
 
             table.put("IntakeSeesNote", intakeSeesNote);
             table.put("NearestNoteYawDegrees", nearestNoteYawDegrees);
+            table.put("NearestNote", nearestNote);
         }
 
         public void fromLog(LogTable table) {

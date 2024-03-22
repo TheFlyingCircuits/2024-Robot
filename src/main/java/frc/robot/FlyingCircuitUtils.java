@@ -26,6 +26,11 @@ public class FlyingCircuitUtils {
             if (element == FieldElement.STAGE_LEFT) { return fieldLayout.getTagPose(15).get().toPose2d(); }
             if (element == FieldElement.STAGE_RIGHT) { return fieldLayout.getTagPose(16).get().toPose2d(); }
             if (element == FieldElement.CENTER_STAGE) { return fieldLayout.getTagPose(14).get().toPose2d(); }
+            if (element == FieldElement.LOB_TARGET) {
+                Pose2d speaker = getLocationOfFieldElement(FieldElement.SPEAKER);
+                Pose2d amp = getLocationOfFieldElement(FieldElement.AMP);
+                return speaker.interpolate(amp, 0.5);
+            }
         }
 
         if (alliance.isPresent() && alliance.get() == Alliance.Red) {
@@ -34,6 +39,11 @@ public class FlyingCircuitUtils {
             if (element == FieldElement.STAGE_LEFT) { return fieldLayout.getTagPose(11).get().toPose2d(); }
             if (element == FieldElement.STAGE_RIGHT) { return fieldLayout.getTagPose(12).get().toPose2d(); }
             if (element == FieldElement.CENTER_STAGE) { return fieldLayout.getTagPose(13).get().toPose2d(); }
+            if (element == FieldElement.LOB_TARGET) {
+                Pose2d speaker = getLocationOfFieldElement(FieldElement.SPEAKER);
+                Pose2d amp = getLocationOfFieldElement(FieldElement.AMP);
+                return speaker.interpolate(amp, 0.5);
+            }
         }
 
         // Should never get to this point as long as we're connected to the driver station.

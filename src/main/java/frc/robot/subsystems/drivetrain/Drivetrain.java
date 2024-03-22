@@ -382,7 +382,7 @@ public class Drivetrain extends SubsystemBase {
 
             // don't add vision measurements that are too far away
             // for reference: it is 6 meters from speaker tags to wing.
-            double teleportToleranceMeters = 1.0;
+            double teleportToleranceMeters = 2.0;
             if (visionTranslation.getDistance(estimatedTranslation) <= teleportToleranceMeters) {
                 fusedPoseEstimator.addVisionMeasurement(
                     visionMeasurement.robotFieldPose, 

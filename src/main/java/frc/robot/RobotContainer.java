@@ -34,6 +34,7 @@ import edu.wpi.first.wpilibj.util.Color;
 import com.pathplanner.lib.auto.NamedCommands;
 
 import edu.wpi.first.wpilibj.RobotBase;
+import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -54,6 +55,9 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 public class RobotContainer {
 
     public final HumanDriver charlie = new HumanDriver(0);
+
+    public final CommandXboxController ben = new CommandXboxController(1);
+
     public final Shooter shooter;
     public final Drivetrain drivetrain;
     public final Arm arm;
@@ -63,6 +67,7 @@ public class RobotContainer {
     public final LEDs leds;
 
     private Trigger ringJustEnteredIntake;
+    private Trigger inSpeakerShotRange;
     
     
     public RobotContainer() {
@@ -131,7 +136,11 @@ public class RobotContainer {
         NamedCommands.registerCommand("trackNote", new InstantCommand(() -> {drivetrain.isTrackingNote = true;}));
         NamedCommands.registerCommand("resetShooter", resetShooter());
         NamedCommands.registerCommand("neverMissPickup", neverMissPickup());
+
+
         ringJustEnteredIntake = new Trigger(intake::ringJustEnteredIntake);
+        inSpeakerShotRange = new Trigger(drivetrain::inSpeakerShotRange);
+
         ringJustEnteredIntake.onTrue(new InstantCommand(() -> {drivetrain.isTrackingNote = false;}));
 
         realBindings();
@@ -164,7 +173,7 @@ public class RobotContainer {
     public Command runIntake(boolean rapidFire) {
         return new ScheduleCommand(leds.playIntakeAnimationCommand(drivetrain::shouldTrackNote))
                .andThen(
-                    indexer.setOrangeWheelsSurfaceSpeedCommand(rapidFire ? 4 : 2.5)
+                    indexer.setOrangeWheelsSurfaceSpeedCommand(rapidFire ? 5 : 2.5)
                     .alongWith(intake.setVoltsCommand(12))
                );
     }
@@ -235,11 +244,15 @@ public class RobotContainer {
                .alongWith(shooter.setFlywheelSurfaceSpeedCommand(10));
     }
 
+    Command prepLobShot() {
+        return new PrepShot(true, drivetrain, arm, shooter, charlie::getRequestedFieldOrientedVelocity, leds, FieldElement.LOB_TARGET);
+    }
+
     Command shootAtTarget(FieldElement target) {
         PrepShot aim = new PrepShot(true, drivetrain, arm, shooter, charlie::getRequestedFieldOrientedVelocity, leds, target);
         Command waitForAlignment = new WaitUntilCommand(aim::readyToShoot);
         Command fire = fireNote();
-        if (target == FieldElement.SPEAKER) {
+        if (target == FieldElement.SPEAKER || target == FieldElement.LOB_TARGET) {
             fire = fire.withTimeout(0.2);
         }
         return aim.raceWith(waitForAlignment.andThen(fireNote()));
@@ -250,7 +263,7 @@ public class RobotContainer {
     }
 
     Command lobShot() {
-        return shootAtTarget(FieldElement.AMP);
+        return shootAtTarget(FieldElement.LOB_TARGET);
     }
 
     public Command speakerShot() {
@@ -276,16 +289,30 @@ public class RobotContainer {
         
         /** SCORING **/
         
-        controller.rightBumper().onTrue(
-            new ConditionalCommand(
-                this.speakerShot(), 
-                this.lobShot(),
-                drivetrain::inSpeakerShotRange)
-            .andThen(new ScheduleCommand(this.resetShooter())));
+        //speaker shot
+        controller.rightBumper().and(inSpeakerShotRange)
+            .onTrue(
+                this.speakerShot()
+                .andThen(new ScheduleCommand(this.resetShooter())));
 
-            //.onTrue(this.speakerShot().andThen(new ScheduleCommand(this.resetShooter())));
-            //.onTrue(this.lobShot().andThen(new ScheduleCommand(this.resetShooter())));
-            //.onTrue(prepAutoSpeakerShot().alongWith(runIntake()));
+        //lob shot (prep while holding, release to fire)
+        controller.rightBumper().and(inSpeakerShotRange.negate())
+            .onTrue(prepLobShot())
+            .onFalse(this.fireNote()
+                .andThen(new ScheduleCommand(this.resetShooter())));
+
+
+        
+        // controller.rightBumper().onTrue(
+        //     new ConditionalCommand(
+        //         this.speakerShot(), 
+        //         this.lobShot(),
+        //         drivetrain::inSpeakerShotRange)
+        //     .andThen(new ScheduleCommand(this.resetShooter())));
+
+        //.onTrue(this.speakerShot().andThen(new ScheduleCommand(this.resetShooter())));
+        //.onTrue(this.lobShot().andThen(new ScheduleCommand(this.resetShooter())));
+        //.onTrue(prepAutoSpeakerShot().alongWith(runIntake()));
 
         controller.leftBumper()
             .onTrue(prepAmpShot())
@@ -296,13 +323,13 @@ public class RobotContainer {
 
         /** CLIMB **/
         
-        //deprecated, moved to TrapRoutine.java
         controller.povUp().onTrue(climb.raiseHooksCommand());
         controller.povDown().onTrue(climb.lowerHooksCommand().until(climb::climbArmsZero));
         controller.a().whileTrue(new TrapRoutine(charlie::getRequestedFieldOrientedVelocity, climb, arm, shooter, indexer, leds, drivetrain));
 
         /** MISC **/
         controller.y().onTrue(new InstantCommand(() -> drivetrain.setPoseToVisionMeasurement()));
+        ben.y().onTrue(new InstantCommand(() -> drivetrain.setPoseToVisionMeasurement()));
         //controller.y().onTrue(new InstantCommand(() -> drivetrain.setRobotFacingForward()));
 
         controller.x().onTrue(new InstantCommand(() -> arm.setDisableSetpointChecking(false)).andThen(resetShooter()));

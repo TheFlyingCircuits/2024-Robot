@@ -44,11 +44,11 @@ public class ArmIONeo implements ArmIO {
     public void updateInputs(ArmIOInputs inputs) {
         
         inputs.armVelocityDegreesPerSecond = velocityFilter.calculate(
-            rightAbsoluteEncoder.getVelocity().getValueAsDouble()*360);
+            leftAbsoluteEncoder.getVelocity().getValueAsDouble()*360);
 
         inputs.leftEncoderReadingDegrees = leftAbsoluteEncoder.getAbsolutePosition().getValueAsDouble()*360;
         inputs.rightEncoderReadingDegrees = rightAbsoluteEncoder.getAbsolutePosition().getValueAsDouble()*360;
-        inputs.armAngleDegrees = inputs.rightEncoderReadingDegrees;
+        inputs.armAngleDegrees = inputs.leftEncoderReadingDegrees;
 
         //getBusVoltage() gets voltage fed into motor controller, getAppliedOutput() gets a percent the motor is running at.
         //found this solution on chiefdelphi
