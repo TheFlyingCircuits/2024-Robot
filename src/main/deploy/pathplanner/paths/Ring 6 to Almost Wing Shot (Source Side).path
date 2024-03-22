@@ -3,13 +3,13 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 8.58,
-        "y": 3.88
+        "x": 8.55,
+        "y": 4.4
       },
       "prevControl": null,
       "nextControl": {
-        "x": 8.985123136828221,
-        "y": 3.5869552184281948
+        "x": 8.955123136828222,
+        "y": 4.106955218428196
       },
       "isLocked": true,
       "linkedName": "Ring 6 Pickup (From Almost Wing Shot)"

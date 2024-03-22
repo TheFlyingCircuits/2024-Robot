@@ -3,25 +3,25 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 8.27,
+        "x": 8.65,
         "y": 7.46
       },
       "prevControl": null,
       "nextControl": {
-        "x": 9.207616107539907,
-        "y": 7.035130224106603
+        "x": 9.613630453208623,
+        "y": 7.192761623921744
       },
       "isLocked": false,
       "linkedName": "Ring 4"
     },
     {
       "anchor": {
-        "x": 10.71,
+        "x": 11.5,
         "y": 6.62
       },
       "prevControl": {
-        "x": 9.543358277485789,
-        "y": 6.9660616244309415
+        "x": 10.536369546791377,
+        "y": 6.887238376078257
       },
       "nextControl": null,
       "isLocked": false,
