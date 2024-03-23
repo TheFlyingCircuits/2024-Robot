@@ -173,7 +173,7 @@ public class RobotContainer {
     public Command runIntake(boolean rapidFire) {
         return new ScheduleCommand(leds.playIntakeAnimationCommand(drivetrain::shouldTrackNote))
                .andThen(
-                    indexer.setOrangeWheelsSurfaceSpeedCommand(rapidFire ? 5 : 2.5)
+                    indexer.setOrangeWheelsSurfaceSpeedCommand(rapidFire ? 4 : 2.5)
                     .alongWith(intake.setVoltsCommand(12))
                );
     }

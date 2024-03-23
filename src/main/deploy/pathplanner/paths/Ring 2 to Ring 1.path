@@ -8,10 +8,10 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 15.0,
-        "y": 5.55
+        "x": 14.851746679242288,
+        "y": 5.972526638348569
       },
-      "isLocked": true,
+      "isLocked": false,
       "linkedName": "Ring 2 Pickup (From Ring 3)"
     },
     {
@@ -20,11 +20,11 @@
         "y": 6.82
       },
       "prevControl": {
-        "x": 14.898794046299168,
-        "y": 6.381628853210923
+        "x": 15.638897148639483,
+        "y": 5.953881756568535
       },
       "nextControl": null,
-      "isLocked": true,
+      "isLocked": false,
       "linkedName": "Ring 1 Pickup (From Ring 2)"
     }
   ],

@@ -153,6 +153,8 @@ public class VisionIOPhotonLib implements VisionIO {
         }
         else {
             inputs.intakeSeesNote = true;
+            inputs.nearestNoteYawDegrees = -noteCameraResult.getBestTarget().getYaw();
+
             double nearestNoteYawDegrees = -noteCameraResult.getBestTarget().getYaw();
             double notePitchDegrees = -noteCameraResult.getBestTarget().getPitch();
 
