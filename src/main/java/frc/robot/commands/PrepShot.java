@@ -96,8 +96,8 @@ public class PrepShot extends Command {
         double leftFlywheelMetersPerSecond = 25;
         double rightFlywheelMetersPerSecond = 20;
         if (target == FieldElement.LOB_TARGET) {
-            leftFlywheelMetersPerSecond = 18; //13 and 9 was too low
-            rightFlywheelMetersPerSecond = 13;
+            leftFlywheelMetersPerSecond = 15; //13 and 9 was too low
+            rightFlywheelMetersPerSecond = 10;
         }
         flywheels.setLeftFlywheelsMetersPerSecond(leftFlywheelMetersPerSecond);
         flywheels.setRightFlywheelsMetersPerSecond(rightFlywheelMetersPerSecond);

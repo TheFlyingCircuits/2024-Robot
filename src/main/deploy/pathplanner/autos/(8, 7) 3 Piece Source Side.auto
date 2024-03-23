@@ -62,7 +62,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "Ring 8 to Wing Shot"
+                  "pathName": "Ring 8 to Almost Wing Shot"
                 }
               },
               {
@@ -131,7 +131,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "Wing Shot to Ring 7"
+                  "pathName": "Almost Wing Shot to Ring 7"
                 }
               }
             ]
@@ -144,7 +144,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "Ring 7 to Wing Shot"
+                  "pathName": "Ring 7 to Almost Wing Shot"
                 }
               },
               {
@@ -186,7 +186,7 @@
                     {
                       "type": "wait",
                       "data": {
-                        "waitTime": 0.5
+                        "waitTime": 1.0
                       }
                     },
                     {
@@ -207,7 +207,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "Wing Shot to Ring 6 (Source Side)"
+                  "pathName": "Almost Wing Shot to Ring 6 (Source Side)"
                 }
               },
               {
@@ -226,7 +226,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "Ring 6 to Wing Shot (Source Side)"
+                  "pathName": "Ring 6 to Almost Wing Shot (Source Side)"
                 }
               },
               {
@@ -260,6 +260,6 @@
       ]
     }
   },
-  "folder": "Ambitious",
+  "folder": "Slow and Steady",
   "choreoAuto": false
 }

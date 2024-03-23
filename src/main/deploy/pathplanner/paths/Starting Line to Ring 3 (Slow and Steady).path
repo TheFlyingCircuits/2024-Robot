@@ -8,8 +8,8 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 15.050830900520573,
-        "y": 4.731177964495728
+        "x": 14.358160254782051,
+        "y": 4.469725093296342
       },
       "isLocked": false,
       "linkedName": "Starting Line (Between Ring 2 and 3)"
@@ -32,8 +32,8 @@
   "constraintZones": [],
   "eventMarkers": [],
   "globalConstraints": {
-    "maxVelocity": 4.0,
-    "maxAcceleration": 4.0,
+    "maxVelocity": 2.0,
+    "maxAcceleration": 2.0,
     "maxAngularVelocity": 360.0,
     "maxAngularAcceleration": 360.0
   },
@@ -48,5 +48,5 @@
     "rotation": 26.0,
     "velocity": 0
   },
-  "useDefaultConstraints": true
+  "useDefaultConstraints": false
 }

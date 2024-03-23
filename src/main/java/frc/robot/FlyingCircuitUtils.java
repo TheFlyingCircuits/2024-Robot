@@ -29,7 +29,7 @@ public class FlyingCircuitUtils {
             if (element == FieldElement.LOB_TARGET) {
                 Pose2d speaker = getLocationOfFieldElement(FieldElement.SPEAKER);
                 Pose2d amp = getLocationOfFieldElement(FieldElement.AMP);
-                return speaker.interpolate(amp, 0.5);
+                return speaker.interpolate(amp, 0.6);
             }
         }
 
@@ -42,7 +42,7 @@ public class FlyingCircuitUtils {
             if (element == FieldElement.LOB_TARGET) {
                 Pose2d speaker = getLocationOfFieldElement(FieldElement.SPEAKER);
                 Pose2d amp = getLocationOfFieldElement(FieldElement.AMP);
-                return speaker.interpolate(amp, 0.5);
+                return speaker.interpolate(amp, 0.6);
             }
         }
 

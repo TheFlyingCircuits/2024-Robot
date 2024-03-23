@@ -176,7 +176,7 @@ public class VisionIOPhotonLib implements VisionIO {
             double cameraPitchRadians = VisionConstants.robotToNoteCamera.getRotation().getY();
 
             //distance from the camera to the floor (pointed straight out of the camera)
-            double d = Units.inchesToMeters(30);//h/Math.sin(cameraPitchRadians);
+            double d = h/Math.sin(cameraPitchRadians);
 
             //vector pointing out of the camera and ending on the floor
             Vector<N3> anchorPoint = VecBuilder.fill(d, 0, 0);

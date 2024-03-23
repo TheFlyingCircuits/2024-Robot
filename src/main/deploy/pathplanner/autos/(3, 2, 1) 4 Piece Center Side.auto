@@ -12,25 +12,25 @@
           }
         },
         {
-          "type": "parallel",
+          "type": "deadline",
           "data": {
             "commands": [
               {
+                "type": "named",
+                "data": {
+                  "name": "waitIndexNote"
+                }
+              },
+              {
                 "type": "path",
                 "data": {
-                  "pathName": "Amp Side Speaker to Ring 1"
+                  "pathName": "Starting Line to Ring 3 (Slow and Steady)"
                 }
               },
               {
                 "type": "named",
                 "data": {
-                  "name": "indexNote"
-                }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "trackNote"
+                  "name": "resetShooter"
                 }
               }
             ]
@@ -43,34 +43,28 @@
           }
         },
         {
-          "type": "parallel",
+          "type": "deadline",
           "data": {
             "commands": [
               {
+                "type": "named",
+                "data": {
+                  "name": "waitIndexNote"
+                }
+              },
+              {
                 "type": "path",
                 "data": {
-                  "pathName": "Center Speaker to Ring 4"
+                  "pathName": "Ring 3 to Ring 2 (Slow and Steady)"
                 }
               },
               {
                 "type": "named",
                 "data": {
-                  "name": "indexNote"
-                }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "trackNote"
+                  "name": "resetShooter"
                 }
               }
             ]
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "Ring 4 to Ring 1"
           }
         },
         {
@@ -80,34 +74,28 @@
           }
         },
         {
-          "type": "parallel",
+          "type": "deadline",
           "data": {
             "commands": [
               {
+                "type": "named",
+                "data": {
+                  "name": "waitIndexNote"
+                }
+              },
+              {
                 "type": "path",
                 "data": {
-                  "pathName": "Ring 1 to Ring 5"
+                  "pathName": "Ring 2 to Ring 1 (Slow and Steady)"
                 }
               },
               {
                 "type": "named",
                 "data": {
-                  "name": "indexNote"
-                }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "trackNote"
+                  "name": "resetShooter"
                 }
               }
             ]
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "Ring 5 to Ring 1"
           }
         },
         {
@@ -119,6 +107,6 @@
       ]
     }
   },
-  "folder": "Ambitious",
+  "folder": "Slow and Steady",
   "choreoAuto": false
 }

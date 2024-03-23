@@ -130,6 +130,7 @@ public class RobotContainer {
         
         NamedCommands.registerCommand("prepShot", prepAutoSpeakerShot());
         NamedCommands.registerCommand("shootFromAnywhere", speakerShot());
+        NamedCommands.registerCommand("waitIndexNote", indexNote().withTimeout(4).finallyDo(() -> {drivetrain.isTrackingNote = false;}));
         NamedCommands.registerCommand("indexNote", indexNote().withTimeout(2).finallyDo(() -> {drivetrain.isTrackingNote = false;}));
         NamedCommands.registerCommand("intakeNote", intakeNote().withTimeout(1.5).finallyDo(() -> {drivetrain.isTrackingNote = false;}));
         NamedCommands.registerCommand("rapidFire", prepAutoSpeakerShot().alongWith(runIntake(true)));
@@ -299,7 +300,10 @@ public class RobotContainer {
         controller.rightBumper().and(inSpeakerShotRange.negate())
             .onTrue(prepLobShot())
             .onFalse(this.fireNote()
-                .andThen(new ScheduleCommand(this.resetShooter())));
+                .andThen(new ScheduleCommand(this.resetShooter()))
+                .unless(() -> arm.getDegrees() < 15));
+            
+
 
 
         

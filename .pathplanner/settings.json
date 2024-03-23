@@ -10,7 +10,11 @@
     "Starts at Starting Line",
     "Starts at Wing Shot"
   ],
-  "autoFolders": [],
+  "autoFolders": [
+    "Slow and Steady",
+    "Pit doesn't smell like one",
+    "Ambitious"
+  ],
   "defaultMaxVel": 4.0,
   "defaultMaxAccel": 4.0,
   "defaultMaxAngVel": 360.0,

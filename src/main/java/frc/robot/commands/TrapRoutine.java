@@ -7,6 +7,7 @@ package frc.robot.commands;
 import java.util.function.Supplier;
 
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
@@ -34,10 +35,12 @@ public class TrapRoutine extends SequentialCommandGroup {
             
             //while we are driving, do this sequence
             drivetrain.run(() -> {
-                // Pose2d nearestTrap = FlyingCircuitUtils.getClosestTrap(drivetrain.getPoseMeters());
+                Pose2d nearestTrap = FlyingCircuitUtils.getClosestTrap(drivetrain.getPoseMeters());
                 // drivetrain.fieldOrientedDriveOnALine(translationController.get(), nearestTrap);
 
-                drivetrain.fieldOrientedDrive(translationController.get(), true);
+                Rotation2d nearestTrapRotation = nearestTrap.getRotation();
+
+                drivetrain.fieldOrientedDriveWhileAiming(translationController.get(), nearestTrapRotation);
             })
             .raceWith(
                 new SequentialCommandGroup(

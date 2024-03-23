@@ -3,50 +3,50 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 14.65,
-        "y": 4.825
-      },
-      "prevControl": null,
-      "nextControl": {
-        "x": 15.050830900520573,
-        "y": 4.731177964495728
-      },
-      "isLocked": false,
-      "linkedName": "Starting Line (Between Ring 2 and 3)"
-    },
-    {
-      "anchor": {
         "x": 14.002950313592937,
         "y": 4.262519294269358
       },
+      "prevControl": null,
+      "nextControl": {
+        "x": 15.285652878998068,
+        "y": 5.278814403782653
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 13.825345342998377,
+        "y": 5.555088802485298
+      },
       "prevControl": {
-        "x": 14.227648825167728,
-        "y": 4.372112080966628
+        "x": 15.41392313553858,
+        "y": 5.525487974052871
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "Ring 3 Pickup (From Starting Line)"
+      "linkedName": null
     }
   ],
   "rotationTargets": [],
   "constraintZones": [],
   "eventMarkers": [],
   "globalConstraints": {
-    "maxVelocity": 4.0,
-    "maxAcceleration": 4.0,
+    "maxVelocity": 2.0,
+    "maxAcceleration": 2.0,
     "maxAngularVelocity": 360.0,
     "maxAngularAcceleration": 360.0
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 26.0,
+    "rotation": 0,
     "rotateFast": true
   },
   "reversed": false,
-  "folder": "Starts at Starting Line",
+  "folder": "Starts at Frontline Rings",
   "previewStartingState": {
     "rotation": 26.0,
     "velocity": 0
   },
-  "useDefaultConstraints": true
+  "useDefaultConstraints": false
 }
