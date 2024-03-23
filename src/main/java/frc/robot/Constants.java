@@ -266,8 +266,8 @@ public final class Constants {
         public final static AprilTagFieldLayout aprilTagFieldLayout = AprilTagFields.k2024Crescendo.loadAprilTagLayoutField();
     
         public final static Transform3d robotToShooterCamera = new Transform3d(
-            new Translation3d(Units.inchesToMeters(8), 0, Units.inchesToMeters(11.5)), // 11.5 inches off the ground, and 8 inches forward from the center of the robot
-            new Rotation3d(0, Math.toRadians(-28), 0) // tilted up 28 degrees to look at the tags.
+            new Translation3d(Units.inchesToMeters(8), 0, Units.inchesToMeters(11.5-0.75)), // 11.5 inches off the ground, and 8 inches forward from the center of the robot
+            new Rotation3d(0, Math.toRadians(-26), 0) // tilted up 28 degrees to look at the tags.
         );
 
         public final static Transform3d robotToTrapCamera = new Transform3d(
