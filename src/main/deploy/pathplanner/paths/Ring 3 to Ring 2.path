@@ -3,37 +3,53 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 14.002950313592937,
-        "y": 4.262519294269358
+        "x": 14.01,
+        "y": 4.28
       },
       "prevControl": null,
       "nextControl": {
-        "x": 15.150612295079526,
-        "y": 5.12912119865719
+        "x": 14.087129745002716,
+        "y": 4.517804546709722
       },
       "isLocked": true,
-      "linkedName": "Ring 3 Pickup (From Starting Line)"
+      "linkedName": "Ring 3 Rapid Pickup"
     },
     {
       "anchor": {
-        "x": 14.0,
+        "x": 14.42,
         "y": 5.55
       },
       "prevControl": {
-        "x": 15.238204285253078,
-        "y": 5.574358195791997
+        "x": 14.67,
+        "y": 5.55
+      },
+      "nextControl": {
+        "x": 14.17,
+        "y": 5.55
+      },
+      "isLocked": true,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 13.96,
+        "y": 5.55
+      },
+      "prevControl": {
+        "x": 14.21,
+        "y": 5.55
       },
       "nextControl": null,
       "isLocked": true,
-      "linkedName": "Ring 2 Pickup (From Ring 3)"
+      "linkedName": "Ring 2 Rapid Pickup"
     }
   ],
   "rotationTargets": [],
   "constraintZones": [],
   "eventMarkers": [],
   "globalConstraints": {
-    "maxVelocity": 3.0,
-    "maxAcceleration": 3.0,
+    "maxVelocity": 4.0,
+    "maxAcceleration": 2.0,
     "maxAngularVelocity": 360.0,
     "maxAngularAcceleration": 360.0
   },
@@ -43,10 +59,10 @@
     "rotateFast": true
   },
   "reversed": false,
-  "folder": "Starts at Frontline Rings",
+  "folder": "5 Piece Center Side",
   "previewStartingState": {
     "rotation": 26.0,
     "velocity": 0
   },
-  "useDefaultConstraints": false
+  "useDefaultConstraints": true
 }

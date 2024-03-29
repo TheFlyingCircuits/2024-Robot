@@ -11,7 +11,7 @@
         "x": 14.358160254782051,
         "y": 4.469725093296342
       },
-      "isLocked": false,
+      "isLocked": true,
       "linkedName": "Starting Line (Between Ring 2 and 3)"
     },
     {
@@ -24,8 +24,8 @@
         "y": 4.372112080966628
       },
       "nextControl": null,
-      "isLocked": false,
-      "linkedName": "Ring 3 Pickup (From Starting Line)"
+      "isLocked": true,
+      "linkedName": "Ring 3 Pickup (Slow)"
     }
   ],
   "rotationTargets": [],
@@ -43,7 +43,7 @@
     "rotateFast": true
   },
   "reversed": false,
-  "folder": "Starts at Starting Line",
+  "folder": "Buckeye Paths",
   "previewStartingState": {
     "rotation": 26.0,
     "velocity": 0

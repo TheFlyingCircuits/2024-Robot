@@ -3,13 +3,13 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 8.63,
-        "y": 2.3
+        "x": 8.53,
+        "y": 2.34
       },
       "prevControl": null,
       "nextControl": {
-        "x": 9.339224122038068,
-        "y": 2.0560714352124094
+        "x": 9.239224122038067,
+        "y": 2.0960714352124095
       },
       "isLocked": true,
       "linkedName": "Ring 7 Pickup (From Wing Shot)"
@@ -33,17 +33,17 @@
   "eventMarkers": [],
   "globalConstraints": {
     "maxVelocity": 4.0,
-    "maxAcceleration": 4.0,
+    "maxAcceleration": 2.0,
     "maxAngularVelocity": 360.0,
     "maxAngularAcceleration": 360.0
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 33.97,
+    "rotation": 35.04,
     "rotateFast": false
   },
   "reversed": false,
-  "folder": "Starts at Midline Rings",
+  "folder": "4 Piece Source Side",
   "previewStartingState": {
     "rotation": -18.980000000000018,
     "velocity": 0

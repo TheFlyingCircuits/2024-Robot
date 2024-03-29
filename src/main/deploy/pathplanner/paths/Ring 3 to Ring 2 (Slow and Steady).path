@@ -11,8 +11,8 @@
         "x": 15.285652878998068,
         "y": 5.278814403782653
       },
-      "isLocked": false,
-      "linkedName": null
+      "isLocked": true,
+      "linkedName": "Ring 3 Pickup (Slow)"
     },
     {
       "anchor": {
@@ -24,8 +24,8 @@
         "y": 5.525487974052871
       },
       "nextControl": null,
-      "isLocked": false,
-      "linkedName": null
+      "isLocked": true,
+      "linkedName": "Ring 2 Pickup (Slow)"
     }
   ],
   "rotationTargets": [],
@@ -43,7 +43,7 @@
     "rotateFast": true
   },
   "reversed": false,
-  "folder": "Starts at Frontline Rings",
+  "folder": "Buckeye Paths",
   "previewStartingState": {
     "rotation": 26.0,
     "velocity": 0

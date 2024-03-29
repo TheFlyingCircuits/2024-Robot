@@ -3,29 +3,29 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 13.68,
-        "y": 7.003080254377342
+        "x": 15.35,
+        "y": 1.59
       },
       "prevControl": null,
       "nextControl": {
-        "x": 12.68,
-        "y": 7.003080254377342
+        "x": 14.356931543045068,
+        "y": 1.472462602542162
       },
       "isLocked": false,
-      "linkedName": "Ring 1"
+      "linkedName": "Blue Source"
     },
     {
       "anchor": {
-        "x": 8.65,
-        "y": 7.46
+        "x": 8.55,
+        "y": 0.78
       },
       "prevControl": {
-        "x": 9.65,
-        "y": 7.46
+        "x": 9.543068456954927,
+        "y": 0.8975373974578373
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "Ring 4"
+      "linkedName": null
     }
   ],
   "rotationTargets": [],
@@ -33,19 +33,19 @@
   "eventMarkers": [],
   "globalConstraints": {
     "maxVelocity": 4.0,
-    "maxAcceleration": 4.0,
+    "maxAcceleration": 2.0,
     "maxAngularVelocity": 360.0,
     "maxAngularAcceleration": 360.0
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 0,
-    "rotateFast": false
+    "rotation": 6.75,
+    "rotateFast": true
   },
   "reversed": false,
-  "folder": "Starts at Frontline Rings",
+  "folder": "3 Piece Source Side",
   "previewStartingState": {
-    "rotation": 0,
+    "rotation": 30.0,
     "velocity": 0
   },
   "useDefaultConstraints": true

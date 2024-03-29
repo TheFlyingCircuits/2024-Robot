@@ -3,50 +3,66 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 14.0,
+        "x": 13.96,
         "y": 5.55
       },
       "prevControl": null,
       "nextControl": {
-        "x": 14.851746679242288,
-        "y": 5.972526638348569
+        "x": 14.07963465342838,
+        "y": 5.769516627386337
       },
-      "isLocked": false,
-      "linkedName": "Ring 2 Pickup (From Ring 3)"
+      "isLocked": true,
+      "linkedName": "Ring 2 Rapid Pickup"
     },
     {
       "anchor": {
-        "x": 14.0,
-        "y": 6.82
+        "x": 14.33,
+        "y": 6.65
       },
       "prevControl": {
-        "x": 15.638897148639483,
-        "y": 5.953881756568535
+        "x": 14.549516627386335,
+        "y": 6.530365346571622
+      },
+      "nextControl": {
+        "x": 14.110483372613665,
+        "y": 6.769634653428379
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 13.93,
+        "y": 6.87
+      },
+      "prevControl": {
+        "x": 14.149516627386337,
+        "y": 6.750365346571622
       },
       "nextControl": null,
-      "isLocked": false,
-      "linkedName": "Ring 1 Pickup (From Ring 2)"
+      "isLocked": true,
+      "linkedName": "Ring 1 Rapid Pickup"
     }
   ],
   "rotationTargets": [],
   "constraintZones": [],
   "eventMarkers": [],
   "globalConstraints": {
-    "maxVelocity": 3.0,
-    "maxAcceleration": 3.0,
+    "maxVelocity": 4.0,
+    "maxAcceleration": 2.0,
     "maxAngularVelocity": 360.0,
     "maxAngularAcceleration": 360.0
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -26.0,
+    "rotation": -28.589999999999975,
     "rotateFast": true
   },
   "reversed": false,
-  "folder": "Starts at Frontline Rings",
+  "folder": "5 Piece Center Side",
   "previewStartingState": {
     "rotation": 0,
     "velocity": 0
   },
-  "useDefaultConstraints": false
+  "useDefaultConstraints": true
 }

@@ -9,23 +9,23 @@
       "prevControl": null,
       "nextControl": {
         "x": 10.01421255068982,
-        "y": 2.308247746520956
+        "y": 2.3082477465209563
       },
       "isLocked": true,
       "linkedName": "Wing Shot (Source Side)"
     },
     {
       "anchor": {
-        "x": 8.54,
-        "y": 3.83
+        "x": 8.46,
+        "y": 3.9
       },
       "prevControl": {
-        "x": 9.23578744931018,
-        "y": 3.111752253479044
+        "x": 9.155787449310182,
+        "y": 3.181752253479044
       },
       "nextControl": null,
       "isLocked": true,
-      "linkedName": "Ring 6 Pickup (From Wing Shot)"
+      "linkedName": "Ring 6 Pickup (From Source Side Wing Shot)"
     }
   ],
   "rotationTargets": [],
@@ -33,7 +33,7 @@
   "eventMarkers": [],
   "globalConstraints": {
     "maxVelocity": 4.0,
-    "maxAcceleration": 4.0,
+    "maxAcceleration": 2.0,
     "maxAngularVelocity": 360.0,
     "maxAngularAcceleration": 360.0
   },
@@ -43,9 +43,9 @@
     "rotateFast": true
   },
   "reversed": false,
-  "folder": "Starts at Wing Shot",
+  "folder": "4 Piece Source Side",
   "previewStartingState": {
-    "rotation": 33.97,
+    "rotation": 35.04,
     "velocity": 0
   },
   "useDefaultConstraints": true

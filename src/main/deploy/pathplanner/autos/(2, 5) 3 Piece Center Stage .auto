@@ -68,7 +68,7 @@
               {
                 "type": "named",
                 "data": {
-                  "name": "continuousPrepShotFromAnywhere"
+                  "name": "prepShot"
                 }
               }
             ]

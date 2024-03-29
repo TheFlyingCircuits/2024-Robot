@@ -3,20 +3,22 @@
   "robotLength": 0.91,
   "holonomicMode": true,
   "pathFolders": [
-    "Starts at Almost Wing Shot",
-    "Starts at Frontline Rings",
-    "Starts at Midline Rings",
-    "Starts at Speaker",
-    "Starts at Starting Line",
-    "Starts at Wing Shot"
+    "3 Piece Source Side",
+    "Buckeye Paths",
+    "4 Piece Amp Side",
+    "4 Piece Source Side",
+    "Unused (But Maybe Later)",
+    "Pittsburgh Paths",
+    "5 Piece Center Side"
   ],
   "autoFolders": [
-    "Slow and Steady",
+    "Less is More",
     "Pit doesn't smell like one",
+    "Fancy",
     "Ambitious"
   ],
   "defaultMaxVel": 4.0,
-  "defaultMaxAccel": 4.0,
+  "defaultMaxAccel": 2.0,
   "defaultMaxAngVel": 360.0,
   "defaultMaxAngAccel": 360.0,
   "maxModuleSpeed": 4.0

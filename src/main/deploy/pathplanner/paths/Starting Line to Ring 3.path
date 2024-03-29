@@ -8,24 +8,24 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 15.050830900520573,
-        "y": 4.731177964495728
+        "x": 14.768982808841123,
+        "y": 4.605129376222569
       },
-      "isLocked": false,
+      "isLocked": true,
       "linkedName": "Starting Line (Between Ring 2 and 3)"
     },
     {
       "anchor": {
-        "x": 14.002950313592937,
-        "y": 4.262519294269358
+        "x": 14.01,
+        "y": 4.28
       },
       "prevControl": {
-        "x": 14.227648825167728,
-        "y": 4.372112080966628
+        "x": 14.22987062377743,
+        "y": 4.398982808841124
       },
       "nextControl": null,
-      "isLocked": false,
-      "linkedName": "Ring 3 Pickup (From Starting Line)"
+      "isLocked": true,
+      "linkedName": "Ring 3 Rapid Pickup"
     }
   ],
   "rotationTargets": [],
@@ -33,19 +33,19 @@
   "eventMarkers": [],
   "globalConstraints": {
     "maxVelocity": 4.0,
-    "maxAcceleration": 4.0,
+    "maxAcceleration": 2.0,
     "maxAngularVelocity": 360.0,
     "maxAngularAcceleration": 360.0
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 26.0,
+    "rotation": 28.42,
     "rotateFast": true
   },
   "reversed": false,
-  "folder": "Starts at Starting Line",
+  "folder": "5 Piece Center Side",
   "previewStartingState": {
-    "rotation": 26.0,
+    "rotation": 22.88,
     "velocity": 0
   },
   "useDefaultConstraints": true

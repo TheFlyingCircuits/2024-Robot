@@ -4,28 +4,28 @@
     {
       "anchor": {
         "x": 14.65,
-        "y": 6.28
+        "y": 7.72
       },
       "prevControl": null,
       "nextControl": {
-        "x": 11.65,
-        "y": 6.28
+        "x": 13.65,
+        "y": 7.72
       },
       "isLocked": true,
-      "linkedName": "Starting Line (Amp Side)"
+      "linkedName": "Starting Line (Between Ring 3 and Amp)"
     },
     {
       "anchor": {
-        "x": 8.65,
+        "x": 8.54,
         "y": 7.46
       },
       "prevControl": {
-        "x": 10.65,
+        "x": 9.54,
         "y": 7.46
       },
       "nextControl": null,
       "isLocked": true,
-      "linkedName": "Ring 4"
+      "linkedName": "Ring 4 Pickup (From Starting Line)"
     }
   ],
   "rotationTargets": [],
@@ -33,7 +33,7 @@
   "eventMarkers": [],
   "globalConstraints": {
     "maxVelocity": 4.0,
-    "maxAcceleration": 4.0,
+    "maxAcceleration": 2.0,
     "maxAngularVelocity": 360.0,
     "maxAngularAcceleration": 360.0
   },
@@ -43,7 +43,7 @@
     "rotateFast": true
   },
   "reversed": false,
-  "folder": "Starts at Starting Line",
+  "folder": "4 Piece Amp Side",
   "previewStartingState": {
     "rotation": 0,
     "velocity": 0

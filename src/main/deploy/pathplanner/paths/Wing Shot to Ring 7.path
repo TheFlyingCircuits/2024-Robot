@@ -8,20 +8,20 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 10.000775877961935,
-        "y": 1.8339285647875903
+        "x": 10.000818462329772,
+        "y": 1.8340523440323586
       },
       "isLocked": true,
       "linkedName": "Wing Shot (Source Side)"
     },
     {
       "anchor": {
-        "x": 8.63,
-        "y": 2.3
+        "x": 8.53,
+        "y": 2.34
       },
       "prevControl": {
-        "x": 9.339224122038068,
-        "y": 2.0560714352124094
+        "x": 9.23918153767023,
+        "y": 2.095947655967641
       },
       "nextControl": null,
       "isLocked": true,
@@ -33,7 +33,7 @@
   "eventMarkers": [],
   "globalConstraints": {
     "maxVelocity": 4.0,
-    "maxAcceleration": 4.0,
+    "maxAcceleration": 2.0,
     "maxAngularVelocity": 360.0,
     "maxAngularAcceleration": 360.0
   },
@@ -43,9 +43,9 @@
     "rotateFast": true
   },
   "reversed": false,
-  "folder": "Starts at Wing Shot",
+  "folder": "4 Piece Source Side",
   "previewStartingState": {
-    "rotation": 33.97,
+    "rotation": 35.04,
     "velocity": 0
   },
   "useDefaultConstraints": true

@@ -3,45 +3,45 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 14.65,
-        "y": 4.825
+        "x": 12.68,
+        "y": 2.43
       },
       "prevControl": null,
       "nextControl": {
-        "x": 13.65,
-        "y": 4.825
+        "x": 12.246987298107781,
+        "y": 2.1800000000000006
       },
       "isLocked": true,
-      "linkedName": "Starting Line (Between Ring 2 and 3)"
+      "linkedName": "Mid Shot (Source Side)"
     },
     {
       "anchor": {
-        "x": 12.0,
-        "y": 4.67
+        "x": 10.38,
+        "y": 1.87
       },
       "prevControl": {
-        "x": 12.958968313515195,
-        "y": 4.953513268955454
+        "x": 11.346331186464253,
+        "y": 1.6126985463185501
       },
       "nextControl": {
-        "x": 10.743751509295086,
-        "y": 4.298597617668351
+        "x": 9.413668813535748,
+        "y": 2.12730145368145
       },
       "isLocked": true,
-      "linkedName": "Stage Right Passthrough"
+      "linkedName": "Around Stage Left"
     },
     {
       "anchor": {
-        "x": 8.55,
-        "y": 4.1
+        "x": 8.54,
+        "y": 2.36
       },
       "prevControl": {
-        "x": 9.55,
-        "y": 4.1
+        "x": 9.023165593232125,
+        "y": 2.231349273159275
       },
       "nextControl": null,
       "isLocked": true,
-      "linkedName": "Ring 6 Pickup (From Center Stage)"
+      "linkedName": "Ring 7 Pickup (From Mid Shot)"
     }
   ],
   "rotationTargets": [],
@@ -55,13 +55,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 0,
+    "rotation": -14.910000000000025,
     "rotateFast": true
   },
   "reversed": false,
-  "folder": "5 Piece Center Side",
+  "folder": "3 Piece Source Side",
   "previewStartingState": {
-    "rotation": 0,
+    "rotation": 40.34,
     "velocity": 0
   },
   "useDefaultConstraints": true

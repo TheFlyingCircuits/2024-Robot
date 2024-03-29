@@ -3,29 +3,29 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 11.5,
-        "y": 6.62
+        "x": 8.53,
+        "y": 5.87
       },
       "prevControl": null,
       "nextControl": {
-        "x": 10.362959105918213,
-        "y": 6.314843398917567
+        "x": 9.475632162717421,
+        "y": 6.195238086383454
       },
-      "isLocked": false,
-      "linkedName": "Wing Shot (Amp Side)"
+      "isLocked": true,
+      "linkedName": "Ring 5 Pickup (From Wing Shot)"
     },
     {
       "anchor": {
-        "x": 8.65,
-        "y": 5.85
+        "x": 10.71,
+        "y": 6.62
       },
       "prevControl": {
-        "x": 9.755354135323657,
-        "y": 6.325641742052715
+        "x": 9.76436783728258,
+        "y": 6.294761913616546
       },
       "nextControl": null,
-      "isLocked": false,
-      "linkedName": "Ring 5"
+      "isLocked": true,
+      "linkedName": "Wing Shot (Amp Side)"
     }
   ],
   "rotationTargets": [],
@@ -33,19 +33,19 @@
   "eventMarkers": [],
   "globalConstraints": {
     "maxVelocity": 4.0,
-    "maxAcceleration": 4.0,
+    "maxAcceleration": 2.0,
     "maxAngularVelocity": 360.0,
     "maxAngularAcceleration": 360.0
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 20.0,
-    "rotateFast": true
+    "rotation": -10.759999999999991,
+    "rotateFast": false
   },
   "reversed": false,
-  "folder": "Starts at Wing Shot",
+  "folder": "4 Piece Amp Side",
   "previewStartingState": {
-    "rotation": 0,
+    "rotation": 18.98,
     "velocity": 0
   },
   "useDefaultConstraints": true

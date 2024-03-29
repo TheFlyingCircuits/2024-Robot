@@ -3,13 +3,13 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 8.62,
-        "y": 0.9
+        "x": 8.53,
+        "y": 0.86
       },
       "prevControl": null,
       "nextControl": {
-        "x": 9.331698316256322,
-        "y": 1.1366125665257774
+        "x": 9.239224122038067,
+        "y": 1.1039285647875903
       },
       "isLocked": true,
       "linkedName": "Ring 8 Pickup (From Starting Line)"
@@ -20,8 +20,8 @@
         "y": 1.59
       },
       "prevControl": {
-        "x": 9.998301683743678,
-        "y": 1.3533874334742229
+        "x": 10.000775877961935,
+        "y": 1.34607143521241
       },
       "nextControl": null,
       "isLocked": true,
@@ -33,19 +33,19 @@
   "eventMarkers": [],
   "globalConstraints": {
     "maxVelocity": 4.0,
-    "maxAcceleration": 4.0,
+    "maxAcceleration": 2.0,
     "maxAngularVelocity": 360.0,
     "maxAngularAcceleration": 360.0
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 33.97,
+    "rotation": 35.04,
     "rotateFast": false
   },
   "reversed": false,
-  "folder": "Starts at Midline Rings",
+  "folder": "4 Piece Source Side",
   "previewStartingState": {
-    "rotation": 22.409999999999997,
+    "rotation": 22.41,
     "velocity": 0
   },
   "useDefaultConstraints": true

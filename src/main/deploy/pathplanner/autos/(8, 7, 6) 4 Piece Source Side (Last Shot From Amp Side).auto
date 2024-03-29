@@ -28,7 +28,77 @@
                     {
                       "type": "named",
                       "data": {
-                        "name": "trackNote"
+                        "name": "intakeNote"
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "Starting Line to Ring 8"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "trackNote"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "race",
+          "data": {
+            "commands": [
+              {
+                "type": "parallel",
+                "data": {
+                  "commands": [
+                    {
+                      "type": "named",
+                      "data": {
+                        "name": "indexNote"
+                      }
+                    },
+                    {
+                      "type": "path",
+                      "data": {
+                        "pathName": "Ring 8 to Wing Shot"
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "prepShot"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "shootFromAnywhere"
+          }
+        },
+        {
+          "type": "deadline",
+          "data": {
+            "commands": [
+              {
+                "type": "sequential",
+                "data": {
+                  "commands": [
+                    {
+                      "type": "wait",
+                      "data": {
+                        "waitTime": 1.5
                       }
                     },
                     {
@@ -43,7 +113,13 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "Starting Line to Ring 4"
+                  "pathName": "Wing Shot to Ring 7"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "trackNote"
                 }
               }
             ]
@@ -58,15 +134,15 @@
                 "data": {
                   "commands": [
                     {
-                      "type": "named",
+                      "type": "path",
                       "data": {
-                        "name": "indexNote"
+                        "pathName": "Ring 7 to Wing Shot"
                       }
                     },
                     {
-                      "type": "path",
+                      "type": "named",
                       "data": {
-                        "pathName": "Ring 4 to Amp Side Wing Shot"
+                        "name": "indexNote"
                       }
                     }
                   ]
@@ -92,78 +168,28 @@
           "data": {
             "commands": [
               {
-                "type": "named",
-                "data": {
-                  "name": "intakeNote"
-                }
-              },
-              {
-                "type": "path",
-                "data": {
-                  "pathName": "Ring 2 to Ring 5"
-                }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "trackNote"
-                }
-              }
-            ]
-          }
-        },
-        {
-          "type": "race",
-          "data": {
-            "commands": [
-              {
-                "type": "parallel",
+                "type": "sequential",
                 "data": {
                   "commands": [
                     {
-                      "type": "named",
+                      "type": "wait",
                       "data": {
-                        "name": "indexNote"
+                        "waitTime": 1.0
                       }
                     },
                     {
-                      "type": "path",
+                      "type": "named",
                       "data": {
-                        "pathName": "Ring 5 to Amp Side Wing Shot"
+                        "name": "intakeNote"
                       }
                     }
                   ]
                 }
               },
               {
-                "type": "named",
-                "data": {
-                  "name": "prepShot"
-                }
-              }
-            ]
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "shootFromAnywhere"
-          }
-        },
-        {
-          "type": "deadline",
-          "data": {
-            "commands": [
-              {
-                "type": "named",
-                "data": {
-                  "name": "intakeNote"
-                }
-              },
-              {
                 "type": "path",
                 "data": {
-                  "pathName": "Amp Side Wing Shot to Ring 6"
+                  "pathName": "Wing Shot to Ring 6 (Source Side)"
                 }
               },
               {
@@ -186,28 +212,21 @@
           "data": {
             "commands": [
               {
-                "type": "parallel",
+                "type": "path",
                 "data": {
-                  "commands": [
-                    {
-                      "type": "named",
-                      "data": {
-                        "name": "indexNote"
-                      }
-                    },
-                    {
-                      "type": "path",
-                      "data": {
-                        "pathName": "Ring 6 to Stage Shot (After Source Side Pickup)"
-                      }
-                    }
-                  ]
+                  "pathName": "Ring 6 to Wing Shot (Amp Side)"
                 }
               },
               {
                 "type": "named",
                 "data": {
                   "name": "resetShooter"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "indexNote"
                 }
               }
             ]

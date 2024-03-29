@@ -3,16 +3,16 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 13.894413942674039,
-        "y": 5.545221859674489
+        "x": 13.825345342998377,
+        "y": 5.555088802485298
       },
       "prevControl": null,
       "nextControl": {
-        "x": 15.268869306969382,
-        "y": 5.816718118051622
+        "x": 15.19980070729372,
+        "y": 5.826585060862431
       },
-      "isLocked": false,
-      "linkedName": null
+      "isLocked": true,
+      "linkedName": "Ring 2 Pickup (Slow)"
     },
     {
       "anchor": {
@@ -24,8 +24,8 @@
         "y": 6.060475609756241
       },
       "nextControl": null,
-      "isLocked": false,
-      "linkedName": null
+      "isLocked": true,
+      "linkedName": "Ring 1 Pickup (Slow)"
     }
   ],
   "rotationTargets": [],
@@ -43,7 +43,7 @@
     "rotateFast": true
   },
   "reversed": false,
-  "folder": "Starts at Frontline Rings",
+  "folder": "Buckeye Paths",
   "previewStartingState": {
     "rotation": 0,
     "velocity": 0

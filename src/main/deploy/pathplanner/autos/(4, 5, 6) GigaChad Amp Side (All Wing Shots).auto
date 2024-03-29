@@ -1,6 +1,12 @@
 {
   "version": 1.0,
-  "startingPose": null,
+  "startingPose": {
+    "position": {
+      "x": 15.309581973083187,
+      "y": 7.039325432570105
+    },
+    "rotation": -60.94539590092283
+  },
   "command": {
     "type": "sequential",
     "data": {
@@ -28,6 +34,12 @@
                     {
                       "type": "named",
                       "data": {
+                        "name": "trackNote"
+                      }
+                    },
+                    {
+                      "type": "named",
+                      "data": {
                         "name": "intakeNote"
                       }
                     }
@@ -35,26 +47,32 @@
                 }
               },
               {
-                "type": "path",
+                "type": "named",
                 "data": {
-                  "pathName": "Starting Line to Ring 8"
+                  "name": "resetShooter"
                 }
               },
               {
-                "type": "named",
+                "type": "path",
                 "data": {
-                  "name": "trackNote"
+                  "pathName": "Starting Line to Ring 4"
                 }
               }
             ]
           }
         },
         {
-          "type": "race",
+          "type": "deadline",
           "data": {
             "commands": [
               {
-                "type": "parallel",
+                "type": "path",
+                "data": {
+                  "pathName": "Ring 4 to Wing Shot"
+                }
+              },
+              {
+                "type": "sequential",
                 "data": {
                   "commands": [
                     {
@@ -64,18 +82,12 @@
                       }
                     },
                     {
-                      "type": "path",
+                      "type": "named",
                       "data": {
-                        "pathName": "Ring 8 to Almost Wing Shot"
+                        "name": "prepShot"
                       }
                     }
                   ]
-                }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "prepShot"
                 }
               }
             ]
@@ -98,7 +110,13 @@
                     {
                       "type": "wait",
                       "data": {
-                        "waitTime": 1.5
+                        "waitTime": 0.5
+                      }
+                    },
+                    {
+                      "type": "named",
+                      "data": {
+                        "name": "trackNote"
                       }
                     },
                     {
@@ -111,47 +129,47 @@
                 }
               },
               {
-                "type": "path",
+                "type": "named",
                 "data": {
-                  "pathName": "Almost Wing Shot to Ring 7"
+                  "name": "resetShooter"
                 }
               },
               {
-                "type": "named",
+                "type": "path",
                 "data": {
-                  "name": "trackNote"
+                  "pathName": "Wing Shot to Ring 5"
                 }
               }
             ]
           }
         },
         {
-          "type": "race",
+          "type": "deadline",
           "data": {
             "commands": [
               {
-                "type": "parallel",
+                "type": "path",
+                "data": {
+                  "pathName": "Ring 5 to Wing Shot"
+                }
+              },
+              {
+                "type": "sequential",
                 "data": {
                   "commands": [
-                    {
-                      "type": "path",
-                      "data": {
-                        "pathName": "Ring 7 to Almost Wing Shot"
-                      }
-                    },
                     {
                       "type": "named",
                       "data": {
                         "name": "indexNote"
                       }
+                    },
+                    {
+                      "type": "named",
+                      "data": {
+                        "name": "prepShot"
+                      }
                     }
                   ]
-                }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "prepShot"
                 }
               }
             ]
@@ -174,7 +192,13 @@
                     {
                       "type": "wait",
                       "data": {
-                        "waitTime": 1.0
+                        "waitTime": 0.5
+                      }
+                    },
+                    {
+                      "type": "named",
+                      "data": {
+                        "name": "trackNote"
                       }
                     },
                     {
@@ -189,13 +213,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "Almost Wing Shot to Ring 6 (Source Side)"
-                }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "trackNote"
+                  "pathName": "Wing Shot to Ring 6 (Amp Side)"
                 }
               },
               {
@@ -214,19 +232,26 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "Ring 6 to Stage Shot (After Source Side Pickup)"
+                  "pathName": "Ring 6 to Wing Shot (Amp Side)"
                 }
               },
               {
-                "type": "named",
+                "type": "sequential",
                 "data": {
-                  "name": "resetShooter"
-                }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "indexNote"
+                  "commands": [
+                    {
+                      "type": "named",
+                      "data": {
+                        "name": "indexNote"
+                      }
+                    },
+                    {
+                      "type": "named",
+                      "data": {
+                        "name": "prepShot"
+                      }
+                    }
+                  ]
                 }
               }
             ]

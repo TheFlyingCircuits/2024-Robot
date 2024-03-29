@@ -12,7 +12,7 @@
         "y": 1.0195154991019844
       },
       "isLocked": false,
-      "linkedName": "Ring 8"
+      "linkedName": null
     },
     {
       "anchor": {
@@ -33,7 +33,7 @@
   "eventMarkers": [],
   "globalConstraints": {
     "maxVelocity": 4.0,
-    "maxAcceleration": 4.0,
+    "maxAcceleration": 2.0,
     "maxAngularVelocity": 360.0,
     "maxAngularAcceleration": 360.0
   },
@@ -43,7 +43,7 @@
     "rotateFast": false
   },
   "reversed": false,
-  "folder": "Starts at Midline Rings",
+  "folder": "Pittsburgh Paths",
   "previewStartingState": {
     "rotation": 0,
     "velocity": 0
