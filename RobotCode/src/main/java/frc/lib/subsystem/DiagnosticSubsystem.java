@@ -110,8 +110,8 @@ public abstract class DiagnosticSubsystem extends SubsystemBase {
             this.faults.add(fault);
         }
     }
-    protected void addFault(String message, boolean warning) {
-        this.addFault(new Fault(message, warning));
+    protected void addFault(String message, boolean isJustWarning) {
+        this.addFault(new Fault(message, isJustWarning));
     }
 
     public List<Fault> getFaults() {

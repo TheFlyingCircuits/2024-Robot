@@ -54,12 +54,22 @@ public class RobotContainer {
     public final HumanDriver charlie = new HumanDriver(0);
 
     public final CommandXboxController ben = new CommandXboxController(1);
+    // TODO: make everything static but not final or do this (which seems disgusting):
+    // public final static Shooter shooter = new Shooter(RobotBase.isReal() ? new ShooterIOKraken() : new ShooterIOSim());
+    // public final Drivetrain drivetrain;
+    // public final Arm arm = new Arm(RobotBase.isReal() ? new ArmIONeo() : new ArmIOSim());
+    // public final Intake intake = new Intake();;
+    // public final static Indexer indexer = new Indexer();
+    // public final Climb climb = new Climb();
+    // public final LEDs leds = new LEDs();
+    // public final AutoDiagnose autoDiagnose = new AutoDiagnose();
 
-    public final Shooter shooter;
+
+    public static Shooter shooter;
     public final Drivetrain drivetrain;
     public final Arm arm;
     public final Intake intake;
-    public final Indexer indexer;
+    public static Indexer indexer;
     public final Climb climb;
     public final LEDs leds;
     public final AutoDiagnose autoDiagnose;
@@ -275,6 +285,14 @@ public class RobotContainer {
                .alongWith(new ScheduleCommand(leds.playFireNoteAnimationCommand()));
     }
 
+
+    public static Command autoDiagnoseAllSubsystemsCommand() {
+        return Commands.sequence(
+            indexer.autoDiagnoseCommand(),
+            shooter.autoDiagnoseCommand()
+
+        );
+    }
 
     private void realBindings() {
         CommandXboxController controller = charlie.getXboxController();

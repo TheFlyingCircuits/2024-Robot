@@ -5,10 +5,12 @@ import org.littletonrobotics.junction.Logger;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.lib.subsystem.DiagnosticSubsystem;
 import frc.robot.Constants.ShooterConstants;
 
-public class Shooter extends SubsystemBase {
+public class Shooter extends DiagnosticSubsystem {
     private ShooterIO io;
     private ShooterIOInputsAutoLogged inputs;
 
@@ -131,5 +133,42 @@ public class Shooter extends SubsystemBase {
         Logger.recordOutput("shooter/rightFlywheelsSetpoint", rightFlywheelsPID.getSetpoint());
         Logger.recordOutput("shooter/flywheelsAtSetpoints", flywheelsAtSetpoints());
 
+    }
+
+    @Override
+    public Command autoDiagnoseCommand() {
+
+        return Commands.sequence(
+            Commands.runOnce(() -> {
+                io.setLeftMotorVolts(5.0);
+                io.setRightMotorVolts(5.0);
+            }, this),
+            Commands.waitSeconds(1.0),
+            Commands.runOnce(() -> {
+                if(Math.abs(inputs.leftFlywheelsMetersPerSecond/ShooterConstants.flywheelCircumferenceMeters) < 0.1) {
+                    addFault("[Auto Diagnose] Left flywheels not moving forward", false);
+                }
+                if(Math.abs(inputs.rightFlywheelsMetersPerSecond/ShooterConstants.flywheelCircumferenceMeters) < 0.1) {
+                    addFault("[Auto Diagnose] Right flywheels not moving forward", false);
+                }
+                io.setLeftMotorVolts(5.0);
+                io.setRightMotorVolts(5.0);
+            }, this),
+            Commands.waitSeconds(1.0),
+            Commands.runOnce(() -> {
+                if(Math.abs(inputs.leftFlywheelsMetersPerSecond/ShooterConstants.flywheelCircumferenceMeters) < 0.1) {
+                    addFault("[Auto Diagnose] Left flywheels not moving backward", false);
+                }
+                if(Math.abs(inputs.rightFlywheelsMetersPerSecond/ShooterConstants.flywheelCircumferenceMeters) < 0.1) {
+                    addFault("[Auto Diagnose] Right flywheels not moving backward", false);
+                }
+                io.setLeftMotorVolts(0.0);
+                io.setRightMotorVolts(0.0);
+            }, this).until(() -> getFaults().size() > 0)
+            .andThen(() -> {
+                io.setLeftMotorVolts(0.0);
+                io.setRightMotorVolts(0.0);
+            })
+        );
     };
 }

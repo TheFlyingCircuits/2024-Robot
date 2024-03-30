@@ -10,11 +10,12 @@ import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.Commands;
+import frc.lib.subsystem.DiagnosticSubsystem;
 import frc.robot.Constants.ShooterConstants;
 import frc.robot.VendorWrappers.Kraken;
 
-public class Indexer extends SubsystemBase {
+public class Indexer extends DiagnosticSubsystem {
 
     private Kraken indexerMotor;
     private DigitalInput indexerProximitySwitch;
@@ -98,6 +99,29 @@ public class Indexer extends SubsystemBase {
         Logger.recordOutput("indexer/indexerRPS", indexerMotor.getVelocity().getValueAsDouble());
         Logger.recordOutput("indexer/setpointRPS", indexerPID.getSetpoint()); 
         Logger.recordOutput("indexer/supplyCurrent", indexerMotor.getSupplyCurrent().getValueAsDouble());
-    };
+    }
 
+    @Override
+    public Command autoDiagnoseCommand() {
+
+        return Commands.sequence(
+            Commands.runOnce(() -> {
+                indexerMotor.set(1.0); 
+            }, this),
+            Commands.waitSeconds(1.0),
+            Commands.runOnce(() -> {
+                if(Math.abs(indexerMotor.getVelocity().getValueAsDouble()) < 0.1) {
+                    addFault("[Auto Diagnose] Indexer not moving forward", false);
+                }
+                indexerMotor.set(-1.0);
+            }, this),
+            Commands.waitSeconds(1.0),
+            Commands.runOnce(() -> {
+                if(Math.abs(indexerMotor.getVelocity().getValueAsDouble()) < 0.1) {
+                    addFault("[Auto Diagnose] Indexer not moving backward", false);
+                }
+                indexerMotor.set(0.0);
+            }, this)).until(() -> getFaults().size() > 0)
+            .andThen(() -> indexerMotor.set(0));
+    };
 }
