@@ -7,9 +7,9 @@ package frc.robot;
 import frc.robot.Constants.ArmConstants;
 import frc.robot.Constants.FieldElement;
 import frc.robot.commands.AimEverythingAtAmp;
-import frc.robot.commands.NoteTrackingIndexNote;
 import frc.robot.commands.PrepShot;
 import frc.robot.commands.TrapRoutine;
+import frc.robot.subsystems.AutoDiagnose;
 import frc.robot.subsystems.HumanDriver;
 import frc.robot.subsystems.arm.Arm;
 import frc.robot.subsystems.arm.ArmIONeo;
@@ -34,14 +34,11 @@ import edu.wpi.first.wpilibj.util.Color;
 import com.pathplanner.lib.auto.NamedCommands;
 
 import edu.wpi.first.wpilibj.RobotBase;
-import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ScheduleCommand;
-import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -65,6 +62,7 @@ public class RobotContainer {
     public final Indexer indexer;
     public final Climb climb;
     public final LEDs leds;
+    public final AutoDiagnose autoDiagnose;
 
     private Trigger ringJustEnteredIntake;
     private Trigger inSpeakerShotRange;
@@ -118,6 +116,7 @@ public class RobotContainer {
         indexer = new Indexer();
         climb = new Climb();
         leds = new LEDs();
+        autoDiagnose = new AutoDiagnose();
         
         
         drivetrain.setDefaultCommand(drivetrain.run(() -> {drivetrain.fieldOrientedDrive(charlie.getRequestedFieldOrientedVelocity(), true);}));
