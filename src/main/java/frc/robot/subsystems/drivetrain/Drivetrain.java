@@ -24,7 +24,9 @@ import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
@@ -564,5 +566,8 @@ public class Drivetrain extends SubsystemBase {
         Logger.recordOutput("drivetrain/isAligned", isAligned());
         Logger.recordOutput("drivetrain/isTrackingNote", isTrackingNote);
         
+        Translation3d noteRelativeToRobot = visionInputs.nearestNote;
+        Pose2d noteRelativeToField = getPoseMeters().plus(new Transform2d(noteRelativeToRobot.toTranslation2d(), new Rotation2d()));
+        Logger.recordOutput("drivetrain/seenNote", noteRelativeToField);
     }
 }

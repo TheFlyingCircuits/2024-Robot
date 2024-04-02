@@ -276,8 +276,8 @@ public final class Constants {
         );
 
         public final static Transform3d robotToNoteCamera = new Transform3d(
-            new Translation3d(Units.inchesToMeters(-(10. + 5./16.)), 0, Units.inchesToMeters(15.25)),
-            new Rotation3d(0, Math.toRadians(25), Math.toRadians(180))
+            new Translation3d(Units.inchesToMeters(-11.25), 0, Units.inchesToMeters(15.25)),
+            new Rotation3d(0, Math.toRadians(23), Math.toRadians(180))
         );
     }
 

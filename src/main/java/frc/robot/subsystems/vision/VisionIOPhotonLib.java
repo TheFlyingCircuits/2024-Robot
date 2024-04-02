@@ -124,6 +124,23 @@ public class VisionIOPhotonLib implements VisionIO {
         return Optional.of(output);
     }
 
+    public Translation3d cameraCoordsFromRobotCoords(Translation3d robotCoords) {
+        Transform3d robotToCam = VisionConstants.robotToNoteCamera.inverse(); // inverse works, need to think about why.
+        return robotCoords.rotateBy(robotToCam.getRotation()).plus(robotToCam.getTranslation());
+    }
+
+    public Translation3d robotCoordsFromCameraCoords(Translation3d camCoords) {
+        Transform3d camToRobot = VisionConstants.robotToNoteCamera;
+        return camCoords.rotateBy(camToRobot.getRotation()).plus(camToRobot.getTranslation());
+    }
+
+    public double dot(Translation3d a, Translation3d b) {
+        double x = a.getX() * b.getX();
+        double y = a.getY() * b.getY();
+        double z = a.getZ() * b.getZ();
+        return x + y + z;
+    }
+
     @Override
     public void updateInputs(VisionIOInputs inputs) {
         inputs.visionMeasurements = new ArrayList<VisionMeasurement>();
@@ -165,43 +182,62 @@ public class VisionIOPhotonLib implements VisionIO {
                 Math.toRadians(notePitchDegrees),
                 Math.toRadians(nearestNoteYawDegrees));
 
-            //unit vector that points at the note, by rotating the unit vector in the camera frame by the rotation
-            Vector<N3> unitTowardsNote = new Translation3d(1, 0, 0)
-                .rotateBy(cameraToNoteRotation).toVector();
 
-            //height of the camera above the note
-            double h = VisionConstants.robotToNoteCamera.getZ();
+            Translation3d unitTowardsNote = new Translation3d(1, 0, 0)
+                                          .rotateBy(cameraToNoteRotation);
 
-            //pitch of the camera (positive is counterclockwise about the robot y axis)
-            double cameraPitchRadians = VisionConstants.robotToNoteCamera.getRotation().getY();
+            // find floor normal
+            Translation3d origin = new Translation3d();
+            Translation3d floorNormalRobotCoords = new Translation3d(0, 0, 1);
+            Translation3d floorNormalCamCoords = cameraCoordsFromRobotCoords(floorNormalRobotCoords).minus(cameraCoordsFromRobotCoords(origin));
 
-            //distance from the camera to the floor (pointed straight out of the camera)
-            double d = h/Math.sin(cameraPitchRadians);
+            Translation3d floorAnchorCamCoords = cameraCoordsFromRobotCoords(origin);
 
-            //vector pointing out of the camera and ending on the floor
-            Vector<N3> anchorPoint = VecBuilder.fill(d, 0, 0);
+            double t = dot(floorAnchorCamCoords , floorNormalCamCoords) / dot(unitTowardsNote , floorNormalCamCoords);
+
+            Translation3d noteInCamCoords = unitTowardsNote.times(t);
+
+            inputs.nearestNote = robotCoordsFromCameraCoords(noteInCamCoords);
 
 
-            //normal vector of the floor in the camera frame, done by rotating
-            //a negative unit x vector by the camera's pitch
-            Vector<N3> floorNormal = 
-                new Translation3d(-1, 0, 0)
-                    .rotateBy(
-                        new Rotation3d(0, Math.PI/2-cameraPitchRadians, 0)).toVector();
+            // //unit vector that points at the note, by rotating the unit vector in the camera frame by the rotation
+            // Vector<N3> unitTowardsNote = new Translation3d(1, 0, 0)
+            //     .rotateBy(cameraToNoteRotation).toVector();
+
+
+            // //height of the camera above the note
+            // double h = VisionConstants.robotToNoteCamera.getZ();
+
+            // //pitch of the camera (positive is counterclockwise about the robot y axis)
+            // double cameraPitchRadians = VisionConstants.robotToNoteCamera.getRotation().getY();
+
+            // //distance from the camera to the floor (pointed straight out of the camera)
+            // double d = h/Math.sin(cameraPitchRadians);
+
+            // //vector pointing out of the camera and ending on the floor
+            // Vector<N3> anchorPoint = VecBuilder.fill(d, 0, 0);
+
+
+            // //normal vector of the floor in the camera frame, done by rotating
+            // //a negative unit x vector by the camera's pitch
+            // Vector<N3> floorNormal = 
+            //     new Translation3d(-1, 0, 0)
+            //         .rotateBy(
+            //             new Rotation3d(0, Math.PI/2-cameraPitchRadians, 0)).toVector();
                         
-            //distance from the camera to the note, in full 3d
-            double t = anchorPoint.dot(floorNormal)/unitTowardsNote.dot(floorNormal);
+            // //distance from the camera to the note, in full 3d
+            // double t = anchorPoint.dot(floorNormal)/unitTowardsNote.dot(floorNormal);
 
-            Translation3d cameraToNoteTranslation = new Translation3d(unitTowardsNote.times(t));
+            // Translation3d cameraToNoteTranslation = new Translation3d(unitTowardsNote.times(t));
 
-            //transform to bring a vector in the note camera frame into the robot frame
-            Transform3d noteCameraToRobot = VisionConstants.robotToNoteCamera.inverse();
+            // //transform to bring a vector in the note camera frame into the robot frame
+            // Transform3d noteCameraToRobot = VisionConstants.robotToNoteCamera.inverse();
 
-            //position of the note relative to the robot
-            inputs.nearestNote = cameraToNoteTranslation.rotateBy(noteCameraToRobot.getRotation())
-                .plus(noteCameraToRobot.getTranslation());
+            // //position of the note relative to the robot
+            // inputs.nearestNote = cameraToNoteTranslation.rotateBy(noteCameraToRobot.getRotation())
+            //     .plus(noteCameraToRobot.getTranslation());
 
-            //inputs.nearestNote = (new Pose3d(cameraToNoteTranslation, new Rotation3d())).transformBy(noteCameraToRobot).getTranslation();
+            // //inputs.nearestNote = (new Pose3d(cameraToNoteTranslation, new Rotation3d())).transformBy(noteCameraToRobot).getTranslation();
         }
     };
 }
