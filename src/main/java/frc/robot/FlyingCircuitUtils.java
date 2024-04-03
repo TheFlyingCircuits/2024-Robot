@@ -6,7 +6,9 @@ import java.util.Optional;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import frc.robot.Constants.FieldElement;
@@ -83,5 +85,15 @@ public class FlyingCircuitUtils {
                                   FlyingCircuitUtils.getLocationOfFieldElement(FieldElement.CENTER_STAGE)};
 
         return yourPoseOnTheField.nearest(Arrays.asList(trapLocations));
+    }
+
+    public static Translation3d noteCameraCoordsFromRobotCoords(Translation3d robotCoords) {
+        Transform3d robotAxesFromCamPerspective = VisionConstants.robotToNoteCamera.inverse();
+        return robotCoords.rotateBy(robotAxesFromCamPerspective.getRotation()).plus(robotAxesFromCamPerspective.getTranslation());
+    }
+
+    public static Translation3d robotCoordsFromNoteCameraCoords(Translation3d noteCamCoords) {
+        Transform3d camAxesFromRobotPerspective = VisionConstants.robotToNoteCamera;
+        return noteCamCoords.rotateBy(camAxesFromRobotPerspective.getRotation()).plus(camAxesFromRobotPerspective.getTranslation());
     }
 }

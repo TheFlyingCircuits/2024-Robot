@@ -23,7 +23,9 @@ public interface GyroIO {
          */
         public Rotation2d robotYawRotation2dPerSecond = new Rotation2d(0.0);
 
-        
+        public double robotAccelX = 0;
+        public double robotAccelY = 0;
+        public double robotAccelZ = 0;
 
         //temporary values, may be used for climbing
         public Rotation2d robotPitchRotation2d = new Rotation2d(0.0);

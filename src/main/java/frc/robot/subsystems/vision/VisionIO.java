@@ -3,6 +3,7 @@ package frc.robot.subsystems.vision;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import org.littletonrobotics.junction.AutoLog;
 import org.littletonrobotics.junction.LogTable;
@@ -71,18 +72,13 @@ public interface VisionIO {
          */
         public ArrayList<VisionMeasurement> visionMeasurements = new ArrayList<VisionMeasurement>();
 
-        public Translation3d nearestNote = new Translation3d();
-
         /**
-         * Whether or not the intake camera currently sees a note to target.
+         * The 3D coordinates of the note in the robot coordinate frame.
+         * Positive X is forward
+         * Positive Y is left
+         * Positive Z is up
          */
-        public boolean intakeSeesNote = false;
-        
-        /**
-         * Yaw of the center point of the nearest note RELATIVE TO THE CAMERA detected on the intake camera.
-         * This value is positive to the left, and has maximum value of the camera's FOV/2.
-         */
-        public double nearestNoteYawDegrees = 0.;
+        public Optional<Translation3d> nearestNoteRobotFrame = Optional.empty();
 
     }
 
@@ -108,9 +104,10 @@ public interface VisionIO {
             }
 
 
-            table.put("IntakeSeesNote", intakeSeesNote);
-            table.put("NearestNoteYawDegrees", nearestNoteYawDegrees);
-            table.put("NearestNote", nearestNote);
+            if (nearestNoteRobotFrame.isPresent())
+                table.put("NearestNote", nearestNoteRobotFrame.get());
+            else 
+                table.put("NearestNote", new Translation3d());
         }
 
         public void fromLog(LogTable table) {
@@ -134,9 +131,15 @@ public interface VisionIO {
                 meas.stdDevs = VecBuilder.fill(stdDevX, stdDevY, stdDevRot);
             }
 
-
-            intakeSeesNote = table.get("IntakeSeesNote", intakeSeesNote);
-            nearestNoteYawDegrees = table.get("NearestNoteYawDegrees", nearestNoteYawDegrees);
+            //if there's no note seen, the table will return a default translation3d
+            //if that's the case, set the optional to empty.
+            if (table.get("NearestNote", new Translation3d()).equals(new Translation3d())) {
+                nearestNoteRobotFrame = Optional.of(table.get("NearestNote", new Translation3d()));
+            }
+            else {
+                nearestNoteRobotFrame = Optional.empty();
+            }
+            
         }
     }
 

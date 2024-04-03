@@ -420,20 +420,26 @@ public class Drivetrain extends SubsystemBase {
 
 
     public boolean intakeSeesNote() {
-        return visionInputs.intakeSeesNote;
+        return visionInputs.nearestNoteRobotFrame.isPresent();
     }
 
     public boolean shouldTrackNote() {
-        return visionInputs.intakeSeesNote && isTrackingNote;
+        return intakeSeesNote() && isTrackingNote;
     }
 
     /**
      * Gets the angle that the robot needs to aim at in order to intake the nearest ring
      * seen on the intake camera. This is used for the rotation override during auto.
+     * This rotation2d is empty if you can't see a note.
      */
     public Rotation2d getFieldRelativeRotationToNote() {
-        Rotation2d currentAngle = getPoseMeters().getRotation();
-        return currentAngle.plus(Rotation2d.fromDegrees(visionInputs.nearestNoteYawDegrees));
+        if (visionInputs.nearestNoteRobotFrame.isEmpty())
+            return new Rotation2d();
+
+        Rotation2d robotAngle = getPoseMeters().getRotation();
+        Rotation2d noteAngleToRobot = visionInputs.nearestNoteRobotFrame.get().toTranslation2d().getAngle();
+
+        return robotAngle.plus(noteAngleToRobot);
     }
 
 
@@ -443,10 +449,10 @@ public class Drivetrain extends SubsystemBase {
             Logger.recordOutput("PathPlanner/rotationTargetOverride", angle);
             return Optional.of(angle);
         }
-        if (isTrackingNote && visionInputs.intakeSeesNote) {
+        if (isTrackingNote && intakeSeesNote()) {
             Rotation2d angle = getFieldRelativeRotationToNote();
             Logger.recordOutput("PathPlanner/rotationTargetOverride", angle);
-            return Optional.of(angle);
+            return Optional.empty();//Optional.of(angle);
         }
         else {
             Logger.recordOutput("PathPlanner/rotationTargetOverride", new Rotation2d(0));
@@ -565,9 +571,17 @@ public class Drivetrain extends SubsystemBase {
         Logger.recordOutput("drivetrain/anglePIDSetpoint", Rotation2d.fromDegrees(angleController.getSetpoint()));
         Logger.recordOutput("drivetrain/isAligned", isAligned());
         Logger.recordOutput("drivetrain/isTrackingNote", isTrackingNote);
-        
-        Translation3d noteRelativeToRobot = visionInputs.nearestNote;
-        Pose2d noteRelativeToField = getPoseMeters().plus(new Transform2d(noteRelativeToRobot.toTranslation2d(), new Rotation2d()));
-        Logger.recordOutput("drivetrain/seenNote", noteRelativeToField);
+        Logger.recordOutput("drivetrain/fieldRelativeRotationToNote", getFieldRelativeRotationToNote());
+
+
+        // Note tracking visualization
+        if (visionInputs.nearestNoteRobotFrame.isPresent()) {
+            Translation2d noteRelativeToRobot = visionInputs.nearestNoteRobotFrame.get().toTranslation2d();
+            Pose2d noteRelativeToField = getPoseMeters().plus(new Transform2d(noteRelativeToRobot, new Rotation2d()));
+            Logger.recordOutput("drivetrain/trackedNotePose", noteRelativeToField);
+        }
+        else {
+            Logger.recordOutput("drivetrain/trackedNotePose", getPoseMeters());
+        }
     }
 }
