@@ -96,17 +96,19 @@ public class Arm extends SubsystemBase {
     public void setDesiredDegrees(double targetAngleDegrees) {
         targetAngleDegrees = MathUtil.clamp(targetAngleDegrees, ArmConstants.armMinAngleDegrees, ArmConstants.armMaxAngleDegrees);
         
+
         //For continuous control
-        if (Math.abs(this.targetAngleDegrees - targetAngleDegrees) < 0.5) {
+        if (Math.abs(this.targetAngleDegrees - targetAngleDegrees) < 2) {
             // No need to generate a new profile if the requested
             // target is close to the current target. PID should get us
             // there on its own.
+            this.targetAngleDegrees = targetAngleDegrees;
             return;
         }
 
         initState = new TrapezoidProfile.State(inputs.armAngleDegrees, inputs.armVelocityDegreesPerSecond);
-        this.targetAngleDegrees = targetAngleDegrees;
         isMovingToTarget = true;
+        this.targetAngleDegrees = targetAngleDegrees;
         
         timer.restart();
     }

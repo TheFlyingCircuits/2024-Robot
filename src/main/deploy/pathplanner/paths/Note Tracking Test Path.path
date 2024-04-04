@@ -4,27 +4,27 @@
     {
       "anchor": {
         "x": 14.65,
-        "y": 6.28
+        "y": 7.72
       },
       "prevControl": null,
       "nextControl": {
-        "x": 13.65,
-        "y": 6.28
+        "x": 15.65,
+        "y": 7.72
       },
-      "isLocked": true,
-      "linkedName": "Starting Line (Amp Side)"
+      "isLocked": false,
+      "linkedName": "Starting Line (Between Ring 3 and Amp)"
     },
     {
       "anchor": {
-        "x": 8.65,
-        "y": 5.85
+        "x": 10.296231262933281,
+        "y": 7.4598028796628215
       },
       "prevControl": {
-        "x": 11.547777478867205,
-        "y": 6.626457135307562
+        "x": 9.296231262933281,
+        "y": 7.4598028796628215
       },
       "nextControl": null,
-      "isLocked": true,
+      "isLocked": false,
       "linkedName": null
     }
   ],
@@ -38,12 +38,12 @@
     "maxAngularAcceleration": 360.0
   },
   "goalEndState": {
-    "velocity": 0,
-    "rotation": 15.0,
-    "rotateFast": false
+    "velocity": 3.0,
+    "rotation": 0,
+    "rotateFast": true
   },
   "reversed": false,
-  "folder": "Unused (But Maybe Later)",
+  "folder": null,
   "previewStartingState": {
     "rotation": 0,
     "velocity": 0

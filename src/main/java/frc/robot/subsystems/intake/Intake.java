@@ -25,8 +25,10 @@ public class Intake extends SubsystemBase {
     private boolean ringJustEnteredIntake = false;
     private Timer sensorDebounceTimer = new Timer(); // helps prevent rapid repeated triggers of intake sensor
 
+    // Left and right is from Ronnie's perspective.
     private DigitalInput intakeProximitySwitchLeft;
     private DigitalInput intakeProximitySwitchRight;
+
     /**
      * Motor object that controls the four axles on the front of the intake. 
      * A positive voltage spins the axles to suck a note into the robot.
@@ -139,7 +141,9 @@ public class Intake extends SubsystemBase {
         // Record information for this iteration.
         // Proximity sensor pulls the digital input pin high by default,
         // and pulls it low when it detects an object.
-        intakeSensorTriggeredNow = (!intakeProximitySwitchLeft.get()) || (!intakeProximitySwitchRight.get());
+        boolean leftSensorTriggeredNow = (!intakeProximitySwitchLeft.get());
+        boolean rightSensorTriggeredNow = (!intakeProximitySwitchRight.get());
+        intakeSensorTriggeredNow = leftSensorTriggeredNow || rightSensorTriggeredNow;
 
         // Detect proximity sensor rising edges.
         // Debounce the signal to prevent rapid back to back triggers.
