@@ -17,14 +17,16 @@ import frc.robot.VendorWrappers.Kraken;
 public class Indexer extends SubsystemBase {
 
     private Kraken indexerMotor;
-    private DigitalInput indexerProximitySwitch;
+    private DigitalInput indexerProximitySwitchLeft;
+    private DigitalInput indexerProximitySwitchRight;
 
     private PIDController indexerPID;
     private SimpleMotorFeedforward indexerFeedforward;
 
     public Indexer() {
         indexerMotor = new Kraken(ShooterConstants.indexerMotorID, "CTRENetwork");
-        indexerProximitySwitch = new DigitalInput(ShooterConstants.indexerProximitySwitchID);
+        indexerProximitySwitchLeft = new DigitalInput(ShooterConstants.indexerProximitySwitchIDLeft);
+        indexerProximitySwitchRight = new DigitalInput(ShooterConstants.indexerProximitySwitchIDRight);
 
         indexerPID = new PIDController(
             ShooterConstants.kPIndexerVoltsPerRPS,
@@ -75,10 +77,10 @@ public class Indexer extends SubsystemBase {
     }
 
     /**
-     * Returns true if the proximity switch in the indexer detects a note present.
+     * Returns true if either of the proximity switches in the indexer detects a note present.
      */
     public boolean isNoteIndexed() {
-        return !indexerProximitySwitch.get();
+        return (!indexerProximitySwitchLeft.get()) || (!indexerProximitySwitchRight.get());
     }
 
     private void configMotor() {

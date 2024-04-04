@@ -44,7 +44,8 @@ public final class Constants {
 
         public final static int indexerMotorID = 4;
 
-        public static final int indexerProximitySwitchID = 1;
+        public static final int indexerProximitySwitchIDLeft = 1;
+            public static final int indexerProximitySwitchIDRight = 4;
 
         public static final double kPIndexerVoltsPerRPS = 0.04;
 
@@ -329,7 +330,8 @@ public final class Constants {
     public final static class IntakeConstants {
         public final static int frontIntakeMotorID = 4;
         public final static int backIntakeMotorID = 3;
-        public static final int intakeProximitySwitchID = 0;
+        public static final int intakeProximitySwitchIDLeft = 0;
+        public static final int intakeProximitySwitchIDRight = 3;
 
         
 
