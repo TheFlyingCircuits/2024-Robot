@@ -44,7 +44,8 @@ public final class Constants {
 
         public final static int indexerMotorID = 4;
 
-        public static final int indexerProximitySwitchID = 1;
+        public static final int indexerProximitySwitchIDLeft = 1;
+            public static final int indexerProximitySwitchIDRight = 4;
 
         public static final double kPIndexerVoltsPerRPS = 0.04;
 
@@ -202,7 +203,9 @@ public final class Constants {
         public final static double armMinAngleDegrees = -25.8;
 
         /**Maximum angle of the arm, in degrees. This value should be positive and greater than 90, as it is beyond the vertical. */
-        public final static double armMaxAngleDegrees = 129.; // old value was 137, has to be 129 to pass inspection.
+        // original value 137, changed to 129 for inspection.
+        // As of 4/3/2024, now has to be 122 due to new black banebot wheels for hardstop
+        public final static double armMaxAngleDegrees = 122.0;  
 
         public final static double armMaxVelDegreesPerSecond = 360.;
 
@@ -266,8 +269,8 @@ public final class Constants {
         public final static AprilTagFieldLayout aprilTagFieldLayout = AprilTagFields.k2024Crescendo.loadAprilTagLayoutField();
     
         public final static Transform3d robotToShooterCamera = new Transform3d(
-            new Translation3d(Units.inchesToMeters(8), 0, Units.inchesToMeters(11.5-0.75)), // 11.5 inches off the ground, and 8 inches forward from the center of the robot
-            new Rotation3d(0, Math.toRadians(-26), 0) // tilted up 28 degrees to look at the tags.
+            new Translation3d(Units.inchesToMeters(10.25), 0, Units.inchesToMeters(9.5)), // 11.5 inches off the ground, and 8 inches forward from the center of the robot
+            new Rotation3d(0, Math.toRadians(-22), 0)
         );
 
         public final static Transform3d robotToTrapCamera = new Transform3d(
@@ -276,8 +279,8 @@ public final class Constants {
         );
 
         public final static Transform3d robotToNoteCamera = new Transform3d(
-            new Translation3d(Units.inchesToMeters(-(10. + 5./16.)), 0, Units.inchesToMeters(15.25)),
-            new Rotation3d(0, Math.toRadians(25), Math.toRadians(180))
+            new Translation3d(Units.inchesToMeters(-11.25), 0, Units.inchesToMeters(15.25)),
+            new Rotation3d(0, Math.toRadians(24), Math.toRadians(180))
         );
     }
 
@@ -327,7 +330,8 @@ public final class Constants {
     public final static class IntakeConstants {
         public final static int frontIntakeMotorID = 4;
         public final static int backIntakeMotorID = 3;
-        public static final int intakeProximitySwitchID = 0;
+        public static final int intakeProximitySwitchIDLeft = 0;
+        public static final int intakeProximitySwitchIDRight = 3;
 
         
 

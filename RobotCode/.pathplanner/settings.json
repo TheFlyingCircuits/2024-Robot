@@ -17,8 +17,8 @@
     "Fancy",
     "Ambitious"
   ],
-  "defaultMaxVel": 4.0,
-  "defaultMaxAccel": 2.0,
+  "defaultMaxVel": 2.0,
+  "defaultMaxAccel": 1.0,
   "defaultMaxAngVel": 360.0,
   "defaultMaxAngAccel": 360.0,
   "maxModuleSpeed": 4.0

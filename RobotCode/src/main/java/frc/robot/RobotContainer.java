@@ -139,9 +139,9 @@ public class RobotContainer {
         
         NamedCommands.registerCommand("prepShot", prepAutoSpeakerShot());
         NamedCommands.registerCommand("shootFromAnywhere", speakerShot());
-        NamedCommands.registerCommand("waitIndexNote", indexNote().withTimeout(4).finallyDo(() -> {drivetrain.isTrackingNote = false;}));
-        NamedCommands.registerCommand("indexNote", indexNote().withTimeout(2).finallyDo(() -> {drivetrain.isTrackingNote = false;}));
-        NamedCommands.registerCommand("intakeNote", intakeNote().withTimeout(1.5).finallyDo(() -> {drivetrain.isTrackingNote = false;}));
+        NamedCommands.registerCommand("waitIndexNote", indexNote().withTimeout(40).finallyDo(() -> {drivetrain.isTrackingNote = false;}));
+        NamedCommands.registerCommand("indexNote", indexNote().withTimeout(20).finallyDo(() -> {drivetrain.isTrackingNote = false;}));
+        NamedCommands.registerCommand("intakeNote", intakeNote().withTimeout(10.5).finallyDo(() -> {drivetrain.isTrackingNote = false;}));
         NamedCommands.registerCommand("rapidFire", prepAutoSpeakerShot().alongWith(runIntake(true)));
         NamedCommands.registerCommand("trackNote", new InstantCommand(() -> {drivetrain.isTrackingNote = true;}));
         NamedCommands.registerCommand("resetShooter", resetShooter());
@@ -349,9 +349,9 @@ public class RobotContainer {
         controller.a().whileTrue(new TrapRoutine(charlie::getRequestedFieldOrientedVelocity, climb, arm, shooter, indexer, leds, drivetrain));
 
         /** MISC **/
-        controller.y().onTrue(new InstantCommand(() -> drivetrain.setPoseToVisionMeasurement()));
-        ben.y().onTrue(new InstantCommand(() -> drivetrain.setPoseToVisionMeasurement()));
-        //controller.y().onTrue(new InstantCommand(() -> drivetrain.setRobotFacingForward()));
+        // controller.y().onTrue(new InstantCommand(() -> drivetrain.setPoseToVisionMeasurement()));
+        // ben.y().onTrue(new InstantCommand(() -> drivetrain.setPoseToVisionMeasurement()));
+        controller.y().onTrue(new InstantCommand(() -> drivetrain.setRobotFacingForward()));
 
         controller.x().onTrue(new InstantCommand(() -> arm.setDisableSetpointChecking(false)).andThen(resetShooter()));
 
