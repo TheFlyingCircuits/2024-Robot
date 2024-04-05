@@ -116,7 +116,7 @@ public class Indexer extends DiagnosticSubsystem {
 
     @Override
     public Command autoDiagnoseCommand() {
-
+        // TODO: Determine proper speeds and tolerances
         return Commands.sequence(
                 Commands.runOnce(() -> {
                     this.setMotorRotationsPerSecond(50);
