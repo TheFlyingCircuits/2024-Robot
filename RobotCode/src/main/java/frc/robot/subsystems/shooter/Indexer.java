@@ -92,7 +92,9 @@ public class Indexer extends DiagnosticSubsystem {
      * note present.
      */
     public boolean isNoteIndexed() {
-        return (!indexerProximitySwitchLeft.get()) || (!indexerProximitySwitchRight.get());
+        boolean leftSensorSeesNote = !indexerProximitySwitchLeft.get();
+        boolean rightSensorSeesNote = !indexerProximitySwitchRight.get();
+        return leftSensorSeesNote || rightSensorSeesNote;
     }
 
     private void configMotor() {

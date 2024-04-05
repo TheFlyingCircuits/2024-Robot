@@ -12,13 +12,14 @@
     "5 Piece Center Side"
   ],
   "autoFolders": [
+    "Pittsburgh",
+    "Testing",
     "Less is More",
-    "Pit doesn't smell like one",
     "Fancy",
     "Ambitious"
   ],
-  "defaultMaxVel": 2.0,
-  "defaultMaxAccel": 1.0,
+  "defaultMaxVel": 4.0,
+  "defaultMaxAccel": 4.0,
   "defaultMaxAngVel": 360.0,
   "defaultMaxAngAccel": 360.0,
   "maxModuleSpeed": 4.0

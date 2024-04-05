@@ -139,13 +139,13 @@ public class RobotContainer {
         
         NamedCommands.registerCommand("prepShot", prepAutoSpeakerShot());
         NamedCommands.registerCommand("shootFromAnywhere", speakerShot());
-        NamedCommands.registerCommand("waitIndexNote", indexNote().withTimeout(40).finallyDo(() -> {drivetrain.isTrackingNote = false;}));
-        NamedCommands.registerCommand("indexNote", indexNote().withTimeout(20).finallyDo(() -> {drivetrain.isTrackingNote = false;}));
-        NamedCommands.registerCommand("intakeNote", intakeNote().withTimeout(10.5).finallyDo(() -> {drivetrain.isTrackingNote = false;}));
+        NamedCommands.registerCommand("waitIndexNote", indexNote().withTimeout(4).finallyDo(() -> {drivetrain.isTrackingNote = false;}));
+        NamedCommands.registerCommand("indexNote", indexNote().withTimeout(2).finallyDo(() -> {drivetrain.isTrackingNote = false;}));
+        NamedCommands.registerCommand("intakeNote", intakeNote().withTimeout(1.5).finallyDo(() -> {drivetrain.isTrackingNote = false;}));
         NamedCommands.registerCommand("rapidFire", prepAutoSpeakerShot().alongWith(runIntake(true)));
         NamedCommands.registerCommand("trackNote", new InstantCommand(() -> {drivetrain.isTrackingNote = true;}));
         NamedCommands.registerCommand("resetShooter", resetShooter());
-        NamedCommands.registerCommand("neverMissPickup", neverMissPickup());
+        NamedCommands.registerCommand("intakeTowardsNote", intakeTowardsNote());
 
 
         ringJustEnteredIntake = new Trigger(intake::ringJustEnteredIntake);
@@ -156,7 +156,7 @@ public class RobotContainer {
         realBindings();
     }
 
-    Command neverMissPickup() {
+    Command intakeTowardsNote() {
         return drivetrain.run(drivetrain::driveTowardsNote)
                .raceWith(intakeNote())
                .withTimeout(3.0);
@@ -300,7 +300,8 @@ public class RobotContainer {
         controller.rightTrigger()
             //.onTrue(intakeNote().raceWith(resetShooter()));
             //.whileTrue(new NoteTrackingIndexNote(intake, indexer, drivetrain, charlie::getRequestedFieldOrientedVelocity));
-            .onTrue(indexNote().raceWith(resetShooter())); // reset never ends, indexNote does.
+            .whileTrue(intakeTowardsNote());
+            //.onTrue(indexNote().raceWith(resetShooter())); // reset never ends, indexNote does.
     
         controller.leftTrigger().whileTrue(reverseIntake());
         
@@ -322,19 +323,6 @@ public class RobotContainer {
             
 
 
-
-        
-        // controller.rightBumper().onTrue(
-        //     new ConditionalCommand(
-        //         this.speakerShot(), 
-        //         this.lobShot(),
-        //         drivetrain::inSpeakerShotRange)
-        //     .andThen(new ScheduleCommand(this.resetShooter())));
-
-        //.onTrue(this.speakerShot().andThen(new ScheduleCommand(this.resetShooter())));
-        //.onTrue(this.lobShot().andThen(new ScheduleCommand(this.resetShooter())));
-        //.onTrue(prepAutoSpeakerShot().alongWith(runIntake()));
-
         controller.leftBumper()
             .onTrue(prepAmpShot())
             .onFalse(this.fireNote().andThen(new ScheduleCommand(this.resetShooter())));
@@ -345,7 +333,8 @@ public class RobotContainer {
         /** CLIMB **/
         
         controller.povUp().onTrue(climb.raiseHooksCommand());
-        controller.povDown().onTrue(climb.lowerHooksCommand().until(climb::climbArmsZero));
+        // controller.povDown().onTrue(climb.lowerHooksCommand().until((climb::climbArmsZero)));
+        controller.povDown().whileTrue(climb.lowerHooksCommand().until(climb::atQuickClimbSetpoint));
         controller.a().whileTrue(new TrapRoutine(charlie::getRequestedFieldOrientedVelocity, climb, arm, shooter, indexer, leds, drivetrain));
 
         /** MISC **/
@@ -355,10 +344,12 @@ public class RobotContainer {
 
         controller.x().onTrue(new InstantCommand(() -> arm.setDisableSetpointChecking(false)).andThen(resetShooter()));
 
+        controller.start().whileTrue(new MeasureWheelDiameter(drivetrain));
+
         /** Driver Feedback **/
         ringJustEnteredIntake.onTrue(charlie.rumbleController(0.25, 0.5)); // lol this happens even during auto
         ringJustEnteredIntake.onTrue(this.signalNoteInIntake().ignoringDisable(true));
         // TODO: prevent flash on reverse? Either condition with positive wheel speeds,
-        //       or no seperate scheudle command?
+        //       or no seperate schedule command?
     }
 }

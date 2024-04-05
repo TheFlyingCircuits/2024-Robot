@@ -36,7 +36,7 @@ public class ArmIONeo implements ArmIO {
         
         configMotors();
 
-        velocityFilter = LinearFilter.movingAverage(4);
+        velocityFilter = LinearFilter.movingAverage(8);
 
     }
 

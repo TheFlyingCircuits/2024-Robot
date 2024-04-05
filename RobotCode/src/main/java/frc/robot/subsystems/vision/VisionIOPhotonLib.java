@@ -13,7 +13,7 @@ import org.photonvision.PhotonUtils;
 import org.photonvision.PhotonPoseEstimator.PoseStrategy;
 import org.photonvision.targeting.PhotonPipelineResult;
 
-
+import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Rotation3d;
@@ -36,6 +36,7 @@ public class VisionIOPhotonLib implements VisionIO {
         shooterCamera = new PhotonCamera("shooterCamera");
         trapCamera = new PhotonCamera("trapCamera");
         noteCamera = new PhotonCamera("noteCamera");
+
 
         shooterPoseEstimator = new PhotonPoseEstimator(
             VisionConstants.aprilTagFieldLayout, 

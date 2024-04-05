@@ -4,10 +4,16 @@
 
 package frc.robot;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Arrays;
+
 import com.revrobotics.CANSparkBase.IdleMode;
 
+import edu.wpi.first.apriltag.AprilTag;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -15,6 +21,7 @@ import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 
 /**
  * The Constants class provides a convenient place for teams to hold robot-wide numerical or boolean
@@ -44,8 +51,8 @@ public final class Constants {
 
         public final static int indexerMotorID = 4;
 
-        public static final int indexerProximitySwitchIDLeft = 1;
-            public static final int indexerProximitySwitchIDRight = 4;
+        public static final int indexerProximitySwitchIDLeft = 3;
+        public static final int indexerProximitySwitchIDRight = 1;
 
         public static final double kPIndexerVoltsPerRPS = 0.04;
 
@@ -79,7 +86,7 @@ public final class Constants {
         /**
          * Distance from the center of the robot to each swerve module.
          */
-        public static final double drivetrainRadiusMeters = Math.hypot(wheelbaseMeters / 2.0, trackwidthMeters / 2.0);
+        public static final double drivetrainRadiusMeters = Math.hypot(wheelbaseMeters / 2.0, trackwidthMeters / 2.0); //0.4177
 
 
         public static final SwerveDriveKinematics swerveKinematics = new SwerveDriveKinematics(
@@ -161,11 +168,9 @@ public final class Constants {
         /** Rotations of the steering column per rotations of the angle motor. */
         public static final double steerGearReduction = (14.0 / 50.0) * (10.0 / 60.0);
 
-        // The wheels have a 2 inch radius, but sink into the capet about (1/8) of an inch
-        // for an effective radius of 2-(1/8).
-        // Update: they don't sink as much as orignially, though, so now we subtract
-        // 1/16 of an inch instead and odometry seems to agree with this.
-        public static final double wheelRadiusMeters = Units.inchesToMeters(2.-1./16.);
+        // The wheels have a 2 inch radius, but sink into the capet about (1/16) of an inch.
+        // As an estimate, the wheel radius is Units.inchesToMeters(2.-1./16.), or 0.0492m
+        public static final double wheelRadiusMeters = 0.0488; //use MeasureWheelDiameter for this!
         public static final double wheelCircumferenceMeters = 2 * Math.PI * wheelRadiusMeters; // ~0.31
 
         // PID + FEEDFORWARD CONSTANTS FOR MOTORS
@@ -266,7 +271,28 @@ public final class Constants {
 
     public final static class VisionConstants {
 
+        //TODO: add tags for practice field
+        // List<AprilTag> practiceFieldTags = Arrays.asList(
+        //     new AprilTag(0, null),
+        //     new AprilTag(1, null),
+        //     new AprilTag(2, null),
+        //     new AprilTag(3, null),
+        //     new AprilTag(4, null),
+        //     new AprilTag(1, null),
+        //     new AprilTag(2, null),
+        //     new AprilTag(0, null),
+        //     new AprilTag(1, null),
+        //     new AprilTag(2, null),
+        //     new AprilTag(0, null),
+        //     new AprilTag(1, null),
+        //     new AprilTag(2, null),
+        // )
+    
+
         public final static AprilTagFieldLayout aprilTagFieldLayout = AprilTagFields.k2024Crescendo.loadAprilTagLayoutField();
+        // public final static AprilTagFieldLayout aprilTagFieldLayout = new AprilTagFieldLayout(
+        //     tags, 0.0, 0.0
+        // );
     
         public final static Transform3d robotToShooterCamera = new Transform3d(
             new Translation3d(Units.inchesToMeters(10.25), 0, Units.inchesToMeters(9.5)), // 11.5 inches off the ground, and 8 inches forward from the center of the robot
@@ -330,8 +356,8 @@ public final class Constants {
     public final static class IntakeConstants {
         public final static int frontIntakeMotorID = 4;
         public final static int backIntakeMotorID = 3;
-        public static final int intakeProximitySwitchIDLeft = 0;
-        public static final int intakeProximitySwitchIDRight = 3;
+        public static final int intakeProximitySwitchIDLeft = 2;
+        public static final int intakeProximitySwitchIDRight = 0;
 
         
 

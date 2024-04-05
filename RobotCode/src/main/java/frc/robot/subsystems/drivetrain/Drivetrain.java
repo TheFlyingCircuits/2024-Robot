@@ -123,9 +123,9 @@ public class Drivetrain extends SubsystemBase {
             getModulePositions(), 
             new Pose2d());
 
-        angleController = new PIDController(6, 0, 0.); // kP has units of degreesPerSecond per degree of error.
+        angleController = new PIDController(11, 0, 0.5); // kP has units of degreesPerSecond per degree of error.
         angleController.enableContinuousInput(-180, 180);
-        angleController.setTolerance(3.0); // degrees.
+        angleController.setTolerance(1.0); // degrees.
 
         translationController = new PIDController(4.0, 0, 0); // kP has units of metersPerSecond per meter of error.
         translationController.setTolerance(0.05); // 5 centimeters
@@ -284,7 +284,7 @@ public class Drivetrain extends SubsystemBase {
 
 
     //could be used for a drivetrain command in the future; leave this as its own function
-    public void setModuleStates(SwerveModuleState[] desiredStates, boolean closedLoop) {
+    private void setModuleStates(SwerveModuleState[] desiredStates, boolean closedLoop) {
         SwerveDriveKinematics.desaturateWheelSpeeds(desiredStates, DrivetrainConstants.maxAchievableVelocityMetersPerSecond);
         for (SwerveModule mod : swerveModules) {
             mod.setDesiredState(desiredStates[mod.moduleIndex], closedLoop);
@@ -336,11 +336,27 @@ public class Drivetrain extends SubsystemBase {
      * <p>
      * A positive X value brings the robot towards the red alliance, and a positive Y value
      * brings the robot towards the left side as viewed from the blue alliance.
-     * Rotations are counter-clockwise positive, with an angle of 0 facing away from the blue alliance wall.
+     * <p>
+     * Rotations are discontinuous counter-clockwise positive, with an angle of 0 facing away from the blue alliance wall.
+     * 
      * @return The current position of the robot on the field in meters.
      */ 
     public Pose2d getPoseMeters() {
         return fusedPoseEstimator.getEstimatedPosition();
+    }
+
+    /**
+     * Gets the rotation reported by the gyro.
+     * This rotation is continuous and counterclockwise positive.
+     * 
+     * This is not necessarily equivalent to the one reported by getPoseMeters(), and it is recommended
+     * to use that rotation in almost every case.
+     * 
+     * This is usable for calibrating the wheel radii, where a continuous angle is required.
+     * @return
+     */
+    public Rotation2d getGyroRotation2d() {
+        return gyroInputs.robotYawRotation2d;
     }
 
     /**
@@ -428,7 +444,7 @@ public class Drivetrain extends SubsystemBase {
     }
 
     /**
-     * Gets the angle that the robot needs to aim at in order to intake the nearest ring
+     * Gets the angle that the front of the robot needs to aim at in order to intake the nearest ring
      * seen on the intake camera. This is used for the rotation override during auto.
      * This rotation2d is empty if you can't see a note.
      */
@@ -437,7 +453,7 @@ public class Drivetrain extends SubsystemBase {
             return new Rotation2d();
 
         Rotation2d robotAngle = getPoseMeters().getRotation();
-        Rotation2d noteAngleToRobot = visionInputs.nearestNoteRobotFrame.get().toTranslation2d().getAngle();
+        Rotation2d noteAngleToRobot = visionInputs.nearestNoteRobotFrame.get().toTranslation2d().getAngle().rotateBy(new Rotation2d(Math.PI));
 
         return robotAngle.plus(noteAngleToRobot);
     }
@@ -461,14 +477,14 @@ public class Drivetrain extends SubsystemBase {
     }
 
     public void driveTowardsNote() {
-        double maxAccel = 4.0; // [meters per second per second] (emperically determined)
 
-        double distanceToNote = 0; // TODO: Have Ben get a pitch measurement from the camera
-                                   //       then use PhotonUtils.calculateDistanceToTargetMeters()
-                                   //       make sure to test while disabled first to verify
-                                   //       distance measurements seem reasonable.
-                                   //       Make sure that FOV of camera is correct!
-                                   //       It should be on the camera's datasheet.
+        if (visionInputs.nearestNoteRobotFrame.isEmpty()) {
+            return;
+        }
+
+        double maxAccel = 1.0; // [meters per second per second] (emperically determined)
+
+        double distanceToNote = visionInputs.nearestNoteRobotFrame.get().toTranslation2d().getDistance(new Translation2d());
 
         // Physics 101: under constant accel -> v_final^2 = v_initial^2 + 2 * accel * displacement
         // displacement = finalDistanceToNote - currentDistanceToNote = 0 - currentDistanceToNote
@@ -493,7 +509,7 @@ public class Drivetrain extends SubsystemBase {
 
     //**************** MUSIC ****************/
 
-    public void addInstrument(TalonFX kraken) {
+    private void addInstrument(TalonFX kraken) {
         orchestra.addInstrument(kraken);
     }
 
@@ -501,7 +517,7 @@ public class Drivetrain extends SubsystemBase {
         return orchestra;
     }
 
-    public StatusCode[] playOrchestra() {
+    private StatusCode[] playOrchestra() {
         List<String> shuffledMusicFiles = new ArrayList<String>(List.of(songs));
         Collections.shuffle(shuffledMusicFiles);
         currentSong = shuffledMusicFiles.get(0);
@@ -519,16 +535,18 @@ public class Drivetrain extends SubsystemBase {
         StatusCode[] codes = {loadStatus, playStatus};
         return codes;
     }
-    public StatusCode stopOrchestra() {
+    private StatusCode stopOrchestra() {
         StatusCode stopCode = orchestra.stop();
         return stopCode;
     }
     public boolean isSongPlaying() {
         return orchestra.isPlaying();
     }
-    public int songTimestamp() {
+    private int songTimestamp() {
         return ((int)orchestra.getCurrentTime());
     }
+
+
 
     public boolean isAligned() {
         return angleController.atSetpoint();
@@ -567,6 +585,15 @@ public class Drivetrain extends SubsystemBase {
               swerveModules[2].getState(),
               swerveModules[3].getState()
           });
+
+        Logger.recordOutput(
+            "drivetrain/swerveModulePositions", 
+            new SwerveModulePosition[] {
+                swerveModules[0].getPosition(),
+                swerveModules[1].getPosition(),
+                swerveModules[2].getPosition(),
+                swerveModules[3].getPosition()
+            });
 
         Logger.recordOutput("drivetrain/anglePIDSetpoint", Rotation2d.fromDegrees(angleController.getSetpoint()));
         Logger.recordOutput("drivetrain/isAligned", isAligned());

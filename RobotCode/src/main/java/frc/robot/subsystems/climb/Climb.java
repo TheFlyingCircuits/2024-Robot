@@ -132,6 +132,10 @@ public class Climb extends SubsystemBase{
     public boolean climbArmsUp() {
         return leftArmUp() && rightArmUp();
     }
+
+    public boolean atQuickClimbSetpoint() {
+        return (leftMotor.getPosition() <= 0.27) && (rightMotor.getPosition() <= 0.27);
+    }
     
     @Override
     public void periodic() {
