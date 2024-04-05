@@ -66,11 +66,11 @@ public class RobotContainer {
     // public final AutoDiagnose autoDiagnose = new AutoDiagnose();
 
 
-    public static Shooter shooter;
+    public final Shooter shooter;
     public final Drivetrain drivetrain;
     public final Arm arm;
     public final Intake intake;
-    public static Indexer indexer;
+    public final Indexer indexer;
     public final Climb climb;
     public final LEDs leds;
     public final AutoDiagnose autoDiagnose;
@@ -286,13 +286,32 @@ public class RobotContainer {
                .alongWith(new ScheduleCommand(leds.playFireNoteAnimationCommand()));
     }
 
+    /**
+     * Runs the diagnostic commands for each subsystem
+     * <b>except for the drivetrain</b> in sequential order
+     * 
+     * @return Command group that runs each diagnostic command in series 
+     */
+    public Command autoDiagnoseAllSubsystemsCommand() {
 
-    public static Command autoDiagnoseAllSubsystemsCommand() {
-        return Commands.sequence(
-            indexer.autoDiagnoseCommand(),
-            shooter.autoDiagnoseCommand()
-
+        Command command = Commands.sequence(
+            // TODO: add drivetrain?
+            arm.getAutoDiagnoseCommand(),
+            climb.getAutoDiagnoseCommand(),
+            intake.getAutoDiagnoseCommand(),
+            indexer.getAutoDiagnoseCommand(),
+            shooter.getAutoDiagnoseCommand()
         );
+        command.addRequirements(
+            arm,
+            climb,
+            drivetrain,
+            intake,
+            indexer,
+            shooter
+        );
+
+        return command;
     }
 
     private void realBindings() {

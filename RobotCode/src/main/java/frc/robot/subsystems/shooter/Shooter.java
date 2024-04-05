@@ -135,7 +135,7 @@ public class Shooter extends DiagnosticSubsystem {
     }
 
     @Override
-    public Command autoDiagnoseCommand() {
+    protected Command autoDiagnoseCommand() {
         // TODO: Determine proper speeds and tolerances
         return Commands.sequence(
             Commands.runOnce(() -> {

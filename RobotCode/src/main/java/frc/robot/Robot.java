@@ -17,6 +17,9 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import frc.robot.commands.MeasureWheelDiameter;
 
 /**
  * The VM is configured to automatically run this class, and to call the functions corresponding to
@@ -37,7 +40,9 @@ public class Robot extends LoggedRobot {
         Logger.recordMetadata("projectName", "2024Robot");
         Logger.addDataReceiver(new NT4Publisher());
         //Logger.addDataReceiver(new WPILOGWriter()); // <- log to USB stick
-        new PowerDistribution(); // Apparently just constructing a PDH
+        try (
+        PowerDistribution pdh = new PowerDistribution()) {
+        }
                                  // will allow it's values to be logged? 
                                  // This is what the advantage kit docs imply at least.
         Logger.start();
@@ -142,12 +147,18 @@ public class Robot extends LoggedRobot {
     public void testInit() {
         // Cancels all running commands at the start of test mode.
         CommandScheduler.getInstance().cancelAll();
-        RobotContainer.autoDiagnoseAllSubsystemsCommand().schedule();
+        // RobotContainer.autoDiagnoseAllSubsystemsCommand().schedule();
     }
 
     /** This function is called periodically during test mode. */
     @Override
-    public void testPeriodic() {}
+    public void testPeriodic() {
+        //TODO: Test and find way to potentially integrate with pit display keyboard over networktables
+        CommandXboxController controller = m_robotContainer.charlie.getXboxController();
+        controller.x().onTrue(m_robotContainer.autoDiagnoseAllSubsystemsCommand());
+        controller.povUp().onTrue(new MeasureWheelDiameter(m_robotContainer.drivetrain));
+        controller.b().onTrue(new InstantCommand(()-> {CommandScheduler.getInstance().cancelAll();} ));
+    }
 
     /** This function is called once when the robot is first started up. */
     @Override
