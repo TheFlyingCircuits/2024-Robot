@@ -1,5 +1,7 @@
 package frc.robot.VendorWrappers;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Supplier;
 
 import com.revrobotics.CANSparkMax;
@@ -8,6 +10,7 @@ import com.revrobotics.RelativeEncoder;
 import com.revrobotics.SparkRelativeEncoder.Type;
 
 import edu.wpi.first.wpilibj.Timer;
+import frc.lib.subsystem.Fault;
 
 public class Neo extends CANSparkMax {
 
@@ -167,6 +170,23 @@ public class Neo extends CANSparkMax {
         String errorMessage = "Failed to set the position of "+name+" to "+position+"!";
         return this.waitForConfig(() -> {return encoder.setPosition(position);}, errorMessage);
     }
+
+
+        public List<Fault> autoDiagnoseIsAtTargetRPS(double expectedRPS, double tolerance, boolean isForward) {
+        ArrayList<Fault> faults = new ArrayList<Fault>();
+
+        String direction = isForward ? "forward" : "backward";
+
+        if (Math.abs(this.getVelocity()) < .1) {
+            new Fault("[Auto Diagnose] "+name+" not moving " +direction, false);
+        } else if (Math.abs(this.getVelocity()) > expectedRPS+tolerance) {
+            new Fault("[Auto Diagnose] "+name+" moving "+direction+" too fast", false);
+        } else if (Math.abs(this.getVelocity()) < expectedRPS-tolerance) {
+            new Fault("[Auto Diagnose] "+name+" moving "+direction+" too slow", false);
+        }
+        return faults;
+    }
+    
 
 
     
