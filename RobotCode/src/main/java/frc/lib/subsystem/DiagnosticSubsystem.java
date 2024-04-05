@@ -21,7 +21,6 @@ import frc.lib.subsystem.autodiagnose.AutoDiagnoseCANivore;
 import frc.lib.subsystem.autodiagnose.AutoDiagnoseKraken;
 import frc.lib.subsystem.autodiagnose.AutoDiagnosePigeon2;
 import frc.lib.subsystem.autodiagnose.AutoDiagnosePowerDistributionHub;
-import frc.robot.Robot;
 import frc.robot.VendorWrappers.Kraken;
 import frc.robot.subsystems.AutoDiagnose;
 
@@ -50,17 +49,16 @@ public abstract class DiagnosticSubsystem extends SubsystemBase {
 
     public Command getAutoDiagnoseCommand() {
         return Commands.sequence(
-            Commands.runOnce(() -> {
-                SmartDashboard.putBoolean(statusDirectory + "RanCheck", false);
-                clearAllFaults();
-                publishDiagnostics();
-            }),
-            autoDiagnoseCommand(),
-            Commands.runOnce(() -> {
-                publishDiagnostics();
-                SmartDashboard.putBoolean(statusDirectory + "RanCheck", true);
-            })
-        );
+                Commands.runOnce(() -> {
+                    SmartDashboard.putBoolean(statusDirectory + "RanCheck", false);
+                    clearAllFaults();
+                    publishDiagnostics();
+                }),
+                autoDiagnoseCommand(),
+                Commands.runOnce(() -> {
+                    publishDiagnostics();
+                    SmartDashboard.putBoolean(statusDirectory + "RanCheck", true);
+                }));
     }
 
     private void addPeriodicRunnables() {
@@ -80,43 +78,51 @@ public abstract class DiagnosticSubsystem extends SubsystemBase {
         }
         SmartDashboard.putStringArray(statusDirectory + "/Faults", faultStrings);
     }
-    
 
     protected abstract Command autoDiagnoseCommand();
-
 
     public void addDevice(String label, CANcoder canCoder) {
         devices.add(new AutoDiagnoseCANcoder(label, canCoder));
     }
+
     public void addDevice(String label, String CANivoreName) {
         devices.add(new AutoDiagnoseCANivore(label, CANivoreName));
     }
+
     public void addDevice(String label, CANSparkMax sparkMax) {
         devices.add(new AutoDiagnoseCANSparkMAX(label, sparkMax));
     }
+
     public void addDevice(String label, Kraken kraken) {
         devices.add(new AutoDiagnoseKraken(label, kraken));
     }
+
     public void addDevice(String label, Pigeon2 pigeon) {
         devices.add(new AutoDiagnosePigeon2(label, pigeon));
     }
+
     public void addDevice(String label, PowerDistribution pdh) {
         devices.add(new AutoDiagnosePowerDistributionHub(label, pdh));
     }
-    
 
     protected void addFault(Fault fault) {
-        if(!this.faults.contains(fault)) {
+        if (!this.faults.contains(fault)) {
             this.faults.add(fault);
         }
     }
+
     protected void addFault(String message, boolean isJustWarning) {
         this.addFault(new Fault(message, isJustWarning));
+    }
+
+    protected void addFaults(List<Fault> faults) {
+        this.faults.addAll(faults);
     }
 
     public List<Fault> getFaults() {
         return this.faults;
     }
+
     public void clearAllFaults() {
         this.faults.clear();
     }
@@ -125,14 +131,13 @@ public abstract class DiagnosticSubsystem extends SubsystemBase {
         SubsystemStatus worstStatus = SubsystemStatus.OK;
 
         for (Fault fault : this.faults) {
-            if(fault.timestamp > Timer.getFPGATimestamp() - 10) {
-                if(fault.isJustWarning) {
-                    if(worstStatus != SubsystemStatus.ERROR) {
+            if (fault.timestamp > Timer.getFPGATimestamp() - 10) {
+                if (fault.isJustWarning) {
+                    if (worstStatus != SubsystemStatus.ERROR) {
                         worstStatus = SubsystemStatus.WARNING;
+                    } else {
+                        worstStatus = SubsystemStatus.ERROR;
                     }
-                else {
-                    worstStatus = SubsystemStatus.ERROR;
-                }
                 }
             }
         }
@@ -140,9 +145,9 @@ public abstract class DiagnosticSubsystem extends SubsystemBase {
     }
 
     private void checkForFaults() {
-        if(isReal) {
-            for(AutoDiagnoseBase device : devices) {
-                for(Fault fault : device.getFaultsList()) {
+        if (isReal) {
+            for (AutoDiagnoseBase device : devices) {
+                for (Fault fault : device.getFaultsList()) {
                     addFault(fault);
                 }
             }

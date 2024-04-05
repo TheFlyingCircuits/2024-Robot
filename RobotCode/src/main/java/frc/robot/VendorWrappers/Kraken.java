@@ -3,6 +3,11 @@ package frc.robot.VendorWrappers;
 import com.ctre.phoenix6.hardware.TalonFX;
 
 import edu.wpi.first.wpilibj.Timer;
+import frc.lib.subsystem.Fault;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import com.ctre.phoenix6.StatusCode;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
@@ -24,7 +29,6 @@ public class Kraken extends TalonFX {
         super(canID, canBusName);
         name = motorName;
     }
-    
     
     public void applyConfig(TalonFXConfiguration config) {
         /** Check that we've set some critical safety configs */
@@ -82,4 +86,32 @@ public class Kraken extends TalonFX {
             System.out.println(errorMessage+"\n"+errorName+"\n"+errorDescription+"\n"+"Retrying config...");
         }
     }
+
+    public List<Fault> autoDiagnoseIsAtTargetRPS(double expectedRPS, double tolerance, boolean isForward) {
+        ArrayList<Fault> faults = new ArrayList<Fault>();
+
+        String direction = isForward ? "forward" : "backward";
+
+        if (Math.abs(this.getVelocity().getValueAsDouble()) < .1) {
+            new Fault("[Auto Diagnose] "+name+" not moving " +direction, false);
+        } else if (Math.abs((this.getVelocity().getValueAsDouble())) > expectedRPS+tolerance) {
+            new Fault("[Auto Diagnose] "+name+" moving "+direction+" too fast", false);
+        } else if (Math.abs((this.getVelocity().getValueAsDouble())) < expectedRPS-tolerance) {
+            new Fault("[Auto Diagnose] "+name+" moving "+direction+" too slow", false);
+        }
+        return faults;
+    }
+    
+
+
+    /** 
+     * Returns the name assigned at motor initialization.
+     * It is how we should refer to this motor in error messages.
+     * <p>
+     * This specific method is useful for the automated diagnostic stuff to run stuff in paralell 
+     */
+    public String getName() {
+        return this.name;
+    }
+    
 }

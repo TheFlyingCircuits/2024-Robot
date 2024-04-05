@@ -6,7 +6,6 @@ import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.lib.subsystem.DiagnosticSubsystem;
 import frc.robot.Constants.ShooterConstants;
 
@@ -137,31 +136,22 @@ public class Shooter extends DiagnosticSubsystem {
 
     @Override
     public Command autoDiagnoseCommand() {
-
+        // TODO: Determine proper speeds and tolerances
         return Commands.sequence(
             Commands.runOnce(() -> {
-                io.setLeftMotorVolts(5.0);
-                io.setRightMotorVolts(5.0);
+                setBothFlywheelsMetersPerSecond(3);
             }, this),
             Commands.waitSeconds(1.0),
             Commands.runOnce(() -> {
-                if(Math.abs(inputs.leftFlywheelsMetersPerSecond/ShooterConstants.flywheelCircumferenceMeters) < 0.1) {
-                    addFault("[Auto Diagnose] Left flywheels not moving forward", false);
-                }
-                if(Math.abs(inputs.rightFlywheelsMetersPerSecond/ShooterConstants.flywheelCircumferenceMeters) < 0.1) {
-                    addFault("[Auto Diagnose] Right flywheels not moving forward", false);
-                }
-                io.setLeftMotorVolts(5.0);
-                io.setRightMotorVolts(5.0);
+                this.addFaults(io.getLeftFaults(3 / ShooterConstants.flywheelCircumferenceMeters, 1, true));
+                this.addFaults(io.getRightFaults(3 / ShooterConstants.flywheelCircumferenceMeters, 1, true));
+                setBothFlywheelsMetersPerSecond(-3);
             }, this),
             Commands.waitSeconds(1.0),
             Commands.runOnce(() -> {
-                if(Math.abs(inputs.leftFlywheelsMetersPerSecond/ShooterConstants.flywheelCircumferenceMeters) < 0.1) {
-                    addFault("[Auto Diagnose] Left flywheels not moving backward", false);
-                }
-                if(Math.abs(inputs.rightFlywheelsMetersPerSecond/ShooterConstants.flywheelCircumferenceMeters) < 0.1) {
-                    addFault("[Auto Diagnose] Right flywheels not moving backward", false);
-                }
+                this.addFaults(io.getLeftFaults(-3 / ShooterConstants.flywheelCircumferenceMeters, 1, true));
+                this.addFaults(io.getRightFaults(-3 / ShooterConstants.flywheelCircumferenceMeters, 1, true));
+
                 io.setLeftMotorVolts(0.0);
                 io.setRightMotorVolts(0.0);
             }, this).until(() -> getFaults().size() > 0)

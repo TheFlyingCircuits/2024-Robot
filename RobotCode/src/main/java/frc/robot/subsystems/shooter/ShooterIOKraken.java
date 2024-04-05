@@ -1,9 +1,13 @@
 package frc.robot.subsystems.shooter;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
+import frc.lib.subsystem.Fault;
 import frc.robot.Constants.ShooterConstants;
 import frc.robot.VendorWrappers.Kraken;
 
@@ -70,5 +74,15 @@ public class ShooterIOKraken implements ShooterIO {
 
 
         rightMotor.setVoltage(volts);
+    }
+
+    @Override
+    public List<Fault> getLeftFaults(double expectedRPS, double tolerance, boolean isForward) {
+        return leftMotor.autoDiagnoseIsAtTargetRPS(expectedRPS, tolerance, isForward);
+    }
+    
+    @Override
+    public List<Fault> getRightFaults(double expectedRPS, double tolerance, boolean isForward) {
+        return rightMotor.autoDiagnoseIsAtTargetRPS(expectedRPS, tolerance, isForward);
     }
 }

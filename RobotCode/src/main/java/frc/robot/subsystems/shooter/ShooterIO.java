@@ -1,6 +1,11 @@
 package frc.robot.subsystems.shooter;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.littletonrobotics.junction.AutoLog;
+
+import frc.lib.subsystem.Fault;
 
 public interface ShooterIO {
     @AutoLog
@@ -28,4 +33,9 @@ public interface ShooterIO {
 
     /** Run the shooter's right motor at the specified volts. */
     public default void setRightMotorVolts(double volts) {};
+
+    public default List<Fault> getLeftFaults(double expectedRPS, double tolerance, boolean isForward) { return new ArrayList<Fault>(); };
+
+    public default List<Fault> getRightFaults(double expectedRPS, double tolerance, boolean isForward) { return new ArrayList<Fault>(); };
+
 }

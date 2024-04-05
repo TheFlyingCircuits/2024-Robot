@@ -30,28 +30,34 @@ public class Indexer extends DiagnosticSubsystem {
         indexerProximitySwitchRight = new DigitalInput(ShooterConstants.indexerProximitySwitchIDRight);
 
         indexerPID = new PIDController(
-            ShooterConstants.kPIndexerVoltsPerRPS,
-            0, 
-            0);
-        
+                ShooterConstants.kPIndexerVoltsPerRPS,
+                0,
+                0);
+
         indexerFeedforward = new SimpleMotorFeedforward(
-            ShooterConstants.kSIndexerVolts,
-            ShooterConstants.kVIndexerVoltsPerRPS);
+                ShooterConstants.kSIndexerVolts,
+                ShooterConstants.kVIndexerVoltsPerRPS);
 
         configMotor();
     }
 
     public void setBlackRollerSurfaceSpeed(double metersPerSecond) {
-        // theoretical max of 5.65 meters per second of surface speed based on motor and gearing
-        double blackRollerRotationsPerSecond = metersPerSecond * (1.0 / ShooterConstants.blackRollerCircumferenceMeters);
-        double desiredMotorRotationsPerSecond = blackRollerRotationsPerSecond * (1.0 / ShooterConstants.indexerBlackRollerGearRatio);
+        // theoretical max of 5.65 meters per second of surface speed based on motor and
+        // gearing
+        double blackRollerRotationsPerSecond = metersPerSecond
+                * (1.0 / ShooterConstants.blackRollerCircumferenceMeters);
+        double desiredMotorRotationsPerSecond = blackRollerRotationsPerSecond
+                * (1.0 / ShooterConstants.indexerBlackRollerGearRatio);
         setMotorRotationsPerSecond(desiredMotorRotationsPerSecond);
     }
 
     public void setOrangeWheelsSurfaceSpeed(double metersPerSecond) {
-        // theoretical max of 7.97 meters per second of surface speed based on motor and gearing
-        double orangeWheelsRotationsPerSecond = metersPerSecond * (1.0 / ShooterConstants.orangeWheelsCircumferenceMeters);
-        double desiredMotorRotationsPerSecond = orangeWheelsRotationsPerSecond * (1.0 / ShooterConstants.indexerOrangeWheelsGearRatio);
+        // theoretical max of 7.97 meters per second of surface speed based on motor and
+        // gearing
+        double orangeWheelsRotationsPerSecond = metersPerSecond
+                * (1.0 / ShooterConstants.orangeWheelsCircumferenceMeters);
+        double desiredMotorRotationsPerSecond = orangeWheelsRotationsPerSecond
+                * (1.0 / ShooterConstants.indexerOrangeWheelsGearRatio);
         setMotorRotationsPerSecond(desiredMotorRotationsPerSecond);
     }
 
@@ -65,12 +71,16 @@ public class Indexer extends DiagnosticSubsystem {
 
     /** max of 5.65 */
     public Command setBlackRollerSurfaceSpeedCommand(double metersPerSecond) {
-        return this.run(() -> {this.setBlackRollerSurfaceSpeed(metersPerSecond);});
+        return this.run(() -> {
+            this.setBlackRollerSurfaceSpeed(metersPerSecond);
+        });
     }
 
     /** max of 7.97 */
     public Command setOrangeWheelsSurfaceSpeedCommand(double metersPerSecond) {
-        return this.run(() -> {this.setOrangeWheelsSurfaceSpeed(metersPerSecond);});
+        return this.run(() -> {
+            this.setOrangeWheelsSurfaceSpeed(metersPerSecond);
+        });
     }
 
     public void setVolts(double volts) {
@@ -78,7 +88,8 @@ public class Indexer extends DiagnosticSubsystem {
     }
 
     /**
-     * Returns true if either of the proximity switches in the indexer detects a note present.
+     * Returns true if either of the proximity switches in the indexer detects a
+     * note present.
      */
     public boolean isNoteIndexed() {
         return (!indexerProximitySwitchLeft.get()) || (!indexerProximitySwitchRight.get());
@@ -99,7 +110,7 @@ public class Indexer extends DiagnosticSubsystem {
         Logger.recordOutput("indexer/amps", indexerMotor.getTorqueCurrent().getValueAsDouble());
         Logger.recordOutput("indexer/isNoteIndexed()", isNoteIndexed());
         Logger.recordOutput("indexer/indexerRPS", indexerMotor.getVelocity().getValueAsDouble());
-        Logger.recordOutput("indexer/setpointRPS", indexerPID.getSetpoint()); 
+        Logger.recordOutput("indexer/setpointRPS", indexerPID.getSetpoint());
         Logger.recordOutput("indexer/supplyCurrent", indexerMotor.getSupplyCurrent().getValueAsDouble());
     }
 
@@ -107,23 +118,19 @@ public class Indexer extends DiagnosticSubsystem {
     public Command autoDiagnoseCommand() {
 
         return Commands.sequence(
-            Commands.runOnce(() -> {
-                indexerMotor.set(1.0); 
-            }, this),
-            Commands.waitSeconds(1.0),
-            Commands.runOnce(() -> {
-                if(Math.abs(indexerMotor.getVelocity().getValueAsDouble()) < 0.1) {
-                    addFault("[Auto Diagnose] Indexer not moving forward", false);
-                }
-                indexerMotor.set(-1.0);
-            }, this),
-            Commands.waitSeconds(1.0),
-            Commands.runOnce(() -> {
-                if(Math.abs(indexerMotor.getVelocity().getValueAsDouble()) < 0.1) {
-                    addFault("[Auto Diagnose] Indexer not moving backward", false);
-                }
-                indexerMotor.set(0.0);
-            }, this)).until(() -> getFaults().size() > 0)
-            .andThen(() -> indexerMotor.set(0));
+                Commands.runOnce(() -> {
+                    this.setMotorRotationsPerSecond(50);
+                }, this),
+                Commands.waitSeconds(1.0),
+                Commands.runOnce(() -> {
+                    this.addFaults(indexerMotor.autoDiagnoseIsAtTargetRPS(50, 3, true));
+                    this.setMotorRotationsPerSecond(-3);
+                }, this),
+                Commands.waitSeconds(1.0),
+                Commands.runOnce(() -> {
+                    this.addFaults(indexerMotor.autoDiagnoseIsAtTargetRPS(-50, 3, false));
+                    indexerMotor.set(0.0);
+                }, this)).until(() -> getFaults().size() > 0).withTimeout(6.5)
+                .andThen(() -> indexerMotor.set(0));
     };
 }
