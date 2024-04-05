@@ -271,28 +271,62 @@ public final class Constants {
 
     public final static class VisionConstants {
 
-        //TODO: add tags for practice field
-        // List<AprilTag> practiceFieldTags = Arrays.asList(
-        //     new AprilTag(0, null),
-        //     new AprilTag(1, null),
-        //     new AprilTag(2, null),
-        //     new AprilTag(3, null),
-        //     new AprilTag(4, null),
-        //     new AprilTag(1, null),
-        //     new AprilTag(2, null),
-        //     new AprilTag(0, null),
-        //     new AprilTag(1, null),
-        //     new AprilTag(2, null),
-        //     new AprilTag(0, null),
-        //     new AprilTag(1, null),
-        //     new AprilTag(2, null),
-        // )
+        //abbreviations so practiceFieldTags isn't heinously long
+        private static double im(double inches) {
+            return Units.inchesToMeters(inches);
+        }
+        private static double dr(double degrees) {
+            return Units.degreesToRadians(degrees);
+        }
+
+        //tags for practice field: these are identical to the real field,
+        //except the two speaker tags are aligned with the red alliance wall
+        //rather than 1.5 inches into the wall.
+
+        //these only include the red side of the field, since our practice field only uses those tags.
+        //the pose still follows the default field coordinate system, with a blue origin
+        private final static List<AprilTag> practiceFieldTags = Arrays.asList(
+            //source tag
+            new AprilTag(1, new Pose3d(
+                new Translation3d(im(593.68), im(9.68), im(53.38)),
+                new Rotation3d(0, 0, dr(120)))),
+            //source tag
+            new AprilTag(2, new Pose3d(
+                new Translation3d(im(637.21), im(34.79), im(53.38)),
+                new Rotation3d(0, 0, dr(120)))),
+            //speaker tag (shifted relative to real field position)
+            new AprilTag(3, new Pose3d(
+                new Translation3d(im(652.73-1.5), im(196.17), im(57.13)),
+                new Rotation3d(0, 0, dr(180)))),
+            //speaker tag (shifted relative to field field position)
+            new AprilTag(4, new Pose3d(
+                new Translation3d(im(652.73-1.5), im(218.42), im(57.13)),
+                new Rotation3d(0, 0, dr(180)))),
+            //amp tag
+            new AprilTag(5, new Pose3d(
+                new Translation3d(im(578.77), im(323.00), im(53.38)),
+                new Rotation3d(0, 0, dr(270)))),
+            //stage left
+            new AprilTag(11, new Pose3d(
+                new Translation3d(im(468.69), im(146.19), im(52.00)),
+                new Rotation3d(0, 0, dr(300)))),
+            //stage right
+            new AprilTag(12, new Pose3d(
+                new Translation3d(im(468.69), im(177.10), im(52.00)),
+                new Rotation3d(0, 0, dr(60)))),
+            new AprilTag(13, new Pose3d(
+                new Translation3d(im(441.74), im(161.62), im(52.00)),
+                new Rotation3d(0, 0, dr(180))))
+        );
     
 
-        public final static AprilTagFieldLayout aprilTagFieldLayout = AprilTagFields.k2024Crescendo.loadAprilTagLayoutField();
-        // public final static AprilTagFieldLayout aprilTagFieldLayout = new AprilTagFieldLayout(
-        //     tags, 0.0, 0.0
-        // );
+        //for use on real field:
+        //public final static AprilTagFieldLayout aprilTagFieldLayout = AprilTagFields.k2024Crescendo.loadAprilTagLayoutField();
+        
+        //for use on practice field:
+        public final static AprilTagFieldLayout aprilTagFieldLayout = new AprilTagFieldLayout(
+            practiceFieldTags, 16, 8.2
+        );
     
         public final static Transform3d robotToShooterCamera = new Transform3d(
             new Translation3d(Units.inchesToMeters(10.25), 0, Units.inchesToMeters(9.5)), // 11.5 inches off the ground, and 8 inches forward from the center of the robot
