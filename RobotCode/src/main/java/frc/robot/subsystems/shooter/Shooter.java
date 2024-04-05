@@ -154,7 +154,7 @@ public class Shooter extends DiagnosticSubsystem {
 
                 io.setLeftMotorVolts(0.0);
                 io.setRightMotorVolts(0.0);
-            }, this).until(() -> getFaults().size() > 0)
+            }, this).until(() -> getFaults().size() > 0).withTimeout(6.5)
             .andThen(() -> {
                 io.setLeftMotorVolts(0.0);
                 io.setRightMotorVolts(0.0);

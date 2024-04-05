@@ -120,19 +120,19 @@ public class Indexer extends DiagnosticSubsystem {
     public Command autoDiagnoseCommand() {
         // TODO: Determine proper speeds and tolerances
         return Commands.sequence(
-                Commands.runOnce(() -> {
-                    this.setMotorRotationsPerSecond(50);
-                }, this),
-                Commands.waitSeconds(1.0),
-                Commands.runOnce(() -> {
-                    this.addFaults(indexerMotor.autoDiagnoseIsAtTargetRPS(50, 3, true));
-                    this.setMotorRotationsPerSecond(-3);
-                }, this),
-                Commands.waitSeconds(1.0),
-                Commands.runOnce(() -> {
-                    this.addFaults(indexerMotor.autoDiagnoseIsAtTargetRPS(-50, 3, false));
-                    indexerMotor.set(0.0);
-                }, this)).until(() -> getFaults().size() > 0).withTimeout(6.5)
-                .andThen(() -> indexerMotor.set(0));
+            Commands.runOnce(() -> {
+                this.setMotorRotationsPerSecond(50);
+            }, this),
+            Commands.waitSeconds(1.0),
+            Commands.runOnce(() -> {
+                this.addFaults(indexerMotor.autoDiagnoseIsAtTargetRPS(50, 3, true));
+                this.setMotorRotationsPerSecond(-3);
+            }, this),
+            Commands.waitSeconds(1.0),
+            Commands.runOnce(() -> {
+                this.addFaults(indexerMotor.autoDiagnoseIsAtTargetRPS(-50, 3, false));
+                indexerMotor.set(0.0);
+            }, this)).until(() -> getFaults().size() > 0).withTimeout(6.5)
+            .andThen(() -> indexerMotor.set(0));
     };
 }

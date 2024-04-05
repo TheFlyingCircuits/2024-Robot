@@ -4,17 +4,14 @@
 
 package frc.robot.subsystems.arm;
 
-import org.littletonrobotics.junction.Logger;
-
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.DegreesPerSecond;
 import static edu.wpi.first.units.Units.Volts;
 
+import org.littletonrobotics.junction.Logger;
+
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ArmFeedforward;
-import edu.wpi.first.math.controller.PIDController;
-import edu.wpi.first.math.controller.ProfiledPIDController;
-import edu.wpi.first.math.filter.LinearFilter;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.units.Measure;
 import edu.wpi.first.units.Voltage;
@@ -24,12 +21,14 @@ import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismRoot2d;
 import edu.wpi.first.wpilibj.sysid.SysIdRoutineLog;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Config;
+import frc.lib.subsystem.DiagnosticSubsystem;
+import frc.lib.subsystem.Fault;
 import frc.robot.Constants.ArmConstants;
 
-public class Arm extends SubsystemBase {
+public class Arm extends DiagnosticSubsystem {
 
     ArmIOInputsAutoLogged inputs;
     ArmIO io;
@@ -249,5 +248,46 @@ public class Arm extends SubsystemBase {
         Logger.recordOutput("arm/isMovingToTarget", isMovingToTarget);
         Logger.recordOutput("arm/targetAngleDegrees", targetAngleDegrees);
         Logger.recordOutput("arm/isCloseToTarget", isCloseToTarget());
+    }
+
+
+    /** Resets the angle back to its default idle position. */
+    Command resetShooterAngle() {
+        double desiredAngle = ArmConstants.armMinAngleDegrees+5; // puts the arm at min height to pass under stage
+        //desiredAngle = 35;
+        return this.setDesiredDegreesCommand(desiredAngle);
+    }
+
+    @Override
+    protected Command autoDiagnoseCommand() {
+        return Commands.sequence(
+            Commands.runOnce(() -> {this.setDisableSetpointChecking(false);}),
+            this.setDesiredDegreesCommand(ArmConstants.armMaxAngleDegrees).withTimeout(1),
+            Commands.runOnce(() -> {
+                if(!this.isCloseToTarget()) {
+                    new Fault("[Auto Diagnose] arm not reaching max angle", false);
+                }
+            }),
+            this.setDesiredDegreesCommand(ArmConstants.armMinAngleDegrees).withTimeout(1),
+            Commands.runOnce(() -> {
+                if(!this.isCloseToTarget()) {
+                    new Fault("[Auto Diagnose] arm not reaching min angle", false);
+                }
+            }),
+            // AMP ANGLE
+            this.setDesiredDegreesCommand(110).withTimeout(1),
+            Commands.runOnce(() -> {
+                if(!this.isCloseToTarget()) {
+                    new Fault("[Auto Diagnose] arm not reaching AMP angle", false);
+                }
+            }),
+            this.resetShooterAngle().withTimeout(1),
+            Commands.runOnce(() -> {
+                if(!this.isCloseToTarget()) {
+                    new Fault("[Auto Diagnose] arm not reaching home", false);
+                }
+            })
+        ).until(() -> getFaults().size() > 0).withTimeout(13)
+        .andThen(this.resetShooterAngle().until(()-> this.isCloseToTarget()).withTimeout(3));
     }
 }

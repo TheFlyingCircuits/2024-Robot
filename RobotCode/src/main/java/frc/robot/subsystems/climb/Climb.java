@@ -167,9 +167,10 @@ public class Climb extends DiagnosticSubsystem {
 
     @Override
     protected Command autoDiagnoseCommand() {
+        // TODO: figure out timeouts
         return Commands.sequence(
             Commands.parallel(
-                this.raiseHooksCommand().until(() -> climbArmsUp()).withTimeout(3),
+                this.raiseHooksCommand().until(() -> climbArmsUp()).withTimeout(2),
                 new WaitCommand(.2).andThen(() -> addFaults(getMotorsNotMovingFaults(true)))
             ),
             Commands.runOnce(()-> {
@@ -181,7 +182,7 @@ public class Climb extends DiagnosticSubsystem {
                 }
             }),
             Commands.parallel(
-                this.lowerHooksCommand().until(() -> climbArmsZero()).withTimeout(3),
+                this.lowerHooksCommand().until(() -> climbArmsZero()).withTimeout(2),
                 new WaitCommand(.2).andThen(() -> addFaults(getMotorsNotMovingFaults(false)))
             ),
             Commands.runOnce(()-> {
@@ -192,7 +193,7 @@ public class Climb extends DiagnosticSubsystem {
                     new Fault("[Auto Diagnose] "+rightMotor.getName()+" did not reach zero setpoint", false);
                 }
             })
-        ).until(() -> getFaults().size() > 0).withTimeout(6.5)
+        ).until(() -> getFaults().size() > 0).withTimeout(13)
             .andThen(this.lowerHooksCommand().until(() -> climbArmsZero()).withTimeout(3));
     }
 
