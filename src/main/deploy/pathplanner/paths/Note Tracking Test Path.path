@@ -3,25 +3,25 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 14.65,
-        "y": 7.72
+        "x": 14.62,
+        "y": 5.54
       },
       "prevControl": null,
       "nextControl": {
-        "x": 15.65,
-        "y": 7.72
+        "x": 13.62,
+        "y": 5.54
       },
       "isLocked": false,
-      "linkedName": "Starting Line (Between Ring 3 and Amp)"
+      "linkedName": null
     },
     {
       "anchor": {
-        "x": 10.296231262933281,
-        "y": 7.4598028796628215
+        "x": 10.7,
+        "y": 5.54
       },
       "prevControl": {
-        "x": 9.296231262933281,
-        "y": 7.4598028796628215
+        "x": 11.7,
+        "y": 5.54
       },
       "nextControl": null,
       "isLocked": false,
@@ -32,13 +32,13 @@
   "constraintZones": [],
   "eventMarkers": [],
   "globalConstraints": {
-    "maxVelocity": 4.0,
-    "maxAcceleration": 4.0,
+    "maxVelocity": 4.5,
+    "maxAcceleration": 2.5,
     "maxAngularVelocity": 360.0,
     "maxAngularAcceleration": 360.0
   },
   "goalEndState": {
-    "velocity": 3.0,
+    "velocity": 4.5,
     "rotation": 0,
     "rotateFast": true
   },

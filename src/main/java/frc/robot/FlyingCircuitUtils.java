@@ -6,9 +6,11 @@ import java.util.Optional;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import frc.robot.Constants.FieldElement;
@@ -23,7 +25,13 @@ public class FlyingCircuitUtils {
         AprilTagFieldLayout fieldLayout = VisionConstants.aprilTagFieldLayout;
 
         if (alliance.isPresent() && alliance.get() == Alliance.Blue) {
-            if (element == FieldElement.SPEAKER) { return fieldLayout.getTagPose(7).get().toPose2d(); }
+            if (element == FieldElement.SPEAKER) { 
+                // Target the opening of the speaker, rather than the speaker tag.
+                double speakerDepthIntoField = Units.inchesToMeters(18.11);
+                double x = (speakerDepthIntoField / 2);
+                double y = Units.inchesToMeters(218.42);
+                return new Pose2d(x, y, Rotation2d.fromDegrees(0));
+             }
             if (element == FieldElement.AMP) { return fieldLayout.getTagPose(6).get().toPose2d(); }
             if (element == FieldElement.STAGE_LEFT) { return fieldLayout.getTagPose(15).get().toPose2d(); }
             if (element == FieldElement.STAGE_RIGHT) { return fieldLayout.getTagPose(16).get().toPose2d(); }
@@ -36,7 +44,14 @@ public class FlyingCircuitUtils {
         }
 
         if (alliance.isPresent() && alliance.get() == Alliance.Red) {
-            if (element == FieldElement.SPEAKER) { return fieldLayout.getTagPose(4).get().toPose2d(); }
+            if (element == FieldElement.SPEAKER) {
+                // Target the opening of the speaker, rather than the speaker tag.
+                double speakerDepthIntoField = Units.inchesToMeters(18.11);
+                double redAllianceWallX = Units.inchesToMeters(652.73-1.5);
+                double x = redAllianceWallX - (speakerDepthIntoField / 2);
+                double y = Units.inchesToMeters(218.42);
+                return new Pose2d(x, y, Rotation2d.fromDegrees(180));
+            }
             if (element == FieldElement.AMP) { return fieldLayout.getTagPose(5).get().toPose2d(); }
             if (element == FieldElement.STAGE_LEFT) { return fieldLayout.getTagPose(11).get().toPose2d(); }
             if (element == FieldElement.STAGE_RIGHT) { return fieldLayout.getTagPose(12).get().toPose2d(); }

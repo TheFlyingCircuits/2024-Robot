@@ -432,6 +432,11 @@ public class Drivetrain extends SubsystemBase {
     }
 
 
+    private Translation2d fieldCoordsFromRobotCoords(Translation2d robotCoords) {
+        return getPoseMeters().plus(new Transform2d(robotCoords, new Rotation2d())).getTranslation();
+    }
+
+
     //**************** TARGET TRACKING (Speaker, Note, etc.) ****************/
 
 
@@ -482,7 +487,7 @@ public class Drivetrain extends SubsystemBase {
             return;
         }
 
-        double maxAccel = 1.0; // [meters per second per second] (emperically determined)
+        double maxAccel = 2.35; // [meters per second per second] (emperically determined)
 
         double distanceToNote = visionInputs.nearestNoteRobotFrame.get().toTranslation2d().getDistance(new Translation2d());
 
@@ -604,11 +609,15 @@ public class Drivetrain extends SubsystemBase {
         // Note tracking visualization
         if (visionInputs.nearestNoteRobotFrame.isPresent()) {
             Translation2d noteRelativeToRobot = visionInputs.nearestNoteRobotFrame.get().toTranslation2d();
-            Pose2d noteRelativeToField = getPoseMeters().plus(new Transform2d(noteRelativeToRobot, new Rotation2d()));
-            Logger.recordOutput("drivetrain/trackedNotePose", noteRelativeToField);
+            Translation2d noteRelativeToField = fieldCoordsFromRobotCoords(noteRelativeToRobot);
+            Logger.recordOutput("drivetrain/trackedNotePose", new Pose2d(noteRelativeToField, new Rotation2d()));
         }
         else {
             Logger.recordOutput("drivetrain/trackedNotePose", getPoseMeters());
         }
+
+        ChassisSpeeds v = DrivetrainConstants.swerveKinematics.toChassisSpeeds(getModuleStates());
+        double s = Math.hypot(v.vxMetersPerSecond, v.vyMetersPerSecond);
+        Logger.recordOutput("drivetrain/speed", s);
     }
 }

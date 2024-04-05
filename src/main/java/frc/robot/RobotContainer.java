@@ -202,7 +202,7 @@ public class RobotContainer {
 
     public Command indexNote() {
         return this.runIntake(false).until(indexer::isNoteIndexed)
-               .andThen(new InstantCommand(() -> {indexer.setVolts(0); intake.setVolts(0);})) // TODO: remember why we need this.
+               .andThen(new InstantCommand(() -> {indexer.setVolts(0); intake.setVolts(0);}))
                .andThen(new ScheduleCommand(leds.solidOrangeCommand()));
     }
 
@@ -284,8 +284,8 @@ public class RobotContainer {
         controller.rightTrigger()
             //.onTrue(intakeNote().raceWith(resetShooter()));
             //.whileTrue(new NoteTrackingIndexNote(intake, indexer, drivetrain, charlie::getRequestedFieldOrientedVelocity));
-            .whileTrue(intakeTowardsNote());
-            //.onTrue(indexNote().raceWith(resetShooter())); // reset never ends, indexNote does.
+            //.whileTrue(intakeTowardsNote());
+            .onTrue(indexNote().raceWith(resetShooter())); // reset never ends, indexNote does.
     
         controller.leftTrigger().whileTrue(reverseIntake());
         
