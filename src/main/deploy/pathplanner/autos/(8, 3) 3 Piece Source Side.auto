@@ -43,7 +43,7 @@
               {
                 "type": "named",
                 "data": {
-                  "name": "trackNote"
+                  "name": null
                 }
               }
             ]
@@ -106,7 +106,7 @@
               {
                 "type": "named",
                 "data": {
-                  "name": "trackNote"
+                  "name": null
                 }
               }
             ]

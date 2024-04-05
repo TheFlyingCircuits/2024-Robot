@@ -16,34 +16,9 @@
           "data": {
             "commands": [
               {
-                "type": "sequential",
-                "data": {
-                  "commands": [
-                    {
-                      "type": "wait",
-                      "data": {
-                        "waitTime": 1.75
-                      }
-                    },
-                    {
-                      "type": "named",
-                      "data": {
-                        "name": "intakeNote"
-                      }
-                    }
-                  ]
-                }
-              },
-              {
                 "type": "path",
                 "data": {
                   "pathName": "Starting Line to Ring 8"
-                }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "trackNote"
                 }
               }
             ]
@@ -115,12 +90,6 @@
                 "data": {
                   "pathName": "Wing Shot to Ring 7"
                 }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "trackNote"
-                }
               }
             ]
           }
@@ -190,12 +159,6 @@
                 "type": "path",
                 "data": {
                   "pathName": "Wing Shot to Ring 6 (Source Side)"
-                }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "trackNote"
                 }
               },
               {

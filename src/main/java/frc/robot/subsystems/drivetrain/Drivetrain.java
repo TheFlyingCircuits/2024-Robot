@@ -56,7 +56,6 @@ public class Drivetrain extends SubsystemBase {
     private SwerveDrivePoseEstimator fusedPoseEstimator;
     private SwerveDrivePoseEstimator wheelsOnlyPoseEstimator;
 
-    public boolean isTrackingNote = false;
     public boolean isTrackingSpeakerInAuto = false;
 
     private static Orchestra orchestra;
@@ -444,10 +443,6 @@ public class Drivetrain extends SubsystemBase {
         return visionInputs.nearestNoteRobotFrame.isPresent();
     }
 
-    public boolean shouldTrackNote() {
-        return intakeSeesNote() && isTrackingNote;
-    }
-
     /**
      * Gets the angle that the front of the robot needs to aim at in order to intake the nearest ring
      * seen on the intake camera. This is used for the rotation override during auto.
@@ -470,11 +465,6 @@ public class Drivetrain extends SubsystemBase {
             Logger.recordOutput("PathPlanner/rotationTargetOverride", angle);
             return Optional.of(angle);
         }
-        if (isTrackingNote && intakeSeesNote()) {
-            Rotation2d angle = getFieldRelativeRotationToNote();
-            Logger.recordOutput("PathPlanner/rotationTargetOverride", angle);
-            return Optional.empty();//Optional.of(angle);
-        }
         else {
             Logger.recordOutput("PathPlanner/rotationTargetOverride", new Rotation2d(0));
             return Optional.empty();
@@ -482,12 +472,13 @@ public class Drivetrain extends SubsystemBase {
     }
 
     public void driveTowardsNote() {
-
         if (visionInputs.nearestNoteRobotFrame.isEmpty()) {
+            // will contintue driving at previous speed.
             return;
         }
 
-        double maxAccel = 2.35; // [meters per second per second] (emperically determined)
+        // TODO: maybe put back to 2.35, it turns out the pickup was a different issue.
+        double maxAccel = 1.5; // 2.35 [meters per second per second] (emperically determined)
 
         double distanceToNote = visionInputs.nearestNoteRobotFrame.get().toTranslation2d().getDistance(new Translation2d());
 
@@ -602,7 +593,6 @@ public class Drivetrain extends SubsystemBase {
 
         Logger.recordOutput("drivetrain/anglePIDSetpoint", Rotation2d.fromDegrees(angleController.getSetpoint()));
         Logger.recordOutput("drivetrain/isAligned", isAligned());
-        Logger.recordOutput("drivetrain/isTrackingNote", isTrackingNote);
         Logger.recordOutput("drivetrain/fieldRelativeRotationToNote", getFieldRelativeRotationToNote());
 
 

@@ -3,28 +3,28 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 8.53,
-        "y": 0.86
+        "x": 10.549520329809893,
+        "y": 1.4504405931888795
       },
       "prevControl": null,
       "nextControl": {
-        "x": 9.239224122038067,
-        "y": 1.1039285647875903
+        "x": 11.25874445184796,
+        "y": 1.6943691579764697
       },
       "isLocked": true,
       "linkedName": "Ring 8 Pickup (From Starting Line)"
     },
     {
       "anchor": {
-        "x": 10.71,
-        "y": 1.59
+        "x": 10.815927785701726,
+        "y": 1.5787108497293916
       },
       "prevControl": {
-        "x": 10.000775877961935,
-        "y": 1.34607143521241
+        "x": 10.10670366366366,
+        "y": 1.3347822849418016
       },
       "nextControl": null,
-      "isLocked": true,
+      "isLocked": false,
       "linkedName": "Wing Shot (Source Side)"
     }
   ],

@@ -28,12 +28,6 @@
                     {
                       "type": "named",
                       "data": {
-                        "name": "trackNote"
-                      }
-                    },
-                    {
-                      "type": "named",
-                      "data": {
                         "name": "intakeNote"
                       }
                     }
@@ -110,12 +104,6 @@
                     {
                       "type": "named",
                       "data": {
-                        "name": "trackNote"
-                      }
-                    },
-                    {
-                      "type": "named",
-                      "data": {
                         "name": "intakeNote"
                       }
                     }
@@ -187,12 +175,6 @@
                       "type": "wait",
                       "data": {
                         "waitTime": 0.5
-                      }
-                    },
-                    {
-                      "type": "named",
-                      "data": {
-                        "name": "trackNote"
                       }
                     },
                     {

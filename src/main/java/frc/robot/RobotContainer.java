@@ -131,19 +131,16 @@ public class RobotContainer {
         
         NamedCommands.registerCommand("prepShot", prepAutoSpeakerShot());
         NamedCommands.registerCommand("shootFromAnywhere", speakerShot());
-        NamedCommands.registerCommand("waitIndexNote", indexNote().withTimeout(4).finallyDo(() -> {drivetrain.isTrackingNote = false;}));
-        NamedCommands.registerCommand("indexNote", indexNote().withTimeout(2).finallyDo(() -> {drivetrain.isTrackingNote = false;}));
-        NamedCommands.registerCommand("intakeNote", intakeNote().withTimeout(1.5).finallyDo(() -> {drivetrain.isTrackingNote = false;}));
+        NamedCommands.registerCommand("waitIndexNote", indexNote().withTimeout(4));
+        NamedCommands.registerCommand("indexNote", indexNote().withTimeout(2));
+        NamedCommands.registerCommand("intakeNote", intakeNote().withTimeout(1.5));
         NamedCommands.registerCommand("rapidFire", prepAutoSpeakerShot().alongWith(runIntake(true)));
-        NamedCommands.registerCommand("trackNote", new InstantCommand(() -> {drivetrain.isTrackingNote = true;}));
         NamedCommands.registerCommand("resetShooter", resetShooter());
         NamedCommands.registerCommand("intakeTowardsNote", intakeTowardsNote());
 
 
         ringJustEnteredIntake = new Trigger(intake::ringJustEnteredIntake);
         inSpeakerShotRange = new Trigger(drivetrain::inSpeakerShotRange);
-
-        ringJustEnteredIntake.onTrue(new InstantCommand(() -> {drivetrain.isTrackingNote = false;}));
 
         realBindings();
     }
@@ -173,7 +170,7 @@ public class RobotContainer {
      * @param rapidFire - whether or not we are rapid firing (in auto); if we are, we want to run the indexer faster.
      */
     public Command runIntake(boolean rapidFire) {
-        return new ScheduleCommand(leds.playIntakeAnimationCommand(drivetrain::shouldTrackNote))
+        return new ScheduleCommand(leds.playIntakeAnimationCommand(drivetrain::intakeSeesNote))
                .andThen(
                     indexer.setOrangeWheelsSurfaceSpeedCommand(rapidFire ? 4 : 2.5)
                     .alongWith(intake.setVoltsCommand(12))

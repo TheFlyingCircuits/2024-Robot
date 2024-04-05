@@ -3,13 +3,13 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 8.55,
-        "y": 4.1
+        "x": 10.667923643539597,
+        "y": 4.09478126648561
       },
       "prevControl": null,
       "nextControl": {
-        "x": 9.55,
-        "y": 4.1
+        "x": 11.667923643539597,
+        "y": 4.09478126648561
       },
       "isLocked": true,
       "linkedName": "Ring 6 Pickup (From Center Stage)"

@@ -21,26 +21,26 @@
       },
       "prevControl": {
         "x": 12.958968313515195,
-        "y": 4.953513268955454
+        "y": 4.953513268955457
       },
       "nextControl": {
-        "x": 10.743751509295086,
-        "y": 4.298597617668351
+        "x": 11.535693596922291,
+        "y": 4.532730577978137
       },
       "isLocked": true,
       "linkedName": "Stage Right Passthrough"
     },
     {
       "anchor": {
-        "x": 8.55,
-        "y": 4.1
+        "x": 10.667923643539597,
+        "y": 4.09478126648561
       },
       "prevControl": {
-        "x": 9.55,
-        "y": 4.1
+        "x": 11.667923643539597,
+        "y": 4.09478126648561
       },
       "nextControl": null,
-      "isLocked": true,
+      "isLocked": false,
       "linkedName": "Ring 6 Pickup (From Center Stage)"
     }
   ],
@@ -54,7 +54,7 @@
     "maxAngularAcceleration": 360.0
   },
   "goalEndState": {
-    "velocity": 0,
+    "velocity": 4.0,
     "rotation": 0,
     "rotateFast": true
   },
