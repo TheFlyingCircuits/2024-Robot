@@ -6,7 +6,6 @@ import edu.wpi.first.wpilibj.Timer;
 import frc.lib.subsystem.Fault;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import com.ctre.phoenix6.StatusCode;

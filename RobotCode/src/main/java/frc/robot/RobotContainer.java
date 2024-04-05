@@ -7,6 +7,7 @@ package frc.robot;
 import frc.robot.Constants.ArmConstants;
 import frc.robot.Constants.FieldElement;
 import frc.robot.commands.AimEverythingAtAmp;
+import frc.robot.commands.MeasureWheelDiameter;
 import frc.robot.commands.PrepShot;
 import frc.robot.commands.TrapRoutine;
 import frc.robot.subsystems.AutoDiagnose;

@@ -13,12 +13,13 @@ import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.Commands;
+import frc.lib.subsystem.DiagnosticSubsystem;
 import frc.robot.Constants.IntakeConstants;
 import frc.robot.VendorWrappers.Neo;
 
 /** Add your docs here. */
-public class Intake extends SubsystemBase {
+public class Intake extends DiagnosticSubsystem {
 
     private boolean intakeSensorTriggeredPrev = false;
     private boolean intakeSensorTriggeredNow = false;
@@ -30,7 +31,7 @@ public class Intake extends SubsystemBase {
     private DigitalInput intakeProximitySwitchRight;
 
     /**
-     * Motor object that controls the four axles on the front of the intake. 
+     * Motor object that controls the four axles on the front of the intake.
      * A positive voltage spins the axles to suck a note into the robot.
      */
     private Neo frontIntakeMotor;
@@ -42,7 +43,7 @@ public class Intake extends SubsystemBase {
 
     private SimpleMotorFeedforward frontFeedforward;
     private SimpleMotorFeedforward backFeedforward;
-    
+
     private PIDController frontController;
     private PIDController backController;
 
@@ -55,19 +56,19 @@ public class Intake extends SubsystemBase {
         backIntakeMotor = new Neo("backIntake", IntakeConstants.backIntakeMotorID);
 
         frontFeedforward = new SimpleMotorFeedforward(
-            IntakeConstants.kSFrontIntakeVolts,
-            IntakeConstants.kVFrontIntakeVoltsPerRPM);
+                IntakeConstants.kSFrontIntakeVolts,
+                IntakeConstants.kVFrontIntakeVoltsPerRPM);
 
         backFeedforward = new SimpleMotorFeedforward(
-            IntakeConstants.kSBackIntakeVolts, 
-            IntakeConstants.kVBackIntakeVoltsPerRPM);
+                IntakeConstants.kSBackIntakeVolts,
+                IntakeConstants.kVBackIntakeVoltsPerRPM);
 
         frontController = new PIDController(
-            IntakeConstants.kPFrontIntakeVoltsPerRPM, 0, 0);
+                IntakeConstants.kPFrontIntakeVoltsPerRPM, 0, 0);
 
         backController = new PIDController(
-            IntakeConstants.kPBackIntakeVoltsPerRPM, 0, 0);
-        
+                IntakeConstants.kPBackIntakeVoltsPerRPM, 0, 0);
+
         configMotors();
     }
 
@@ -81,7 +82,9 @@ public class Intake extends SubsystemBase {
 
     /**
      * Sets the RPM of the intake axles, using closed loop control.
-     * @param rpm - RPM to have the motors spin at. A positive value will intake the note.
+     * 
+     * @param rpm - RPM to have the motors spin at. A positive value will intake the
+     *            note.
      */
     public void setRPM(double rpm) {
         double frontFeedforwardOutputVolts = frontFeedforward.calculate(rpm);
@@ -96,7 +99,9 @@ public class Intake extends SubsystemBase {
 
     /**
      * Sets the voltage of both intake motors.
-     * @param volts - Voltage to feed the intake motors. A positive value will intake a note.
+     * 
+     * @param volts - Voltage to feed the intake motors. A positive value will
+     *              intake a note.
      */
     public void setVolts(double volts) {
         frontIntakeMotor.setVoltage(volts);
@@ -104,7 +109,9 @@ public class Intake extends SubsystemBase {
     }
 
     public Command setVoltsCommand(double volts) {
-        return this.run(() -> {this.setVolts(volts);});
+        return this.run(() -> {
+            this.setVolts(volts);
+        });
     }
 
     public double getFrontRPM() {
@@ -132,7 +139,6 @@ public class Intake extends SubsystemBase {
         backIntakeMotor.burnFlash();
     }
 
-
     @Override
     public void periodic() {
         // save information from last iteration
@@ -150,7 +156,8 @@ public class Intake extends SubsystemBase {
         ringJustEnteredIntake = intakeSensorTriggeredNow && (!intakeSensorTriggeredPrev);
         if (ringJustEnteredIntake) {
             if (sensorDebounceTimer.get() < 1.0) {
-                // this is a duplicate trigger that happened too quickly after another recent trigger
+                // this is a duplicate trigger that happened too quickly after another recent
+                // trigger
                 ringJustEnteredIntake = false;
             } else {
                 // this is a legit trigger, so we reset the timer
@@ -164,5 +171,30 @@ public class Intake extends SubsystemBase {
         Logger.recordOutput("intake/backMotorAmps", backIntakeMotor.getOutputCurrent());
         Logger.recordOutput("intake/isRingInIntake", isRingInIntake());
     }
+
+    @Override
+    protected Command autoDiagnoseCommand() {
+        // TODO: Determine proper speeds and tolerances
+        return Commands.sequence(
+            Commands.runOnce(() -> {
+                this.setRPM(200);
+            }, this),
+            Commands.waitSeconds(1.0),
+            Commands.runOnce(() -> {
+                this.addFaults(this.frontIntakeMotor.autoDiagnoseIsAtTargetRPS(200, 3, true));
+                this.addFaults(this.backIntakeMotor.autoDiagnoseIsAtTargetRPS(200, 3, true));
+                this.setRPM(-200);
+            }, this),
+            Commands.waitSeconds(1.0),
+            Commands.runOnce(() -> {
+                this.addFaults(this.frontIntakeMotor.autoDiagnoseIsAtTargetRPS(-200, 3, false));
+                this.addFaults(this.backIntakeMotor.autoDiagnoseIsAtTargetRPS(-200, 3, false));
+                this.setRPM(0.0);
+            }, this)).until(() -> getFaults().size() > 0).withTimeout(6.5)
+            .andThen(() -> {
+                frontIntakeMotor.set(0.0);
+            }
+        );
+    };
 
 }

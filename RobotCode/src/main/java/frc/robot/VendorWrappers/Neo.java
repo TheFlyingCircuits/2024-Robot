@@ -187,7 +187,13 @@ public class Neo extends CANSparkMax {
         return faults;
     }
     
-
-
-    
+    /** 
+     * Returns the name assigned at motor initialization.
+     * It is how we should refer to this motor in error messages.
+     * <p>
+     * This specific method is useful for the automated diagnostic stuff to run stuff in paralell 
+     */
+    public String getName() {
+        return this.name;
+    }
 }

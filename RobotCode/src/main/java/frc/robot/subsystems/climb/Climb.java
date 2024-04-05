@@ -1,15 +1,21 @@
 package frc.robot.subsystems.climb;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.littletonrobotics.junction.Logger;
 
 import com.revrobotics.CANSparkBase.IdleMode;
 
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
+import frc.lib.subsystem.DiagnosticSubsystem;
+import frc.lib.subsystem.Fault;
 import frc.robot.Constants.ClimbConstants;
 import frc.robot.VendorWrappers.Neo;
 
-public class Climb extends SubsystemBase{
+public class Climb extends DiagnosticSubsystem {
     
     private Neo leftMotor;
     private Neo rightMotor;
@@ -143,6 +149,51 @@ public class Climb extends SubsystemBase{
         Logger.recordOutput("climb/rightArmPositionMeters", rightMotor.getPosition());
         Logger.recordOutput("climb/leftArmOutputCurrentAmps", leftMotor.getOutputCurrent());
         Logger.recordOutput("climb/rightArmOutputCurrentAmps", rightMotor.getOutputCurrent());
+    }
+
+    private List<Fault> getMotorsNotMovingFaults(boolean isUp) {
+        ArrayList<Fault> faults = new ArrayList<Fault>();
+        String direction = isUp ? "up" : "down";
+
+        if(Math.abs(leftMotor.getVelocity()) < 0.02) {
+            faults.add(new Fault("[Auto Diagnose] "+leftMotor.getName()+" not moving " +direction, false));
+        }
+        if(Math.abs(leftMotor.getVelocity()) < 0.02) {
+            faults.add(new Fault("[Auto Diagnose] "+rightMotor.getName()+" not moving " +direction, false));
+        }
+
+        return faults;
+    }
+
+    @Override
+    protected Command autoDiagnoseCommand() {
+        return Commands.sequence(
+            Commands.parallel(
+                this.raiseHooksCommand().until(() -> climbArmsUp()).withTimeout(3),
+                new WaitCommand(.2).andThen(() -> addFaults(getMotorsNotMovingFaults(true)))
+            ),
+            Commands.runOnce(()-> {
+                if(!leftArmUp()) {
+                    new Fault("[Auto Diagnose] "+leftMotor.getName()+" did not reach extension setpoint", false);
+                }
+                if(!rightArmUp()) {
+                    new Fault("[Auto Diagnose] "+rightMotor.getName()+" did not reach extension setpoint", false);
+                }
+            }),
+            Commands.parallel(
+                this.lowerHooksCommand().until(() -> climbArmsZero()).withTimeout(3),
+                new WaitCommand(.2).andThen(() -> addFaults(getMotorsNotMovingFaults(false)))
+            ),
+            Commands.runOnce(()-> {
+                if(!(Math.abs(leftMotor.getPosition()) < 0.02)) {
+                    new Fault("[Auto Diagnose] "+leftMotor.getName()+" did not reach zero setpoint", false);
+                }
+                if(!(Math.abs(rightMotor.getPosition()) < 0.02)) {
+                    new Fault("[Auto Diagnose] "+rightMotor.getName()+" did not reach zero setpoint", false);
+                }
+            })
+        ).until(() -> getFaults().size() > 0).withTimeout(6.5)
+            .andThen(this.lowerHooksCommand().until(() -> climbArmsZero()).withTimeout(3));
     }
 
 }
