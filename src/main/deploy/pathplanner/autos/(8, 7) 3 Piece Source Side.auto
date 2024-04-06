@@ -6,53 +6,67 @@
     "data": {
       "commands": [
         {
-          "type": "named",
-          "data": {
-            "name": "shootFromAnywhere"
-          }
-        },
-        {
           "type": "deadline",
           "data": {
             "commands": [
-              {
-                "type": "sequential",
-                "data": {
-                  "commands": [
-                    {
-                      "type": "wait",
-                      "data": {
-                        "waitTime": 1.75
-                      }
-                    },
-                    {
-                      "type": "named",
-                      "data": {
-                        "name": null
-                      }
-                    },
-                    {
-                      "type": "named",
-                      "data": {
-                        "name": "intakeNote"
-                      }
-                    }
-                  ]
-                }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "resetShooter"
-                }
-              },
               {
                 "type": "path",
                 "data": {
                   "pathName": "Starting Line to Ring 8"
                 }
+              },
+              {
+                "type": "sequential",
+                "data": {
+                  "commands": [
+                    {
+                      "type": "race",
+                      "data": {
+                        "commands": [
+                          {
+                            "type": "named",
+                            "data": {
+                              "name": "prepShot"
+                            }
+                          },
+                          {
+                            "type": "sequential",
+                            "data": {
+                              "commands": [
+                                {
+                                  "type": "wait",
+                                  "data": {
+                                    "waitTime": 0.85
+                                  }
+                                },
+                                {
+                                  "type": "named",
+                                  "data": {
+                                    "name": "fireNote"
+                                  }
+                                }
+                              ]
+                            }
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "type": "named",
+                      "data": {
+                        "name": "resetShooter"
+                      }
+                    }
+                  ]
+                }
               }
             ]
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "intakeTowardsNote"
           }
         },
         {
@@ -98,28 +112,9 @@
           "data": {
             "commands": [
               {
-                "type": "sequential",
+                "type": "path",
                 "data": {
-                  "commands": [
-                    {
-                      "type": "wait",
-                      "data": {
-                        "waitTime": 0.5
-                      }
-                    },
-                    {
-                      "type": "named",
-                      "data": {
-                        "name": null
-                      }
-                    },
-                    {
-                      "type": "named",
-                      "data": {
-                        "name": "intakeNote"
-                      }
-                    }
-                  ]
+                  "pathName": "Mid Shot to Ring 7 (Around Stage)"
                 }
               },
               {
@@ -127,14 +122,14 @@
                 "data": {
                   "name": "resetShooter"
                 }
-              },
-              {
-                "type": "path",
-                "data": {
-                  "pathName": "Mid Shot to Ring 7 (Around Stage)"
-                }
               }
             ]
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "intakeTowardsNote"
           }
         },
         {
@@ -173,6 +168,12 @@
           "type": "named",
           "data": {
             "name": "shootFromAnywhere"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "resetShooter"
           }
         }
       ]

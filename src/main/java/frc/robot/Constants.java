@@ -367,7 +367,7 @@ public final class Constants {
          *  Either way, it works for now, and we'll probably just stick with the fudge factor
          *  in the interest of time.
          */
-        public final static double speakerHeightFudgeFactorMeters = Units.inchesToMeters(-3.5); // accounts for difference in height between actuall note exit point and the pivot point. exit point is above the pivot, so effective vertical distance is less
+        public final static double speakerHeightFudgeFactorMeters = Units.inchesToMeters(-3.5*0); // accounts for difference in height between actuall note exit point and the pivot point. exit point is above the pivot, so effective vertical distance is less
         public final static double speakerHeightMeters = actualSpeakerHeightMeters + speakerHeightFudgeFactorMeters;
 
         /** X-Y position of the april tag at the center of the red speaker.  
@@ -381,10 +381,10 @@ public final class Constants {
         public final static Translation2d redSpeakerTranslation2d = new Translation2d(Units.inchesToMeters(652.73), Units.inchesToMeters(218.42));
 
         /** Distance from the floor to the center of the pivot. This is used for angle calculations for shoot from anywhere. */
-        public final static double pivotHeightMeters = Units.inchesToMeters(22);
+        public final static double pivotHeightMeters = Units.inchesToMeters(23.5);
         
         /** Horizontal distance from the robot center to the pivot center */
-        public final static double pivotOffsetMeters = 0.22; // 22 centimeters
+        public final static double pivotOffsetMeters = Units.inchesToMeters(9); // 22 centimeters
     }
 
     public final static class IntakeConstants {
