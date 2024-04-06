@@ -1,8 +1,5 @@
 package frc.robot.subsystems.climb;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.littletonrobotics.junction.Logger;
 
 import com.revrobotics.CANSparkBase.IdleMode;
@@ -151,27 +148,20 @@ public class Climb extends DiagnosticSubsystem {
         Logger.recordOutput("climb/rightArmOutputCurrentAmps", rightMotor.getOutputCurrent());
     }
 
-    private List<Fault> getMotorsNotMovingFaults(boolean isUp) {
-        ArrayList<Fault> faults = new ArrayList<Fault>();
-        String direction = isUp ? "up" : "down";
-
-        if(Math.abs(leftMotor.getVelocity()) < 0.02) {
-            faults.add(new Fault("[Auto Diagnose] "+leftMotor.getName()+" not moving " +direction, false));
-        }
-        if(Math.abs(leftMotor.getVelocity()) < 0.02) {
-            faults.add(new Fault("[Auto Diagnose] "+rightMotor.getName()+" not moving " +direction, false));
-        }
-
-        return faults;
-    }
-
     @Override
     protected Command autoDiagnoseCommand() {
         // TODO: figure out timeouts
         return Commands.sequence(
             Commands.parallel(
                 this.raiseHooksCommand().until(() -> climbArmsUp()).withTimeout(2),
-                new WaitCommand(.2).andThen(() -> addFaults(getMotorsNotMovingFaults(true)))
+                new WaitCommand(.2).andThen(() -> {
+                    if(Math.abs(leftMotor.getVelocity()) < 0.02) {
+                        addFault("[Auto Diagnose] "+leftMotor.getName()+" not moving up", false);
+                    }
+                    if(Math.abs(rightMotor.getVelocity()) < 0.02) {
+                        addFault("[Auto Diagnose] "+rightMotor.getName()+" not moving up", false);
+                    }
+                })
             ),
             Commands.runOnce(()-> {
                 if(!leftArmUp()) {
@@ -183,7 +173,14 @@ public class Climb extends DiagnosticSubsystem {
             }),
             Commands.parallel(
                 this.lowerHooksCommand().until(() -> climbArmsZero()).withTimeout(2),
-                new WaitCommand(.2).andThen(() -> addFaults(getMotorsNotMovingFaults(false)))
+                new WaitCommand(.2).andThen(() -> {
+                    if(Math.abs(leftMotor.getVelocity()) < 0.02) {
+                        addFault("[Auto Diagnose] "+leftMotor.getName()+" not moving down", false);
+                    }
+                    if(Math.abs(rightMotor.getVelocity()) < 0.02) {
+                        addFault("[Auto Diagnose] "+rightMotor.getName()+" not moving down", false);
+                    }
+                })
             ),
             Commands.runOnce(()-> {
                 if(!(Math.abs(leftMotor.getPosition()) < 0.02)) {
@@ -193,8 +190,7 @@ public class Climb extends DiagnosticSubsystem {
                     new Fault("[Auto Diagnose] "+rightMotor.getName()+" did not reach zero setpoint", false);
                 }
             })
-        ).until(() -> getFaults().size() > 0).withTimeout(13)
-            .andThen(this.lowerHooksCommand().until(() -> climbArmsZero()).withTimeout(3));
+        ).andThen(this.lowerHooksCommand().until(() -> climbArmsZero()).withTimeout(3));
     }
 
 }

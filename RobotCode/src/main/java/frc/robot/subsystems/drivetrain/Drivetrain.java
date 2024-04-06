@@ -36,7 +36,7 @@ import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.FlyingCircuitUtils;
+import frc.lib.FlyingCircuitUtils;
 import frc.robot.Constants.DrivetrainConstants;
 import frc.robot.Constants.FieldElement;
 import frc.robot.subsystems.vision.VisionIO;
