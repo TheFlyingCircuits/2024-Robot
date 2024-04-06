@@ -5,7 +5,6 @@ import java.util.List;
 
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.Pigeon2;
-import com.revrobotics.CANSparkMax;
 
 import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.RobotBase;
@@ -14,6 +13,8 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.lib.VendorWrappers.Kraken;
+import frc.lib.VendorWrappers.Neo;
 import frc.lib.subsystem.autodiagnose.AutoDiagnoseBase;
 import frc.lib.subsystem.autodiagnose.AutoDiagnoseCANSparkMAX;
 import frc.lib.subsystem.autodiagnose.AutoDiagnoseCANcoder;
@@ -21,7 +22,6 @@ import frc.lib.subsystem.autodiagnose.AutoDiagnoseCANivore;
 import frc.lib.subsystem.autodiagnose.AutoDiagnoseKraken;
 import frc.lib.subsystem.autodiagnose.AutoDiagnosePigeon2;
 import frc.lib.subsystem.autodiagnose.AutoDiagnosePowerDistributionHub;
-import frc.robot.VendorWrappers.Kraken;
 import frc.robot.subsystems.AutoDiagnose;
 
 public abstract class DiagnosticSubsystem extends SubsystemBase {
@@ -89,12 +89,12 @@ public abstract class DiagnosticSubsystem extends SubsystemBase {
         devices.add(new AutoDiagnoseCANivore(label, CANivoreName));
     }
 
-    public void addDevice(String label, CANSparkMax sparkMax) {
-        devices.add(new AutoDiagnoseCANSparkMAX(label, sparkMax));
+    public void addDevice(String label, Neo sparkMax) {
+        devices.add(new AutoDiagnoseCANSparkMAX(sparkMax));
     }
 
     public void addDevice(String label, Kraken kraken) {
-        devices.add(new AutoDiagnoseKraken(label, kraken));
+        devices.add(new AutoDiagnoseKraken(kraken));
     }
 
     public void addDevice(String label, Pigeon2 pigeon) {

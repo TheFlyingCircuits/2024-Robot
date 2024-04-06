@@ -1,4 +1,4 @@
-package frc.robot.VendorWrappers;
+package frc.lib.VendorWrappers;
 
 import com.ctre.phoenix6.hardware.TalonFX;
 

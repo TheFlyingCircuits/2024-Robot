@@ -6,8 +6,8 @@ import java.util.List;
 import com.ctre.phoenix6.StatusCode;
 import com.ctre.phoenix6.StatusSignal;
 
+import frc.lib.VendorWrappers.Kraken;
 import frc.lib.subsystem.Fault;
-import frc.robot.VendorWrappers.Kraken;
 
 public class AutoDiagnoseKraken implements AutoDiagnoseBase {
 
@@ -21,8 +21,8 @@ public class AutoDiagnoseKraken implements AutoDiagnoseBase {
 
 
 
-    public AutoDiagnoseKraken(String label, Kraken kraken) {
-        this.label = label;
+    public AutoDiagnoseKraken(Kraken kraken) {
+        this.label = kraken.getName();
 
         this.firmwareVersionSignal = kraken.getVersion();
         this.bootDuringEnableSignal = kraken.getFault_BootDuringEnable();

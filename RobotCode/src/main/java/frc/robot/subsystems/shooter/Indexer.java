@@ -11,9 +11,9 @@ import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import frc.lib.VendorWrappers.Kraken;
 import frc.lib.subsystem.DiagnosticSubsystem;
 import frc.robot.Constants.ShooterConstants;
-import frc.robot.VendorWrappers.Kraken;
 
 public class Indexer extends DiagnosticSubsystem {
 

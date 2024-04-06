@@ -14,9 +14,9 @@ import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import frc.lib.VendorWrappers.Neo;
 import frc.lib.subsystem.DiagnosticSubsystem;
 import frc.robot.Constants.IntakeConstants;
-import frc.robot.VendorWrappers.Neo;
 
 /** Add your docs here. */
 public class Intake extends DiagnosticSubsystem {

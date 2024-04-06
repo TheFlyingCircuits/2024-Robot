@@ -7,15 +7,16 @@ import com.revrobotics.CANSparkMax;
 
 import com.revrobotics.CANSparkBase.FaultID;
 
+import frc.lib.VendorWrappers.Neo;
 import frc.lib.subsystem.Fault;
 
 public class AutoDiagnoseCANSparkMAX implements AutoDiagnoseBase {
-    private final String label;
     private CANSparkMax sparkMax;
+        private final String label;
 
-    public AutoDiagnoseCANSparkMAX(String label, CANSparkMax sparkMax) {
-        this.label = label;
+    public AutoDiagnoseCANSparkMAX(Neo sparkMax) {
         this.sparkMax = sparkMax;
+        this.label = sparkMax.getName();
     }
 
     @Override

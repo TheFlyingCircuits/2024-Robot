@@ -9,10 +9,10 @@ import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.signals.SensorDirectionValue;
 
+import frc.lib.VendorWrappers.Kraken;
+import frc.lib.VendorWrappers.Neo;
 import frc.robot.Constants.MotorConstants;
 import frc.robot.Constants.SwerveModuleConstants;
-import frc.robot.VendorWrappers.Kraken;
-import frc.robot.VendorWrappers.Neo;
 
 public class SwerveModuleIOKraken implements SwerveModuleIO {
     private CANcoder absoluteEncoder;

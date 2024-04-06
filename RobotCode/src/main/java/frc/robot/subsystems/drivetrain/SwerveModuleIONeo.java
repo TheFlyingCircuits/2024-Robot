@@ -5,9 +5,9 @@ import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.signals.AbsoluteSensorRangeValue;
 import com.ctre.phoenix6.signals.SensorDirectionValue;
 
+import frc.lib.VendorWrappers.Neo;
 import frc.robot.Constants.MotorConstants;
 import frc.robot.Constants.SwerveModuleConstants;
-import frc.robot.VendorWrappers.Neo;
 
 public class SwerveModuleIONeo implements SwerveModuleIO{
 
