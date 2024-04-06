@@ -1,2 +1,9 @@
 /build/
 /.bin/
+/diagnostic_page/linux
+/diagnostic_page/macos
+/diagnostic_page/windows
+/diagnostic_page/linux
+/diagnostic_page/android
+/diagnostic_page/web
+/diagnostic_page/build

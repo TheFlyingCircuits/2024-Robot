@@ -30,7 +30,12 @@ migrate_working_dir/
 .pub-cache/
 .pub/
 /build/
-
+/linux/
+/macos/
+/windows/
+/ios/
+/web/
+/android/
 # Symbolication related
 app.*.symbols
 
