@@ -258,7 +258,7 @@ public class RobotContainer {
     }
 
     Command shart() {
-        return shootAtTarget(FieldElement.RIGHT_IN_FRONT_OF_YOU);
+        return shootAtTarget(FieldElement.CARPET);
     }
 
     Command lobShot() {

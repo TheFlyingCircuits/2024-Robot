@@ -130,7 +130,6 @@ public class Arm extends SubsystemBase {
     }
 
     public boolean isCloseToTarget() {
-        // TODO: pick a non-arbitrary value based on sensor resolution?
         boolean errorIsSmall = Math.abs(getErrorDegrees()) < 1.0;
         boolean isSteady = inputs.armVelocityDegreesPerSecond < 2.0;
         return errorIsSmall && isSteady; // This worked without the isSteady before because I forgot to deploy!

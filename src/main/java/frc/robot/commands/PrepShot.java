@@ -69,7 +69,6 @@ public class PrepShot extends Command {
         }
 
 
-        // TODO: have drivetrain always on target if not required? how to deal with this in auto?
         //       This will prob be part of the LED re-write to use progress instead of error?
         ledFeedbackCommand = leds.playAimingAnimationCommand(arm::getErrorDegrees, flywheels::getWorstError, drivetrain::getAngleError);
     }
@@ -78,7 +77,6 @@ public class PrepShot extends Command {
     public void initialize() {
         // drive angle error may be stale from last call,
         // and therefore display incorrectly on LEDs on first frame?
-        // TODO: look into this.
         ledFeedbackCommand.schedule();
         setpointsAreFresh = false;
     }
@@ -101,7 +99,6 @@ public class PrepShot extends Command {
         }
         flywheels.setLeftFlywheelsMetersPerSecond(leftFlywheelMetersPerSecond);
         flywheels.setRightFlywheelsMetersPerSecond(rightFlywheelMetersPerSecond);
-        // TODO: use measured avg of flywheel speed?
 
         // Arm
         double horizontalDistance = armDistToTargetMeters();
@@ -116,7 +113,7 @@ public class PrepShot extends Command {
             // lob shot
             desiredArmAngle = 35;//getGravCompensatedArmDesiredDegrees(horizontalDistance, verticalDistance, estimatedExitVelocity, true);
         }
-        if (target == FieldElement.RIGHT_IN_FRONT_OF_YOU) {
+        if (target == FieldElement.CARPET) {
             // shart
             desiredArmAngle = getSimpleArmDesiredDegrees(horizontalDistance, verticalDistance);
         }

@@ -269,7 +269,7 @@ public class LEDs extends SubsystemBase {
 
     public Command playAimingAnimationCommand(Supplier<Double> armErrorDegrees, Supplier<Double> flywheelErrorMetersPerSecond, Supplier<Double> drivetrainErrorDegrees) {
         return this.run(() -> {
-            // TODO: get tollerances from subsystems
+            // TODO: get tolerances from subsystems
             // multiply by 3 so that we're at yellow/green when within tolerance.
             // Arm
             double maxArmErrorToShow = 3 * 1.0;

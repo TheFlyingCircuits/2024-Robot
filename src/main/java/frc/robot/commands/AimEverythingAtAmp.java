@@ -28,7 +28,13 @@ public class AimEverythingAtAmp extends Command {
 
 
     
-    /** We are just using manual control for the time being. */
+    /** Moves the arm to the correct position for an amp shot, while also revving the flywheels.
+     * 
+     * @param useAutoRotate - Whether or not to have the drivetrain auto-rotate to face the amp. 
+     * If this value is true, the driver controls translation while the robot takes over rotation.
+     * @param translationController - Supplier that will give a ChasissSpeeds object for the robot to drive at.
+     * If useAutoRotate is true, the rotation component of the ChassisSpeeds is ignored.
+     */
     public AimEverythingAtAmp(boolean useAutoRotate, Drivetrain drivetrain, Arm arm, Shooter flywheels, Supplier<ChassisSpeeds> translationController, LEDs leds) {
         this.drivetrain = drivetrain;
         this.arm = arm;
@@ -65,7 +71,6 @@ public class AimEverythingAtAmp extends Command {
         }
 
         // drive angle error may be stale from last call?
-        // TODO: look into this.
         ledFeedbackCommand.schedule();
         setpointsAreFresh = false;
     }
@@ -75,7 +80,7 @@ public class AimEverythingAtAmp extends Command {
         ChassisSpeeds desiredTranslationalSpeeds = translationController.get();
         if (useAutoRotate) {
             // point the back of the robot at the amp.
-            Rotation2d desiredAngle = FlyingCircuitUtils.getAngleToFieldElement(FieldElement.AMP, drivetrain.getPoseMeters()).rotateBy(Rotation2d.fromDegrees(180));
+            Rotation2d desiredAngle = Rotation2d.fromDegrees(-90);
             drivetrain.fieldOrientedDriveWhileAiming(desiredTranslationalSpeeds, desiredAngle);
         }
         else {

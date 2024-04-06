@@ -68,7 +68,7 @@ public class FlyingCircuitUtils {
     }
 
     public static Translation2d getVectorToFieldElement(FieldElement element, Pose2d yourPoseOnTheField) {
-        if (element == FieldElement.RIGHT_IN_FRONT_OF_YOU) {
+        if (element == FieldElement.CARPET) {
             // delta between you and right in front of you
             // is just a unit vector that points in the direction you're facing.
             return new Translation2d(yourPoseOnTheField.getRotation().getCos(), yourPoseOnTheField.getRotation().getSin());
