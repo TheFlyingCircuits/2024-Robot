@@ -153,11 +153,6 @@ public class Robot extends LoggedRobot {
     /** This function is called periodically during test mode. */
     @Override
     public void testPeriodic() {
-        //TODO: Test and find way to potentially integrate with pit display keyboard over networktables
-        CommandXboxController controller = m_robotContainer.charlie.getXboxController();
-        controller.x().onTrue(m_robotContainer.autoDiagnoseAllSubsystemsCommand());
-        controller.povUp().onTrue(new MeasureWheelDiameter(m_robotContainer.drivetrain));
-        controller.b().onTrue(new InstantCommand(()-> {CommandScheduler.getInstance().cancelAll();} ));
     }
 
     /** This function is called once when the robot is first started up. */

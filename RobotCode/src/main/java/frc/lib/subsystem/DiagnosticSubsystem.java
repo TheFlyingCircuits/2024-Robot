@@ -50,14 +50,14 @@ public abstract class DiagnosticSubsystem extends SubsystemBase {
     public Command getAutoDiagnoseCommand() {
         return Commands.sequence(
                 Commands.runOnce(() -> {
-                    SmartDashboard.putBoolean(statusDirectory + "RanCheck", false);
+                    SmartDashboard.putBoolean(statusDirectory + "/RanCheck", false);
                     clearAllFaults();
                     publishDiagnostics();
                 }),
                 autoDiagnoseCommand(),
                 Commands.runOnce(() -> {
                     publishDiagnostics();
-                    SmartDashboard.putBoolean(statusDirectory + "RanCheck", true);
+                    SmartDashboard.putBoolean(statusDirectory + "/RanCheck", true);
                 }));
     }
 

@@ -22,6 +22,7 @@ import edu.wpi.first.wpilibj.smartdashboard.MechanismRoot2d;
 import edu.wpi.first.wpilibj.sysid.SysIdRoutineLog;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Config;
 import frc.lib.subsystem.DiagnosticSubsystem;
@@ -262,32 +263,31 @@ public class Arm extends DiagnosticSubsystem {
     protected Command autoDiagnoseCommand() {
         return Commands.sequence(
             Commands.runOnce(() -> {this.setDisableSetpointChecking(false);}),
-            this.setDesiredDegreesCommand(ArmConstants.armMaxAngleDegrees).withTimeout(1),
+            this.setDesiredDegreesCommand(ArmConstants.armMaxAngleDegrees).withTimeout(2),
             Commands.runOnce(() -> {
                 if(!this.isCloseToTarget()) {
                     new Fault("[Auto Diagnose] arm not reaching max angle", false);
                 }
             }),
-            this.setDesiredDegreesCommand(ArmConstants.armMinAngleDegrees).withTimeout(1),
+            this.setDesiredDegreesCommand(ArmConstants.armMinAngleDegrees).withTimeout(2),
             Commands.runOnce(() -> {
                 if(!this.isCloseToTarget()) {
                     new Fault("[Auto Diagnose] arm not reaching min angle", false);
                 }
             }),
             // AMP ANGLE
-            this.setDesiredDegreesCommand(110).withTimeout(1),
+            this.setDesiredDegreesCommand(110).withTimeout(2),
             Commands.runOnce(() -> {
                 if(!this.isCloseToTarget()) {
                     new Fault("[Auto Diagnose] arm not reaching AMP angle", false);
                 }
             }),
-            this.resetShooterAngle().withTimeout(1),
+            this.resetShooterAngle().withTimeout(2),
             Commands.runOnce(() -> {
                 if(!this.isCloseToTarget()) {
                     new Fault("[Auto Diagnose] arm not reaching home", false);
                 }
             })
-        ).until(() -> getFaults().size() > 0).withTimeout(13)
-        .andThen(this.resetShooterAngle().until(()-> this.isCloseToTarget()).withTimeout(3));
+        ).andThen(this.resetShooterAngle().withTimeout(2));
     }
 }

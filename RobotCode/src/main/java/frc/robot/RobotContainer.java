@@ -154,7 +154,8 @@ public class RobotContainer {
 
         ringJustEnteredIntake.onTrue(new InstantCommand(() -> {drivetrain.isTrackingNote = false;}));
 
-        realBindings();
+        // realBindings();
+        testBindings();
     }
 
     Command intakeTowardsNote() {
@@ -296,11 +297,11 @@ public class RobotContainer {
 
         Command command = Commands.sequence(
             // TODO: add drivetrain?
-            arm.getAutoDiagnoseCommand(),
-            climb.getAutoDiagnoseCommand(),
-            intake.getAutoDiagnoseCommand(),
-            indexer.getAutoDiagnoseCommand(),
-            shooter.getAutoDiagnoseCommand()
+            arm.getAutoDiagnoseCommand()//,
+            // climb.getAutoDiagnoseCommand(),
+            // intake.getAutoDiagnoseCommand(),
+            // indexer.getAutoDiagnoseCommand(),
+            // shooter.getAutoDiagnoseCommand()
         );
         command.addRequirements(
             arm,
@@ -371,5 +372,12 @@ public class RobotContainer {
         ringJustEnteredIntake.onTrue(this.signalNoteInIntake().ignoringDisable(true));
         // TODO: prevent flash on reverse? Either condition with positive wheel speeds,
         //       or no seperate schedule command?
+    }
+
+    public void testBindings() {
+        CommandXboxController controller = charlie.getXboxController();
+
+        controller.a().onTrue(autoDiagnoseAllSubsystemsCommand());
+
     }
 }
