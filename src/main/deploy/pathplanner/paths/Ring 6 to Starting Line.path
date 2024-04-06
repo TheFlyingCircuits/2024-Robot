@@ -3,32 +3,16 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 10.667923643539597,
-        "y": 4.09478126648561
+        "x": 10.382675317258354,
+        "y": 4.115574513314067
       },
       "prevControl": null,
       "nextControl": {
-        "x": 11.667923643539597,
-        "y": 4.09478126648561
+        "x": 11.382675317258354,
+        "y": 4.115574513314067
       },
-      "isLocked": true,
+      "isLocked": false,
       "linkedName": "Ring 6 Pickup (From Center Stage)"
-    },
-    {
-      "anchor": {
-        "x": 12.0,
-        "y": 4.67
-      },
-      "prevControl": {
-        "x": 10.743751509295086,
-        "y": 4.298597617668351
-      },
-      "nextControl": {
-        "x": 12.958968313515202,
-        "y": 4.953513268955458
-      },
-      "isLocked": true,
-      "linkedName": "Stage Right Passthrough"
     },
     {
       "anchor": {
@@ -36,11 +20,11 @@
         "y": 4.825
       },
       "prevControl": {
-        "x": 13.65,
-        "y": 4.825
+        "x": 11.722968610089838,
+        "y": 5.062520861510224
       },
       "nextControl": null,
-      "isLocked": true,
+      "isLocked": false,
       "linkedName": "Starting Line (Between Ring 2 and 3)"
     }
   ],
@@ -62,7 +46,7 @@
   "folder": "5 Piece Center Side",
   "previewStartingState": {
     "rotation": 0,
-    "velocity": 0
+    "velocity": 4.0
   },
   "useDefaultConstraints": true
 }
