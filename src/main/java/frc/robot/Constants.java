@@ -4,15 +4,14 @@
 
 package frc.robot;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Arrays;
 
+import com.pathplanner.lib.path.PathConstraints;
 import com.revrobotics.CANSparkBase.IdleMode;
 
 import edu.wpi.first.apriltag.AprilTag;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
-import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
@@ -21,7 +20,6 @@ import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 
 /**
  * The Constants class provides a convenient place for teams to hold robot-wide numerical or boolean
@@ -140,7 +138,9 @@ public final class Constants {
         public static final double maxDesiredTeleopAngularVelocityRadiansPerSecond = Units.rotationsToRadians(0.85);
 
 
-
+        public static final PathConstraints pathfindingConstraints = new PathConstraints(
+                1.0, 1.0,
+                Units.degreesToRadians(360), Units.degreesToRadians(360));
     }
 
     public final static class ControllerConstants {
@@ -345,7 +345,8 @@ public final class Constants {
     }
 
     public static enum FieldElement {
-        SPEAKER, AMP, STAGE_LEFT, STAGE_RIGHT, CENTER_STAGE, LOB_TARGET, CARPET
+        SPEAKER, AMP, STAGE_LEFT, STAGE_RIGHT, CENTER_STAGE, LOB_TARGET, CARPET,
+        NOTE_1, NOTE_2, NOTE_3, NOTE_4, NOTE_5, NOTE_6, NOTE_7, NOTE_8
     }
 
 
