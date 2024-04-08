@@ -122,9 +122,10 @@ public class Drivetrain extends SubsystemBase {
             getModulePositions(), 
             new Pose2d());
 
-        angleController = new PIDController(11, 0, 0.5); // kP has units of degreesPerSecond per degree of error.
+        //angleController = new PIDController(11, 0, 0.5); // kP has units of degreesPerSecond per degree of error.
+        angleController = new PIDController(8, 0, 0);
         angleController.enableContinuousInput(-180, 180);
-        angleController.setTolerance(1.0); // degrees.
+        angleController.setTolerance(2.0); // degrees.
 
         translationController = new PIDController(4.0, 0, 0); // kP has units of metersPerSecond per meter of error.
         translationController.setTolerance(0.05); // 5 centimeters
@@ -478,7 +479,7 @@ public class Drivetrain extends SubsystemBase {
         }
 
         // TODO: maybe put back to 2.35, it turns out the pickup was a different issue.
-        double maxAccel = 1.5; // 2.35 [meters per second per second] (emperically determined)
+        double maxAccel = 2.35; // 2.35 [meters per second per second] (emperically determined)
 
         double distanceToNote = visionInputs.nearestNoteRobotFrame.get().toTranslation2d().getDistance(new Translation2d());
 

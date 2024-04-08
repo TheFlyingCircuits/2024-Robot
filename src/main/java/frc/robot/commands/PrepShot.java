@@ -4,6 +4,7 @@ import java.util.function.Supplier;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants.FieldConstants;
@@ -107,7 +108,12 @@ public class PrepShot extends Command {
 
         double desiredArmAngle = arm.getDegrees();
         if (target == FieldElement.SPEAKER) {
-            desiredArmAngle = getGravCompensatedArmDesiredDegrees(horizontalDistance, verticalDistance, estimatedExitVelocity, false);
+            for (int i = 0; i < 4; i += 1) {
+                desiredArmAngle = getGravCompensatedArmDesiredDegrees(horizontalDistance, verticalDistance, estimatedExitVelocity, false);
+                double armLengthMeters = Units.inchesToMeters(19);
+                horizontalDistance = armDistToTargetMeters() - (armLengthMeters * Math.cos(Math.toRadians(desiredArmAngle)));
+                verticalDistance = (getTargetHeight(target) - FieldConstants.pivotHeightMeters) - (armLengthMeters * Math.sin(Math.toRadians(desiredArmAngle)));
+            }
         }
         if (target == FieldElement.LOB_TARGET) {
             // lob shot
@@ -115,7 +121,7 @@ public class PrepShot extends Command {
         }
         if (target == FieldElement.CARPET) {
             // shart
-            desiredArmAngle = getSimpleArmDesiredDegrees(horizontalDistance, verticalDistance);
+            desiredArmAngle = 0;//getSimpleArmDesiredDegrees(horizontalDistance, verticalDistance);
         }
         arm.setDesiredDegrees(desiredArmAngle);
 

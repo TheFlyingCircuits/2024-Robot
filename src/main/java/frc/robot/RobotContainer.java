@@ -33,10 +33,14 @@ import frc.robot.subsystems.vision.VisionIOPhotonLib;
 import edu.wpi.first.wpilibj.util.Color;
 
 import java.util.ArrayList;
+import java.util.Optional;
+
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.RobotBase;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -129,6 +133,20 @@ public class RobotContainer {
         shooter.setDefaultCommand(shooter.setFlywheelSurfaceSpeedCommand(0));
         climb.setDefaultCommand(Commands.run(() -> {climb.setVolts(0);}, climb));
         arm.setDefaultCommand(arm.holdCurrentPositionCommand().ignoringDisable(true));
+
+        Trigger overTheMidlineInAuto = new Trigger(() -> {
+            Optional<Alliance> alliance  = DriverStation.getAlliance();
+            if (!alliance.isPresent()) {
+                return true;
+            }
+            double midlineX = 8.27;
+            double bumperLength = 0.91;
+            double overshootAllowance = bumperLength / 4;
+            double robotX = drivetrain.getPoseMeters().getX();
+            boolean over = (alliance.get() == Alliance.Blue) && (robotX >= (midlineX + overshootAllowance));
+            over |= (alliance.get() == Alliance.Red) && (robotX <= (midlineX - overshootAllowance));
+            return over;
+        });
         
         NamedCommands.registerCommand("prepShot", prepAutoSpeakerShot());
         NamedCommands.registerCommand("shootFromAnywhere", speakerShot());
@@ -137,7 +155,8 @@ public class RobotContainer {
         NamedCommands.registerCommand("intakeNote", intakeNote().withTimeout(1.5));
         NamedCommands.registerCommand("rapidFire", prepAutoSpeakerShot().alongWith(runIntake(true)));
         NamedCommands.registerCommand("resetShooter", resetShooter());
-        NamedCommands.registerCommand("intakeTowardsNote", intakeTowardsNote());
+        NamedCommands.registerCommand("intakeTowardsNote", intakeTowardsNote().until(overTheMidlineInAuto));
+        NamedCommands.registerCommand("fireNote", fireNote().withTimeout(0.15));
 
 
         ringJustEnteredIntake = new Trigger(intake::ringJustEnteredIntake);
@@ -145,6 +164,7 @@ public class RobotContainer {
 
         realBindings();
     }
+
 
 
     //these command compositions must be separated into their own methods
@@ -159,7 +179,7 @@ public class RobotContainer {
     private Command runIntake(boolean rapidFire) {
         return new ScheduleCommand(leds.playIntakeAnimationCommand(drivetrain::intakeSeesNote))
                .andThen(
-                    indexer.setOrangeWheelsSurfaceSpeedCommand(rapidFire ? 4 : 2.5)
+                    indexer.setOrangeWheelsSurfaceSpeedCommand(rapidFire ? 2.5 : 2.5)
                     .alongWith(intake.setVoltsCommand(12))
                );
     }
@@ -242,7 +262,7 @@ public class RobotContainer {
         Command waitForAlignment = new WaitUntilCommand(aim::readyToShoot);
         Command fire = fireNote();
         if (target == FieldElement.SPEAKER || target == FieldElement.LOB_TARGET) {
-            fire = fire.withTimeout(0.2);
+            fire = fire.withTimeout(0.1);
         }
         return aim.raceWith(waitForAlignment.andThen(fireNote()));
     }
@@ -274,6 +294,14 @@ public class RobotContainer {
         return drivetrain.run(drivetrain::driveTowardsNote)
                .raceWith(intakeNote())
                .withTimeout(3.0);
+    }
+
+    
+
+    Command indexTowardsNote() {
+        return drivetrain.run(drivetrain::driveTowardsNote)
+               .raceWith(intakeNote())
+               .andThen(new ScheduleCommand(indexNote()));
     }
 
     private Command pathfindToNote(FieldElement note) {
@@ -325,7 +353,8 @@ public class RobotContainer {
             //.onTrue(intakeNote().raceWith(resetShooter()));
             //.whileTrue(new NoteTrackingIndexNote(intake, indexer, drivetrain, charlie::getRequestedFieldOrientedVelocity));
             //.whileTrue(intakeTowardsNote());
-            .onTrue(indexNote().raceWith(resetShooter())); // reset never ends, indexNote does.
+            .whileTrue(indexTowardsNote());
+            //.onTrue(indexNote().raceWith(resetShooter())); // reset never ends, indexNote does.
     
         controller.leftTrigger().whileTrue(reverseIntake());
         
