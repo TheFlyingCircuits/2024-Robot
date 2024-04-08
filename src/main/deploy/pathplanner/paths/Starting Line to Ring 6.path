@@ -8,10 +8,10 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 11.322337462776078,
-        "y": 4.996963037404336
+        "x": 13.65,
+        "y": 4.825
       },
-      "isLocked": false,
+      "isLocked": true,
       "linkedName": "Starting Line (Between Ring 2 and 3)"
     },
     {

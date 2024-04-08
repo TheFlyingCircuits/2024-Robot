@@ -11,7 +11,7 @@
         "x": 11.4921246802663,
         "y": 4.567246926518877
       },
-      "isLocked": false,
+      "isLocked": true,
       "linkedName": "Ring 6 Pickup (From Center Stage)"
     },
     {
@@ -36,11 +36,11 @@
         "y": 4.825
       },
       "prevControl": {
-        "x": 11.722968610089838,
-        "y": 5.062520861510224
+        "x": 13.65,
+        "y": 4.825
       },
       "nextControl": null,
-      "isLocked": false,
+      "isLocked": true,
       "linkedName": "Starting Line (Between Ring 2 and 3)"
     }
   ],
