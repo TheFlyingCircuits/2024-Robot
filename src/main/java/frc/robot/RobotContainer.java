@@ -5,10 +5,10 @@
 package frc.robot;
 
 import frc.robot.Constants.ArmConstants;
+import frc.robot.Constants.DrivetrainConstants;
 import frc.robot.Constants.FieldElement;
 import frc.robot.commands.AimEverythingAtAmp;
 import frc.robot.commands.MeasureWheelDiameter;
-import frc.robot.commands.NoteTrackingIndexNote;
 import frc.robot.commands.PrepShot;
 import frc.robot.commands.TrapRoutine;
 import frc.robot.subsystems.HumanDriver;
@@ -32,21 +32,22 @@ import frc.robot.subsystems.vision.VisionIOPhotonLib;
 
 import edu.wpi.first.wpilibj.util.Color;
 
+import java.util.ArrayList;
 import java.util.Optional;
 
+import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
-
-import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.RobotBase;
-import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.ParallelDeadlineGroup;
 import edu.wpi.first.wpilibj2.command.ScheduleCommand;
-import edu.wpi.first.wpilibj2.command.WaitCommand;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -164,32 +165,12 @@ public class RobotContainer {
         realBindings();
     }
 
-    Command intakeTowardsNote() {
-        return drivetrain.run(() -> {drivetrain.driveTowardsNote(charlie::getRequestedFieldOrientedVelocity);})
-               .raceWith(intakeNote())
-               .withTimeout(3.0);
-    }
-
-    Command indexTowardsNote() {
-        return drivetrain.run(() -> {drivetrain.driveTowardsNote(charlie::getRequestedFieldOrientedVelocity);})
-               .raceWith(intakeNote())
-               .andThen(new ScheduleCommand(indexNote()));
-    }
-
-    /**
-     * Aims the flywheels and arm at the speaker, while also setting the Pathplanner rotation override.
-     * This command never finishes.
-     */
-    Command prepAutoSpeakerShot() {
-        return new InstantCommand(() -> {drivetrain.isTrackingSpeakerInAuto = true;})
-                .andThen(new PrepShot(false, drivetrain, arm, shooter, null, leds, FieldElement.SPEAKER))
-                .finallyDo(() -> {drivetrain.isTrackingSpeakerInAuto = false;});
-
-    }
 
     //these command compositions must be separated into their own methods
     //since wpilib requires a new instance of a command to be used in each
     //composition (the same instance of a command cannot be used in multiple compositions).
+
+    /**** INTAKE/INDEX ****///////////////////////////////////////////////////////////////////////
 
     /**
      * @param rapidFire - whether or not we are rapid firing (in auto); if we are, we want to run the indexer faster.
@@ -199,7 +180,7 @@ public class RobotContainer {
                     .alongWith(intake.setVoltsCommand(12));
     }
 
-    public Command reverseIntake() {
+    private Command reverseIntake() {
         return indexer.run(() -> {indexer.setVolts(-8);})
                .alongWith(intake.setVoltsCommand(-8));
                // TODO: reverse LEDs when barfing?
@@ -219,13 +200,13 @@ public class RobotContainer {
         .andThen(new ScheduleCommand(leds.strobeCommand(Color.kWhite, 4, 0.5).andThen(leds.playIntakeAnimationCommand(drivetrain::intakeSeesNote))));
     }
 
-    public Command indexNote() {
+    private Command indexNote() {
         return this.runIntake(false).until(indexer::isNoteIndexed)
                .andThen(new InstantCommand(() -> {indexer.setVolts(0); intake.setVolts(0);}))
                .andThen(new ScheduleCommand(leds.solidOrangeCommand()));
     }
 
-    public Command signalNoteInIntake() {
+    private Command signalNoteInIntake() {
         return new InstantCommand(() -> {
             // Find whatever pattern the LEDs are currently displaying,
             // so that we can return to that pattern after we're done with the strobe.
@@ -244,9 +225,13 @@ public class RobotContainer {
             CommandScheduler.getInstance().schedule(strobe.andThen(reSchedule).ignoringDisable(true));
         });
     }
+    
+
+
+    /**** ARM/SHOOTER ****///////////////////////////////////////////////////////////////////////
 
     /** Resets the angle and speed of the shooter back to its default idle position. */
-    Command resetShooter() {
+    private Command resetShooter() {
         double desiredAngle = ArmConstants.armMinAngleDegrees+5; // puts the arm at min height to pass under stage
         //desiredAngle = 35;
         return arm.setDesiredDegreesCommand(desiredAngle)
@@ -255,21 +240,20 @@ public class RobotContainer {
     }
 
     /** Moves the arm back and spins up the flywheels to prepare for an amp shot. */
-    Command prepAmpShot() {
+    private Command prepAmpShot() {
         return new AimEverythingAtAmp(false, drivetrain, arm, shooter, charlie::getRequestedFieldOrientedVelocity, leds);
     }
 
-    /** Moves the arm back and spins up the flywheels to prepare for a trap shot. */
-    Command prepTrapShot() {
-        return arm.setDesiredDegreesCommand(90)
-               .alongWith(shooter.setFlywheelSurfaceSpeedCommand(10));
-    }
-
-    Command prepLobShot() {
+    private Command prepLobShot() {
         return new PrepShot(true, drivetrain, arm, shooter, charlie::getRequestedFieldOrientedVelocity, leds, FieldElement.LOB_TARGET);
     }
+    
+    private Command fireNote() {
+        return indexer.setOrangeWheelsSurfaceSpeedCommand(7).withTimeout(0.4)
+               .alongWith(new ScheduleCommand(leds.playFireNoteAnimationCommand()));
+    }
 
-    Command shootAtTarget(FieldElement target) {
+    private Command shootAtTarget(FieldElement target) {
         PrepShot aim = new PrepShot(true, drivetrain, arm, shooter, charlie::getRequestedFieldOrientedVelocity, leds, target);
         Command waitForAlignment = new WaitUntilCommand(aim::readyToShoot);
         Command fire = fireNote();
@@ -279,21 +263,79 @@ public class RobotContainer {
         return aim.raceWith(waitForAlignment.andThen(fireNote()));
     }
 
-    Command shart() {
-        return shootAtTarget(FieldElement.RIGHT_IN_FRONT_OF_YOU);
+    private Command shart() {
+        return shootAtTarget(FieldElement.CARPET);
     }
 
-    Command lobShot() {
-        return shootAtTarget(FieldElement.LOB_TARGET);
-    }
-
-    public Command speakerShot() {
+    private Command speakerShot() {
         return shootAtTarget(FieldElement.SPEAKER);
     }
+    
 
-    public Command fireNote() {
-        return indexer.setOrangeWheelsSurfaceSpeedCommand(7).withTimeout(0.4)
-               .alongWith(new ScheduleCommand(leds.playFireNoteAnimationCommand()));
+    /**** AUTO ****///////////////////////////////////////////////////////////////////////
+
+    /**
+     * Aims the flywheels and arm at the speaker, while also setting the Pathplanner rotation override.
+     * This command never finishes.
+     */
+    private Command prepAutoSpeakerShot() {
+        return new InstantCommand(() -> {drivetrain.isTrackingSpeakerInAuto = true;})
+                .andThen(new PrepShot(false, drivetrain, arm, shooter, null, leds, FieldElement.SPEAKER))
+                .finallyDo(() -> {drivetrain.isTrackingSpeakerInAuto = false;});
+
+    }
+
+    Command intakeTowardsNote() {
+        return drivetrain.run(() -> {drivetrain.driveTowardsNote(charlie::getRequestedFieldOrientedVelocity);})
+               .raceWith(intakeNote())
+               .withTimeout(3.0);
+    }
+
+    Command indexTowardsNote() {
+        return drivetrain.run(() -> {drivetrain.driveTowardsNote(charlie::getRequestedFieldOrientedVelocity);})
+               .raceWith(intakeNote())
+               .andThen(new ScheduleCommand(indexNote()));
+    }
+
+    private Command pathfindToNote(FieldElement note) {
+
+        Pose2d targetPose = FlyingCircuitUtils.pickupAtNote(
+                drivetrain.getPoseMeters().getTranslation(),
+                FlyingCircuitUtils.getLocationOfFieldElement(note).getTranslation(), 
+                1);
+
+
+        return AutoBuilder.pathfindToPose(
+                targetPose,
+                DrivetrainConstants.pathfindingConstraints,
+                2.0
+            );
+    }
+
+
+
+    public Command pathfindingAuto(ArrayList<FieldElement> targetNotes, Pose2d scoringPose) {
+
+        //TODO: figure out how to navigate to nearest scoring location instead of a preset one
+        //use lambdas or something for scoringPose
+        Command intakeAndThenShoot = new SequentialCommandGroup(
+            intakeTowardsNote(),
+            new ParallelDeadlineGroup(
+                AutoBuilder.pathfindToPose(scoringPose, DrivetrainConstants.pathfindingConstraints),
+                prepAutoSpeakerShot()
+            ),
+            speakerShot()
+        );
+
+        Command autoCommand = new InstantCommand();
+
+        for (int noteInd = 0; noteInd < targetNotes.size(); noteInd++) {
+            autoCommand = autoCommand
+                .andThen(pathfindToNote(targetNotes.get(noteInd)).deadlineWith(resetShooter()))
+                .andThen(intakeAndThenShoot.onlyIf(drivetrain::intakeSeesNote));
+        }
+
+        return autoCommand;
     }
 
 
