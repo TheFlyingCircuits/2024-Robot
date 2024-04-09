@@ -122,7 +122,7 @@ public class PrepShot extends Command {
             // lob shot
             desiredArmAngle = 35;//getGravCompensatedArmDesiredDegrees(horizontalDistance, verticalDistance, estimatedExitVelocity, true);
         }
-        if (target == FieldElement.RIGHT_IN_FRONT_OF_YOU) {
+        if (target == FieldElement.CARPET) {
             // shart
             desiredArmAngle = getSimpleArmDesiredDegrees(horizontalDistance, verticalDistance);
         }
