@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Supplier;
 
 import org.littletonrobotics.junction.Logger;
 
@@ -472,9 +473,9 @@ public class Drivetrain extends SubsystemBase {
         }
     }
 
-    public void driveTowardsNote() {
+    public void driveTowardsNote(Supplier<ChassisSpeeds> howToDriveWhenNoNoteDetected) {
         if (visionInputs.nearestNoteRobotFrame.isEmpty()) {
-            // will contintue driving at previous speed.
+            this.fieldOrientedDrive(howToDriveWhenNoNoteDetected.get(), true);
             return;
         }
 

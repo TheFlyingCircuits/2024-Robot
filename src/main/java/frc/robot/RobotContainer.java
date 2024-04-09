@@ -165,13 +165,13 @@ public class RobotContainer {
     }
 
     Command intakeTowardsNote() {
-        return drivetrain.run(drivetrain::driveTowardsNote)
+        return drivetrain.run(() -> {drivetrain.driveTowardsNote(charlie::getRequestedFieldOrientedVelocity);})
                .raceWith(intakeNote())
                .withTimeout(3.0);
     }
 
     Command indexTowardsNote() {
-        return drivetrain.run(drivetrain::driveTowardsNote)
+        return drivetrain.run(() -> {drivetrain.driveTowardsNote(charlie::getRequestedFieldOrientedVelocity);})
                .raceWith(intakeNote())
                .andThen(new ScheduleCommand(indexNote()));
     }
@@ -195,11 +195,8 @@ public class RobotContainer {
      * @param rapidFire - whether or not we are rapid firing (in auto); if we are, we want to run the indexer faster.
      */
     public Command runIntake(boolean rapidFire) {
-        return new ScheduleCommand(leds.playIntakeAnimationCommand(drivetrain::intakeSeesNote))
-               .andThen(
-                    indexer.setOrangeWheelsSurfaceSpeedCommand(rapidFire ? 2.5 : 2.5)
-                    .alongWith(intake.setVoltsCommand(12))
-               );
+        return indexer.setOrangeWheelsSurfaceSpeedCommand(rapidFire ? 2.5 : 2.5)
+                    .alongWith(intake.setVoltsCommand(12));
     }
 
     public Command reverseIntake() {
@@ -217,9 +214,9 @@ public class RobotContainer {
      * @return
      */
     public Command intakeNote() {
-        return this.runIntake(false).until(() -> {
-            return intake.ringJustEnteredIntake() || indexer.isNoteIndexed();
-        });
+        return new ScheduleCommand(leds.playIntakeAnimationCommand(drivetrain::intakeSeesNote))
+        .andThen(this.runIntake(false).until(intake::ringJustEnteredIntake))
+        .andThen(new ScheduleCommand(leds.strobeCommand(Color.kWhite, 4, 0.5).andThen(leds.playIntakeAnimationCommand(drivetrain::intakeSeesNote))));
     }
 
     public Command indexNote() {
@@ -307,7 +304,8 @@ public class RobotContainer {
             //.onTrue(intakeNote().raceWith(resetShooter()));
             //.whileTrue(new NoteTrackingIndexNote(intake, indexer, drivetrain, charlie::getRequestedFieldOrientedVelocity));
             //.whileTrue(intakeTowardsNote());
-            .whileTrue(indexTowardsNote());
+            .onTrue(indexTowardsNote());
+            // .whileTrue(intakeNote());
             //.onTrue(indexNote().raceWith(resetShooter())); // reset never ends, indexNote does.
     
         controller.leftTrigger().whileTrue(reverseIntake());
@@ -355,7 +353,7 @@ public class RobotContainer {
 
         /** Driver Feedback **/
         ringJustEnteredIntake.onTrue(charlie.rumbleController(0.25, 0.5)); // lol this happens even during auto
-        ringJustEnteredIntake.onTrue(this.signalNoteInIntake().ignoringDisable(true));
+        //ringJustEnteredIntake.onTrue(this.signalNoteInIntake().ignoringDisable(true));
         // TODO: prevent flash on reverse? Either condition with positive wheel speeds,
         //       or no seperate schedule command?
     }

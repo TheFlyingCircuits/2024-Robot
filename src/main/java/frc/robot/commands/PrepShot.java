@@ -124,7 +124,7 @@ public class PrepShot extends Command {
         }
         if (target == FieldElement.RIGHT_IN_FRONT_OF_YOU) {
             // shart
-            desiredArmAngle = 0;//getSimpleArmDesiredDegrees(horizontalDistance, verticalDistance);
+            desiredArmAngle = getSimpleArmDesiredDegrees(horizontalDistance, verticalDistance);
         }
         arm.setDesiredDegrees(desiredArmAngle);
 

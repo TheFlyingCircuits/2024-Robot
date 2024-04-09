@@ -111,7 +111,7 @@ public class VisionIOPhotonLib implements VisionIO {
 
         output.nearestTagDistanceMeters = pipelineResult.getBestTarget().getBestCameraToTarget().getTranslation().getDistance(new Translation3d());
         
-        if (output.nearestTagDistanceMeters > 5)
+        if (output.nearestTagDistanceMeters > 6)
             return Optional.empty();
 
 
