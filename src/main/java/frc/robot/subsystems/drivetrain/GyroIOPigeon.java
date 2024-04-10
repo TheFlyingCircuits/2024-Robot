@@ -20,9 +20,9 @@ public class GyroIOPigeon implements GyroIO {
         pigeon = new Pigeon2(GyroConstants.pigeonID, "CTRENetwork");
         configPigeon();
 
-        xAccelFilter = LinearFilter.movingAverage(5);
-        yAccelFilter = LinearFilter.movingAverage(5);
-        zAccelFilter = LinearFilter.movingAverage(5);
+        xAccelFilter = LinearFilter.movingAverage(8);
+        yAccelFilter = LinearFilter.movingAverage(8);
+        zAccelFilter = LinearFilter.movingAverage(8);
     }
 
 

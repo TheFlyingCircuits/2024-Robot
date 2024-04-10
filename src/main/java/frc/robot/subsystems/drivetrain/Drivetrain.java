@@ -392,7 +392,14 @@ public class Drivetrain extends SubsystemBase {
 
     private void updatePoseEstimator() {
 
-        fusedPoseEstimator.update(gyroInputs.robotYawRotation2d, getModulePositions());
+
+        
+
+        double totalAccelMetersPerSecondSquared = Math.hypot(gyroInputs.robotAccelX, gyroInputs.robotAccelY);
+
+        if (totalAccelMetersPerSecondSquared < 15) { //TODO: arbitrary value, tune this
+            fusedPoseEstimator.update(gyroInputs.robotYawRotation2d, getModulePositions());
+        }
         wheelsOnlyPoseEstimator.update(gyroInputs.robotYawRotation2d, getModulePositions());
 
         for (VisionMeasurement visionMeasurement : visionInputs.visionMeasurements) {
@@ -402,7 +409,7 @@ public class Drivetrain extends SubsystemBase {
             // don't add vision measurements that are too far away
             // for reference: it is 6 meters from speaker tags to wing.
             double teleportToleranceMeters = 2.0;
-            if (visionTranslation.getDistance(estimatedTranslation) <= teleportToleranceMeters) {
+            if ((visionTranslation.getDistance(estimatedTranslation) <= teleportToleranceMeters)) { 
                 fusedPoseEstimator.addVisionMeasurement(
                     visionMeasurement.robotFieldPose, 
                     visionMeasurement.timestampSeconds, 
@@ -474,15 +481,16 @@ public class Drivetrain extends SubsystemBase {
     }
 
     public void driveTowardsNote(Supplier<ChassisSpeeds> howToDriveWhenNoNoteDetected) {
-        if (visionInputs.nearestNoteRobotFrame.isEmpty()) {
-            this.fieldOrientedDrive(howToDriveWhenNoNoteDetected.get(), true);
-            return;
-        }
 
-        // TODO: maybe put back to 2.35, it turns out the pickup was a different issue.
         double maxAccel = 2.35; // 2.35 [meters per second per second] (emperically determined)
 
         double distanceToNote = visionInputs.nearestNoteRobotFrame.get().toTranslation2d().getDistance(new Translation2d());
+
+
+        if (visionInputs.nearestNoteRobotFrame.isEmpty() || distanceToNote > 2) {
+            this.fieldOrientedDrive(howToDriveWhenNoNoteDetected.get(), true);
+            return;
+        }
 
         // Physics 101: under constant accel -> v_final^2 = v_initial^2 + 2 * accel * displacement
         // displacement = finalDistanceToNote - currentDistanceToNote = 0 - currentDistanceToNote
@@ -491,6 +499,8 @@ public class Drivetrain extends SubsystemBase {
         // after some algebra -> v_initial = sqrt(-2 * accel * displacement)
 
         double desiredSpeed = Math.sqrt(-2 * maxAccel * (0 - distanceToNote));
+
+        
 
         // direction to drive is opposite of the direction to point because the
         // intake is in the back of the robot.

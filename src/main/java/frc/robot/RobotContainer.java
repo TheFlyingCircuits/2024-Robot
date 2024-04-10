@@ -211,7 +211,10 @@ public class RobotContainer {
             // Find whatever pattern the LEDs are currently displaying,
             // so that we can return to that pattern after we're done with the strobe.
             Command interruptedPattern = leds.getCurrentCommand();
-            interruptedPattern.equals(interruptedPattern);
+
+            if (interruptedPattern == null) {
+                return;
+            }
             // TODO: check if the currently scheduled command is itself a strobe, so we don't get duplicate strobes?
 
             // Generate the strobe command
@@ -344,7 +347,6 @@ public class RobotContainer {
         /** INTAKE **/
         controller.rightTrigger()
             //.onTrue(intakeNote().raceWith(resetShooter()));
-            //.whileTrue(new NoteTrackingIndexNote(intake, indexer, drivetrain, charlie::getRequestedFieldOrientedVelocity));
             //.whileTrue(intakeTowardsNote());
             .onTrue(indexTowardsNote());
             // .whileTrue(intakeNote());
