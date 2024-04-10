@@ -27,7 +27,7 @@
         "x": 14.110483372613665,
         "y": 6.769634653428379
       },
-      "isLocked": false,
+      "isLocked": true,
       "linkedName": null
     },
     {
@@ -44,7 +44,13 @@
       "linkedName": "Ring 1 Rapid Pickup"
     }
   ],
-  "rotationTargets": [],
+  "rotationTargets": [
+    {
+      "waypointRelativePos": 1.0,
+      "rotationDegrees": -28.589999999999975,
+      "rotateFast": false
+    }
+  ],
   "constraintZones": [],
   "eventMarkers": [],
   "globalConstraints": {
@@ -56,7 +62,7 @@
   "goalEndState": {
     "velocity": 0,
     "rotation": -28.589999999999975,
-    "rotateFast": true
+    "rotateFast": false
   },
   "reversed": false,
   "folder": "5 Piece Center Side",

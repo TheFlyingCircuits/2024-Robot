@@ -42,6 +42,9 @@ public class Arm extends SubsystemBase {
 
     private TrapezoidProfile.State initState;
     private double targetAngleDegrees;
+    private double prevTargetAngleDegrees;
+    private double setpointVelocityDegreesPerSecond;
+    private Timer setpointVelocityTimer = new Timer();
     public boolean isMovingToTarget;
 
     private Mechanism2d armMech2d;
@@ -94,21 +97,27 @@ public class Arm extends SubsystemBase {
      * @param targetDegrees - Target angle in degrees for the arm.
      */
     public void setDesiredDegrees(double targetAngleDegrees) {
-        targetAngleDegrees = MathUtil.clamp(targetAngleDegrees, ArmConstants.armMinAngleDegrees, ArmConstants.armMaxAngleDegrees);
+        // Save the last target before updating for this iteration
+        prevTargetAngleDegrees = this.targetAngleDegrees;
+        this.targetAngleDegrees = MathUtil.clamp(targetAngleDegrees, ArmConstants.armMinAngleDegrees, ArmConstants.armMaxAngleDegrees);
+        
+        double timeSinceLastSetpoint = setpointVelocityTimer.get();
+        if (timeSinceLastSetpoint > 0) {
+            this.setpointVelocityDegreesPerSecond = (this.targetAngleDegrees - prevTargetAngleDegrees) / timeSinceLastSetpoint;
+        }
+        setpointVelocityTimer.restart();
         
 
         //For continuous control
-        if (Math.abs(this.targetAngleDegrees - targetAngleDegrees) < 2) {
+        if (Math.abs(this.targetAngleDegrees - prevTargetAngleDegrees) < 2) {
             // No need to generate a new profile if the requested
             // target is close to the current target. PID should get us
             // there on its own.
-            this.targetAngleDegrees = targetAngleDegrees;
             return;
         }
 
         initState = new TrapezoidProfile.State(inputs.armAngleDegrees, inputs.armVelocityDegreesPerSecond);
         isMovingToTarget = true;
-        this.targetAngleDegrees = targetAngleDegrees;
         
         timer.restart();
     }
@@ -132,8 +141,8 @@ public class Arm extends SubsystemBase {
     public boolean isCloseToTarget() {
         // TODO: pick a non-arbitrary value based on sensor resolution?
         boolean errorIsSmall = Math.abs(getErrorDegrees()) < 1.0;
-        boolean isSteady = inputs.armVelocityDegreesPerSecond < 2.0;
-        return errorIsSmall && isSteady; // This worked without the isSteady before because I forgot to deploy!
+        boolean isKeepingUp = Math.abs(inputs.armVelocityDegreesPerSecond - setpointVelocityDegreesPerSecond) < 2.0;
+        return errorIsSmall && isKeepingUp;
     }
 
     private void followTrapezoidProfile() {

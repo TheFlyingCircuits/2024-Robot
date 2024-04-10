@@ -3,16 +3,16 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 8.54,
-        "y": 7.46
+        "x": 8.53,
+        "y": 7.37
       },
       "prevControl": null,
       "nextControl": {
-        "x": 9.47207111245821,
-        "y": 7.097724633295455
+        "x": 9.475632162717421,
+        "y": 7.044761913616546
       },
       "isLocked": true,
-      "linkedName": "Ring 4 Pickup (From Starting Line)"
+      "linkedName": "Ring 4 Pickup (From Wing Shot)"
     },
     {
       "anchor": {
@@ -20,8 +20,8 @@
         "y": 6.62
       },
       "prevControl": {
-        "x": 9.77792888754179,
-        "y": 6.982275366704545
+        "x": 9.76436783728258,
+        "y": 6.945238086383454
       },
       "nextControl": null,
       "isLocked": true,
@@ -45,7 +45,7 @@
   "reversed": false,
   "folder": "4 Piece Amp Side",
   "previewStartingState": {
-    "rotation": 0,
+    "rotation": -18.980000000000018,
     "velocity": 0
   },
   "useDefaultConstraints": true

@@ -11,6 +11,8 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.ScheduleCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.LEDConstants;
@@ -277,7 +279,8 @@ public class LEDs extends SubsystemBase {
             armProgress = MathUtil.clamp(armProgress, 0.0, 1.0);
 
             // Flywheels
-            double maxFlywheelErrorToShow = 3 * 0.5;
+            // TODO: use seperate strip segments for left and right flywheel?
+            double maxFlywheelErrorToShow = 3 * 1.0;
             double flywheelProgress = 1.0 - ( Math.abs(flywheelErrorMetersPerSecond.get()) / maxFlywheelErrorToShow );
             flywheelProgress = MathUtil.clamp(flywheelProgress, 0.0, 1.0);
 
@@ -321,5 +324,22 @@ public class LEDs extends SubsystemBase {
         return this.solidColorCommand(green).withTimeout(0.05)
                .andThen(this.playWipeToColorCommand(timeForEachSegment, orange))
                .andThen(this.playWipeToAllianceColorCommand(timeForEachSegment));
+    }
+
+    public Command temporarilySwitchPattern(Command patternToSwitchTo) {
+        return new InstantCommand(() -> {
+            // Find whatever pattern the LEDs are currently displaying,
+            // so that we can return to that pattern after we're done with the new patter.
+            Command interruptedPattern = this.getCurrentCommand();
+            if (interruptedPattern.equals(patternToSwitchTo)) {
+                // don't let a pattern interrupt itself.
+                // TODO: use a more robust equality check than .equals(),
+                //       becuase it just checks for reference equality by default?
+                return;
+            }
+
+            // Schedule the whole sequence.
+            patternToSwitchTo.andThen(new ScheduleCommand(patternToSwitchTo)).schedule();
+        });
     }
 }

@@ -16,6 +16,22 @@
     },
     {
       "anchor": {
+        "x": 14.41,
+        "y": 4.5
+      },
+      "prevControl": {
+        "x": 14.629870623777432,
+        "y": 4.618982808841124
+      },
+      "nextControl": {
+        "x": 14.190129376222568,
+        "y": 4.381017191158876
+      },
+      "isLocked": true,
+      "linkedName": null
+    },
+    {
+      "anchor": {
         "x": 14.01,
         "y": 4.28
       },
@@ -28,7 +44,13 @@
       "linkedName": "Ring 3 Rapid Pickup"
     }
   ],
-  "rotationTargets": [],
+  "rotationTargets": [
+    {
+      "waypointRelativePos": 1.0,
+      "rotationDegrees": 28.42,
+      "rotateFast": false
+    }
+  ],
   "constraintZones": [],
   "eventMarkers": [],
   "globalConstraints": {
@@ -40,7 +62,7 @@
   "goalEndState": {
     "velocity": 0,
     "rotation": 28.42,
-    "rotateFast": true
+    "rotateFast": false
   },
   "reversed": false,
   "folder": "5 Piece Center Side",

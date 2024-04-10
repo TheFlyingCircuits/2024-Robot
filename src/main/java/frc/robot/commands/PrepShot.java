@@ -3,13 +3,12 @@ package frc.robot.commands;
 import java.util.function.Supplier;
 
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
-import edu.wpi.first.math.util.Units;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.Constants.FieldConstants;
+import frc.robot.Constants.ArmConstants;
 import frc.robot.Constants.FieldElement;
-import frc.robot.FlyingCircuitUtils;
 import frc.robot.subsystems.arm.Arm;
 import frc.robot.subsystems.drivetrain.Drivetrain;
 import frc.robot.subsystems.leds.LEDs;
@@ -19,14 +18,18 @@ import frc.robot.subsystems.shooter.Shooter;
  *  arm at the correct angle, spinning the flywheels up to
  *  the right speed, and turning the drivetrain in the right direciton.
  * 
+ *  You can also inject a funciton that provides translational speed commands
+ *  so that you can still move while aiming at a target. This makes the robot
+ *  feel more responsive to the driver, and will come in handy when we get
+ *  to implementing shoot on the move.
+ * 
  *  The drivetrain can optionally be excluded as a requirement for instances
  *  where you only want this command to the aim the arm and spin the flywheels
  *  (mainly useful for auto where the drivetrain is being controlled by PathPlanner).
- * 
- *  In situations where you want this command to control the drivetrain, you can also
- *  inject a funciton that provides translational speed commands so that you can still
- *  move while aiming at a target. This makes the robot feel more responsive to the driver,
- *  and will come in handy when we get to implementing shoot on the move.
+ *  To exclude the drivetrain from this command's requirements, simply pass
+ *  in a null value for the translationController. The drivetrain itself can't be passed
+ *  in as a null value, because we need to read some information from it like the robot's
+ *  position on the field.
  * 
  *  This command will never end on its own, because you should continue aiming
  *  at a target until the note has completely exited the shooter. The intended
@@ -42,7 +45,6 @@ public class PrepShot extends Command {
     private FieldElement target;
     private Command ledFeedbackCommand;
 
-    private boolean useAutoRotate;
     public boolean setpointsAreFresh = false;
 
     /** Command to aim all parts of the robot at the speaker in preparation for a shot.
@@ -50,23 +52,19 @@ public class PrepShot extends Command {
      *  a shot should be fired. This command also provides the ability to control translation
      *  as the robot aims.
      * 
-     *  @param useAutoRotate - True if the drivetrain is able to be controlled by this command. Set this to false when prepping a shot on the move in auto.
-     *  This means that the drivetrain will not move at all, only the arm and flywheels. 
-     *  @param translationController - Supplier that provides chassisSpeeds so that the robot can be controlled while aiming. If useAutoRotate is false, this value is not used.
+     *  @param translationController - Supplier that provides chassisSpeeds so that the robot can be controlled while aiming. Set this to null when prepping a shot in auto
+     *                                 (this means that the drivetrain will not move at all, only the arm and flywheels.)
      */
-    public PrepShot(boolean useAutoRotate, Drivetrain drivetrain, Arm arm, Shooter flywheels, Supplier<ChassisSpeeds> translationController, LEDs leds, FieldElement target) {
+    public PrepShot(Drivetrain drivetrain, Arm arm, Shooter flywheels, Supplier<ChassisSpeeds> translationController, LEDs leds, FieldElement target) {
         this.drivetrain = drivetrain;
         this.arm = arm;
         this.flywheels = flywheels;
         this.translationController = translationController;
-        this.useAutoRotate = useAutoRotate;
         this.target = target;
 
-        if (useAutoRotate) {
-            super.addRequirements(drivetrain, arm, flywheels);
-        }
-        else {
-            super.addRequirements(arm, flywheels);
+        super.addRequirements(arm, flywheels);
+        if (translationController != null) {
+            super.addRequirements(drivetrain);
         }
 
 
@@ -86,52 +84,69 @@ public class PrepShot extends Command {
 
     @Override
     public void execute() {
-        // Drivetrain
-        if (useAutoRotate) {
-            ChassisSpeeds desiredTranslationalSpeeds = translationController.get();
-            Rotation2d desiredAngle = FlyingCircuitUtils.getAngleToFieldElement(target, drivetrain.getPoseMeters());
-            drivetrain.fieldOrientedDriveWhileAiming(desiredTranslationalSpeeds, desiredAngle);
-        }
-
         // Flywheels
         double leftFlywheelMetersPerSecond = 25;
         double rightFlywheelMetersPerSecond = 20;
         if (target == FieldElement.LOB_TARGET) {
-            leftFlywheelMetersPerSecond = 15; //13 and 9 was too low
+            leftFlywheelMetersPerSecond = 15; // 13 and 9 was too low
             rightFlywheelMetersPerSecond = 10;
+        }
+        if (target == FieldElement.AMP) {
+            leftFlywheelMetersPerSecond = 15;
+            rightFlywheelMetersPerSecond = 15;
         }
         flywheels.setLeftFlywheelsMetersPerSecond(leftFlywheelMetersPerSecond);
         flywheels.setRightFlywheelsMetersPerSecond(rightFlywheelMetersPerSecond);
-        // TODO: use measured avg of flywheel speed?
 
-        // Arm
-        double horizontalDistance = armDistToTargetMeters();
-        double verticalDistance = getTargetHeight(target) - FieldConstants.pivotHeightMeters;
-        double estimatedExitVelocity = (leftFlywheelMetersPerSecond + rightFlywheelMetersPerSecond) / 2.0;
+        /* Experiment reveals that simply averaging the requested velocities gives a really solid
+         * estimate for the actual exit velocity (i.e. within 1 m/s) TODO: link desmos graph/experimental data.
+         * This approach is preferend over actually measuring the exit velocity, because we don't want the arm
+         * to go nuts when the note passes through the flywheels and their speed suddenly changes.
+         */
+        double estimatedExitVelocity = (leftFlywheelMetersPerSecond + rightFlywheelMetersPerSecond) / 2.;
 
-        double desiredArmAngle = arm.getDegrees();
+        // Arm & Drivetrain
+        double armDesiredDegrees = arm.getDegrees();
+        Rotation2d driveDesiredAngle = drivetrain.getPoseMeters().getRotation();
         if (target == FieldElement.SPEAKER) {
-            for (int i = 0; i < 4; i += 1) {
-                desiredArmAngle = getGravCompensatedArmDesiredDegrees(horizontalDistance, verticalDistance, estimatedExitVelocity, false);
-                double armLengthMeters = Units.inchesToMeters(19);
-                horizontalDistance = armDistToTargetMeters() - (armLengthMeters * Math.cos(Math.toRadians(desiredArmAngle)));
-                verticalDistance = (getTargetHeight(target) - FieldConstants.pivotHeightMeters) - (armLengthMeters * Math.sin(Math.toRadians(desiredArmAngle)));
-            }
+            Translation3d shootOnTheMoveTarget = getShootOnTheMoveTarget(target.getLocation(), estimatedExitVelocity, false);
+            double armDesiredRadians = getGravCompensatedArmDesiredRadians(shootOnTheMoveTarget, estimatedExitVelocity, false);
+            armDesiredDegrees = Math.toDegrees(armDesiredRadians);
+            driveDesiredAngle = shootOnTheMoveTarget.toTranslation2d().minus(drivetrain.getPoseMeters().getTranslation()).getAngle();
+        }
+        if (target == FieldElement.AMP) {
+            armDesiredDegrees = 110;
+            driveDesiredAngle = Rotation2d.fromDegrees(-90);
+            // facing the back of the robot at the amp (not dependent on alliance color)
+
+            // TODO: maybe fieldOrientedDriveOnALine() or speaker tracking style aiming?
+            //       or maybe just full on auto scoring for the amp?
         }
         if (target == FieldElement.LOB_TARGET) {
-            // lob shot
-            desiredArmAngle = 35;//getGravCompensatedArmDesiredDegrees(horizontalDistance, verticalDistance, estimatedExitVelocity, true);
+            armDesiredDegrees = 35;
+            driveDesiredAngle = target.getLocation().toTranslation2d().minus(drivetrain.getPoseMeters().getTranslation()).getAngle();
+            // TODO: try a more sophisticated lob shot with variable arm angle/speed
+            //       that takes gravity into account? We tried this briefly at competition,
+            //       but ran out of time for more testing, so we setteled on this solution
+            //       that's good enough for now. We may want to come back to this if we
+            //       want more precise lob shots.
         }
         if (target == FieldElement.CARPET) {
             // shart
-            desiredArmAngle = getSimpleArmDesiredDegrees(horizontalDistance, verticalDistance);
+            Translation3d targetOnCarpet = drivetrain.fieldCoordsFromRobotCoords(new Translation3d(1, 0, 0));
+            armDesiredDegrees = getSimpleArmDesiredDegrees(targetOnCarpet);
         }
-        arm.setDesiredDegrees(desiredArmAngle);
+
+        arm.setDesiredDegrees(armDesiredDegrees);
+        if (translationController != null) {
+            drivetrain.fieldOrientedDriveWhileAiming(translationController.get(), driveDesiredAngle);
+        }
 
         setpointsAreFresh = true;
     }
 
     public boolean readyToShoot() {
+        // TODO: led progress.
         return setpointsAreFresh && arm.isCloseToTarget() && flywheels.flywheelsAtSetpoints() && drivetrain.isAligned();
     }
 
@@ -141,35 +156,28 @@ public class PrepShot extends Command {
         setpointsAreFresh = false;
     }
 
-
-
-
-
-
-
-    /** Calculates the horizontal translational distance from the center of the robot to target.*/
-    public double driveDistToTargetMeters() {
-        return FlyingCircuitUtils.getDistanceToFieldElement(target, drivetrain.getPoseMeters());
+    private double getVerticalMetersToPivot(Translation3d targetLocation) {
+        return targetLocation.getZ() - ArmConstants.pivotHeightMeters;
     }
 
-    public double armDistToTargetMeters() {
-        // could do more complex calculation that takes drive-angle into account,
-        // but that's overkill because the drive should be aligned with the target
-        // quickly anyway, in which case this simple calculation gives the right answer.
-        return this.driveDistToTargetMeters() + FieldConstants.pivotOffsetMeters;
+    private double getHorizontalMetersToPivot(Translation3d targetLocation) {
+        Translation2d robotLocation = drivetrain.getPoseMeters().getTranslation();
+        double robotToTargetDistance = targetLocation.toTranslation2d().minus(robotLocation).getNorm();
+        return robotToTargetDistance + ArmConstants.pivotOffsetMeters;
     }
 
-    public double getTargetHeight(FieldElement target) {
-        if (target == FieldElement.SPEAKER) {
-            return FieldConstants.speakerHeightMeters;
-        }
-        else {
-            return 0; // lob shot, shart
-        }
+    private double getVerticalMetersToFlywheels(Translation3d targetLocation, double armAngleRadians) {
+        return getVerticalMetersToPivot(targetLocation) - (ArmConstants.armLengthMeters * Math.sin(armAngleRadians));
+    }
+
+    private double getHorizontalMetersToFlywheels(Translation3d targetLocation, double armAngleRadians) {
+        return getHorizontalMetersToPivot(targetLocation) - (ArmConstants.armLengthMeters * Math.cos(armAngleRadians));
     }
 
     /** Calculates the angle the arm would aim at when pointing directly at the target. */
-    public double getSimpleArmDesiredDegrees(double horizontalDistance, double verticalDistance) {
+    private double getSimpleArmDesiredDegrees(Translation3d targetLocation) {
+        double verticalDistance = getVerticalMetersToPivot(targetLocation);
+        double horizontalDistance = getHorizontalMetersToPivot(targetLocation);
         double radians = Math.atan2(verticalDistance, horizontalDistance); // prob don't need arctan2 here, regular arctan will do.
         return Math.toDegrees(radians);
     }
@@ -179,31 +187,55 @@ public class PrepShot extends Command {
      * This accounts for distance and gravity.
      * @return - Angle in degrees, with 0 being straight forward and a positive angle being pointed upwards.
     */
-    public double getGravCompensatedArmDesiredDegrees(double horizontalDistance, double verticalDistance, double exitVelocityMetersPerSecond, boolean hitTargetFromAbove) {
-        
-        //see https://www.desmos.com/calculator/czxwosgvbz
-
-        double h = verticalDistance;
-        double d = horizontalDistance;
-        double v = exitVelocityMetersPerSecond;
+    private double getGravCompensatedArmDesiredRadians(Translation3d targetLocation, double exitVelocityMetersPerSecond, boolean isLobShot) {
+        //see https://www.desmos.com/calculator/jhuanigvbs
         double g = 9.81;
+        double verticalDistance = getVerticalMetersToPivot(targetLocation);
+        double horizontalDistance = getHorizontalMetersToPivot(targetLocation);
+        double armAngleRadians = 0;
 
-        double a = (h*h)/(d*d)+1;
-        double b = -2*(h*h)*(v*v)/(d*d) - (v*v) - g*h;
-        double c = (h*h)*Math.pow(v, 4)/(d*d) + (g*g)*(d*d)/4 + g*h*(v*v);
+        // TODO: documentation for taking arm length into account
+        for (int approximationCount = 0; approximationCount < 4; approximationCount += 1) {
+            double a = (g*g)/4.;
+            double b = (verticalDistance * g) - (exitVelocityMetersPerSecond * exitVelocityMetersPerSecond);
+            double c = (horizontalDistance * horizontalDistance) + (verticalDistance * verticalDistance);
 
-        // vyBelow will hit the target from below, with the projectile traveling upwards
-        // (like the speaker shot)
-        // vyAbove will hit the target from above, with the projectile traveling downwards
-        // (like the lob shot)
-        double vyAbove = Math.sqrt((-b + Math.sqrt(b*b-4*a*c))/(2*a));
-        double vyBelow = Math.sqrt((-b - Math.sqrt(b*b-4*a*c))/(2*a));
+            double tShort = Math.sqrt((-b - Math.sqrt((b*b) - (4*a*c)))/(2*a));
+            double tLong =  Math.sqrt((-b + Math.sqrt((b*b) - (4*a*c)))/(2*a));
+            double timeToImpact = tShort; // seconds
+            if (isLobShot) {
+                timeToImpact = tLong;
+            }
 
-        if (hitTargetFromAbove) {
-            return Math.toDegrees(Math.asin(vyAbove/v));
+            double horizontalVelocity = horizontalDistance / timeToImpact;
+            double verticalVelocity = (verticalDistance / timeToImpact) + (0.5*g*timeToImpact);
+            armAngleRadians = Math.atan2(verticalVelocity, horizontalVelocity);
+
+            // update for next iteration.
+            verticalDistance = getVerticalMetersToFlywheels(targetLocation, armAngleRadians);
+            horizontalDistance = getHorizontalMetersToFlywheels(targetLocation, armAngleRadians);
         }
-        else {
-            return Math.toDegrees(Math.asin(vyBelow/v));
+        return armAngleRadians;
+    }
+
+    private double getTimeToImpact(Translation3d targetLocation, double exitVelocityMetersPerSecond, boolean isLobShot) {
+        // TODO: documentation
+        double theta = getGravCompensatedArmDesiredRadians(targetLocation, exitVelocityMetersPerSecond, isLobShot);
+        double horizontalVelocity = exitVelocityMetersPerSecond * Math.cos(theta);
+        double horizontalDistance = getHorizontalMetersToFlywheels(targetLocation, theta);
+        return horizontalDistance / horizontalVelocity;
+    }
+
+    private Translation3d getShootOnTheMoveTarget(Translation3d originalTargetLocation, double exitVelocityMetersPerSecond, boolean isLobShot) {
+        // TODO: documentation
+        // see https://www.desmos.com/3d/783cec8449
+        Translation3d target = originalTargetLocation;
+        for (int approximationCount = 0; approximationCount < 3; approximationCount += 1) {
+            double t = getTimeToImpact(target, exitVelocityMetersPerSecond, isLobShot);
+            ChassisSpeeds robotVelocity = drivetrain.getFieldOrientedVelocity();
+            Translation3d robotVelocityVector = new Translation3d(robotVelocity.vxMetersPerSecond, robotVelocity.vyMetersPerSecond, 0);
+            target = originalTargetLocation.minus(robotVelocityVector.times(t));
         }
+        return target;
     }
 }
