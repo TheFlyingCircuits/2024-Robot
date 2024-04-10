@@ -361,9 +361,9 @@ public class RobotContainer {
         controller.a().whileTrue(new TrapRoutine(charlie::getRequestedFieldOrientedVelocity, climb, arm, shooter, indexer, leds, drivetrain));
 
         /** MISC **/
-        // controller.y().onTrue(new InstantCommand(() -> drivetrain.setPoseToVisionMeasurement()));
+        controller.y().onTrue(new InstantCommand(() -> drivetrain.setPoseToVisionMeasurement()));
         // ben.y().onTrue(new InstantCommand(() -> drivetrain.setPoseToVisionMeasurement()));
-        controller.y().onTrue(new InstantCommand(() -> drivetrain.setRobotFacingForward()));
+        // controller.y().onTrue(new InstantCommand(() -> drivetrain.setRobotFacingForward()));
 
         controller.x().onTrue(new InstantCommand(() -> arm.setDisableSetpointChecking(false)).andThen(resetShooter()));
 
@@ -372,7 +372,7 @@ public class RobotContainer {
         /** Driver Feedback **/
         Trigger ringJustEnteredIntake = new Trigger(intake::ringJustEnteredIntake);
         ringJustEnteredIntake.onTrue(charlie.rumbleController(0.5).withTimeout(0.25)); // lol this happens even during auto
-        ringJustEnteredIntake.onTrue(leds.temporarilySwitchPattern(leds.strobeCommand(Color.kWhite, 4, 0.5).ignoringDisable(true)));
+        ringJustEnteredIntake.onTrue(leds.temporarilySwitchPattern(leds.strobeCommand(Color.kWhite, 4, 0.5).ignoringDisable(true)).ignoringDisable(true));
         // TODO: prevent flash on reverse? Either condition with positive wheel speeds,
         //       or no seperate schedule command?
     }

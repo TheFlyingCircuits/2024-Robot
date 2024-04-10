@@ -349,12 +349,12 @@ public final class Constants {
                                                                       : new AprilTagFieldLayout(practiceFieldTags, 16, 8.2);
                                                                       
         public final static Transform3d robotToShooterCamera = new Transform3d(
-            new Translation3d(Units.inchesToMeters(10.25), 0, Units.inchesToMeters(9.5)), // 11.5 inches off the ground, and 8 inches forward from the center of the robot
-            new Rotation3d(0, Math.toRadians(-22), 0)
+            new Translation3d(Units.inchesToMeters(8.75), 0, Units.inchesToMeters(9.875)),
+            new Rotation3d(0, Math.toRadians(-28), 0)
         );
 
         public final static Transform3d robotToTrapCamera = new Transform3d(
-            new Translation3d(Units.inchesToMeters(-11), 0, Units.inchesToMeters(11.5)),
+            new Translation3d(Units.inchesToMeters(-11.5), 0, Units.inchesToMeters(11.25)),
             new Rotation3d(0, Math.toRadians(-33), Math.toRadians(180))
         );
 
@@ -392,8 +392,20 @@ public final class Constants {
         private Pose3d bluePose;
 
         private FieldElement(int redTagID, int blueTagID) {
-            redPose = VisionConstants.aprilTagFieldLayout.getTagPose(redTagID).get();
-            bluePose = VisionConstants.aprilTagFieldLayout.getTagPose(blueTagID).get();
+            Optional<Pose3d> redPoseOptional = VisionConstants.aprilTagFieldLayout.getTagPose(redTagID);
+            Optional<Pose3d> bluePoseOptional = VisionConstants.aprilTagFieldLayout.getTagPose(blueTagID);
+
+            if (redPoseOptional.isPresent()) {
+                this.redPose = redPoseOptional.get();
+            }
+            else {
+                this.redPose = AprilTagFields.k2024Crescendo.loadAprilTagLayoutField().getTagPose(redTagID).get();
+            }
+            if (bluePoseOptional.isPresent()) {
+                this.bluePose = bluePoseOptional.get();
+            } else {
+                this.bluePose = AprilTagFields.k2024Crescendo.loadAprilTagLayoutField().getTagPose(blueTagID).get();
+            }
 
             /* Target the opening of the speaker, rather than the speaker tag */
             if (redTagID == 4 || blueTagID == 7) {

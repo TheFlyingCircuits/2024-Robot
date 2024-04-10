@@ -2,6 +2,8 @@ package frc.robot.commands;
 
 import java.util.function.Supplier;
 
+import org.littletonrobotics.junction.Logger;
+
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
@@ -80,6 +82,7 @@ public class PrepShot extends Command {
         // TODO: look into this.
         ledFeedbackCommand.schedule();
         setpointsAreFresh = false;
+        Logger.recordOutput("shootOnTheMove/aiming", true);
     }
 
     @Override
@@ -147,13 +150,19 @@ public class PrepShot extends Command {
 
     public boolean readyToShoot() {
         // TODO: led progress.
-        return setpointsAreFresh && arm.isCloseToTarget() && flywheels.flywheelsAtSetpoints() && drivetrain.isAligned();
+        boolean ready = setpointsAreFresh && arm.isCloseToTarget() && flywheels.flywheelsAtSetpoints();
+        if (translationController != null) {
+            ready = ready && drivetrain.isAligned();
+        }
+        Logger.recordOutput("shootOnTheMove/ready", ready);
+        return ready;
     }
 
     @Override
     public void end(boolean isInterrupted) {
         ledFeedbackCommand.cancel();
         setpointsAreFresh = false;
+        Logger.recordOutput("shootOnTheMove/aiming", false);
     }
 
     private double getVerticalMetersToPivot(Translation3d targetLocation) {
@@ -233,7 +242,9 @@ public class PrepShot extends Command {
         for (int approximationCount = 0; approximationCount < 3; approximationCount += 1) {
             double t = getTimeToImpact(target, exitVelocityMetersPerSecond, isLobShot);
             ChassisSpeeds robotVelocity = drivetrain.getFieldOrientedVelocity();
+            double fudgeFactor = 1.0;//1.5;
             Translation3d robotVelocityVector = new Translation3d(robotVelocity.vxMetersPerSecond, robotVelocity.vyMetersPerSecond, 0);
+            robotVelocityVector = robotVelocityVector.times(fudgeFactor);
             target = originalTargetLocation.minus(robotVelocityVector.times(t));
         }
         return target;

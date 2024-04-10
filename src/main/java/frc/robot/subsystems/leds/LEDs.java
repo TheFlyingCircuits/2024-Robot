@@ -328,6 +328,7 @@ public class LEDs extends SubsystemBase {
 
     public Command temporarilySwitchPattern(Command patternToSwitchTo) {
         return new InstantCommand(() -> {
+            // System.out.println("starting instant command");
             // Find whatever pattern the LEDs are currently displaying,
             // so that we can return to that pattern after we're done with the new patter.
             Command interruptedPattern = this.getCurrentCommand();
@@ -335,11 +336,17 @@ public class LEDs extends SubsystemBase {
                 // don't let a pattern interrupt itself.
                 // TODO: use a more robust equality check than .equals(),
                 //       becuase it just checks for reference equality by default?
+                // System.out.println("rejected");
                 return;
             }
 
             // Schedule the whole sequence.
-            patternToSwitchTo.andThen(new ScheduleCommand(patternToSwitchTo)).schedule();
+            // System.out.println("switchToMe: " + patternToSwitchTo.runsWhenDisabled());
+            // System.out.println("interruptMe: " + interruptedPattern.runsWhenDisabled());
+            patternToSwitchTo.asProxy().andThen(new ScheduleCommand(interruptedPattern)).schedule();
+            // System.out.println("fullCommand: " + fullCommand.runsWhenDisabled());
+            // fullCommand.schedule();
+            // System.out.println("done with instant command");
         });
     }
 }

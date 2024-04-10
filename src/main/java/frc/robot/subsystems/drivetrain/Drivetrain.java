@@ -126,7 +126,7 @@ public class Drivetrain extends SubsystemBase {
         //angleController = new PIDController(11, 0, 0.5); // kP has units of degreesPerSecond per degree of error.
         angleController = new PIDController(8, 0, 0);
         angleController.enableContinuousInput(-180, 180);
-        angleController.setTolerance(2.0, 10.0); // degrees, degreesPerSecond.
+        angleController.setTolerance(2.0, 10000.0); // degrees, degreesPerSecond.
 
         translationController = new PIDController(4.0, 0, 0); // kP has units of metersPerSecond per meter of error.
         translationController.setTolerance(0.05); // 5 centimeters
@@ -519,12 +519,7 @@ public class Drivetrain extends SubsystemBase {
         double maxAccel = 2.35; // 2.35 [meters per second per second] (emperically determined)
 
         double distanceToNote = visionInputs.nearestNoteRobotFrame.get().toTranslation2d().getDistance(new Translation2d());
-
-
-        if (visionInputs.nearestNoteRobotFrame.isEmpty() || distanceToNote > 2) {
-            this.fieldOrientedDrive(howToDriveWhenNoNoteDetected.get(), true);
-            return;
-        }
+        
 
         // Physics 101: under constant accel -> v_final^2 = v_initial^2 + 2 * accel * displacement
         // displacement = finalDistanceToNote - currentDistanceToNote = 0 - currentDistanceToNote

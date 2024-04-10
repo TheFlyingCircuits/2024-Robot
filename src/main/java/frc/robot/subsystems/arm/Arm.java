@@ -141,7 +141,7 @@ public class Arm extends SubsystemBase {
     public boolean isCloseToTarget() {
         // TODO: pick a non-arbitrary value based on sensor resolution?
         boolean errorIsSmall = Math.abs(getErrorDegrees()) < 1.0;
-        boolean isKeepingUp = Math.abs(inputs.armVelocityDegreesPerSecond - setpointVelocityDegreesPerSecond) < 2.0;
+        boolean isKeepingUp = Math.abs(inputs.armVelocityDegreesPerSecond - setpointVelocityDegreesPerSecond) < 5000.0;
         return errorIsSmall && isKeepingUp;
     }
 

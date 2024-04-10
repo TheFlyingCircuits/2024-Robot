@@ -62,6 +62,7 @@ public class Robot extends LoggedRobot {
         SmartDashboard.putData("Auto Chooser", autoChooser);
 
         DriverStation.silenceJoystickConnectionWarning(true);
+        System.gc();
     }
 
     /**
