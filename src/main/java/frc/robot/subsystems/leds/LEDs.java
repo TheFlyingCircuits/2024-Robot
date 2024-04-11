@@ -271,23 +271,25 @@ public class LEDs extends SubsystemBase {
 
     public Command playAimingAnimationCommand(Supplier<Double> armErrorDegrees, Supplier<Double> flywheelErrorMetersPerSecond, Supplier<Double> drivetrainErrorDegrees) {
         return this.run(() -> {
+            double minProgress = 0.05;
+            double maxProgress = 1.0;
             // TODO: get tolerances from subsystems
             // multiply by 3 so that we're at yellow/green when within tolerance.
             // Arm
             double maxArmErrorToShow = 3 * 1.0;
             double armProgress = 1.0 - ( Math.abs(armErrorDegrees.get()) / maxArmErrorToShow );
-            armProgress = MathUtil.clamp(armProgress, 0.0, 1.0);
+            armProgress = MathUtil.clamp(armProgress, minProgress, maxProgress);
 
             // Flywheels
             // TODO: use seperate strip segments for left and right flywheel?
             double maxFlywheelErrorToShow = 3 * 1.0;
             double flywheelProgress = 1.0 - ( Math.abs(flywheelErrorMetersPerSecond.get()) / maxFlywheelErrorToShow );
-            flywheelProgress = MathUtil.clamp(flywheelProgress, 0.0, 1.0);
+            flywheelProgress = MathUtil.clamp(flywheelProgress, minProgress, maxProgress);
 
             // Drivetrain
             double maxDrivetrainErrorToShow = 3 * 2.0;
             double drivetrainProgress = 1.0 - ( Math.abs(drivetrainErrorDegrees.get()) / maxDrivetrainErrorToShow );
-            drivetrainProgress = MathUtil.clamp(drivetrainProgress, 0.0, 1.0);
+            drivetrainProgress = MathUtil.clamp(drivetrainProgress, minProgress, maxProgress);
 
             this.showProgressOnTopThird(armProgress);
             this.showProgressNearFlywheels(flywheelProgress);
@@ -343,7 +345,9 @@ public class LEDs extends SubsystemBase {
             // Schedule the whole sequence.
             // System.out.println("switchToMe: " + patternToSwitchTo.runsWhenDisabled());
             // System.out.println("interruptMe: " + interruptedPattern.runsWhenDisabled());
-            patternToSwitchTo.asProxy().andThen(new ScheduleCommand(interruptedPattern)).schedule();
+            Command fullCommand = patternToSwitchTo.asProxy().andThen(new ScheduleCommand(interruptedPattern));
+            fullCommand.addRequirements(this);
+            fullCommand.schedule();
             // System.out.println("fullCommand: " + fullCommand.runsWhenDisabled());
             // fullCommand.schedule();
             // System.out.println("done with instant command");

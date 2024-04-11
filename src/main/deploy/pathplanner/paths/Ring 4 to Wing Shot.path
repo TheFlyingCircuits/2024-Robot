@@ -8,23 +8,23 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 9.475632162717421,
-        "y": 7.044761913616546
+        "x": 9.507488448615884,
+        "y": 7.159011059952165
       },
-      "isLocked": true,
+      "isLocked": false,
       "linkedName": "Ring 4 Pickup (From Wing Shot)"
     },
     {
       "anchor": {
-        "x": 10.71,
-        "y": 6.62
+        "x": 11.664484867431273,
+        "y": 6.670053340106681
       },
       "prevControl": {
-        "x": 9.76436783728258,
-        "y": 6.945238086383454
+        "x": 10.689043865363567,
+        "y": 6.890314211541324
       },
       "nextControl": null,
-      "isLocked": true,
+      "isLocked": false,
       "linkedName": "Wing Shot (Amp Side)"
     }
   ],

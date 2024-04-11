@@ -4,6 +4,7 @@ import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.signals.AbsoluteSensorRangeValue;
 import com.ctre.phoenix6.signals.SensorDirectionValue;
+import com.revrobotics.CANSparkBase.FaultID;
 import com.revrobotics.CANSparkBase.IdleMode;
 
 import edu.wpi.first.math.filter.LinearFilter;
@@ -68,6 +69,9 @@ public class ArmIONeo implements ArmIO {
             inputs.atUpperLimit = false;
         }
 
+        inputs.leftMotorAmps = leftMotor.getOutputCurrent();
+        inputs.rightMotorAmps = rightMotor.getOutputCurrent();
+
 
     }
 
@@ -84,14 +88,15 @@ public class ArmIONeo implements ArmIO {
     }
 
     private void configMotors() {
+        int ampLimit = 40;
         rightMotor.restoreFactoryDefaults();
-        rightMotor.setSmartCurrentLimit(60);
+        rightMotor.setSmartCurrentLimit(ampLimit);
         rightMotor.setInverted(false);
         rightMotor.setIdleMode(IdleMode.kBrake);
         rightMotor.burnFlash();
 
         leftMotor.restoreFactoryDefaults();
-        leftMotor.setSmartCurrentLimit(60);
+        leftMotor.setSmartCurrentLimit(ampLimit);
         leftMotor.setInverted(true);
         leftMotor.setIdleMode(IdleMode.kBrake);
         leftMotor.burnFlash();

@@ -385,8 +385,13 @@ public class Drivetrain extends SubsystemBase {
      * Takes the best estimated pose from the vision, and sets our current poseEstimator pose to this one.
      */
     public void setPoseToVisionMeasurement() {
-        if (visionInputs.visionMeasurements.size() > 0)
+        if (visionInputs.visionMeasurements.size() > 0) {
             setPoseMeters(visionInputs.visionMeasurements.get(0).robotFieldPose);
+        }
+    }
+
+    public boolean seesTag() {
+        return visionInputs.visionMeasurements.size() > 0;
     }
 
 
@@ -396,8 +401,11 @@ public class Drivetrain extends SubsystemBase {
         
 
         double totalAccelMetersPerSecondSquared = Math.hypot(gyroInputs.robotAccelX, gyroInputs.robotAccelY);
+        totalAccelMetersPerSecondSquared = Math.hypot(totalAccelMetersPerSecondSquared, gyroInputs.robotAccelZ);
 
-        if (totalAccelMetersPerSecondSquared < 15) { //TODO: arbitrary value, tune this
+        Logger.recordOutput("drivetrain/accelMagnitude", totalAccelMetersPerSecondSquared);
+
+        if (totalAccelMetersPerSecondSquared < 10) { //TODO: arbitrary value, tune this
             fusedPoseEstimator.update(gyroInputs.robotYawRotation2d, getModulePositions());
         }
         wheelsOnlyPoseEstimator.update(gyroInputs.robotYawRotation2d, getModulePositions());
@@ -477,6 +485,14 @@ public class Drivetrain extends SubsystemBase {
         return visionInputs.nearestNoteRobotFrame.isPresent();
     }
 
+    public Translation2d getNearestNoteLocation() {
+        if (visionInputs.nearestNoteRobotFrame.isEmpty()) {
+            return null; // TODO: decide what to do!
+        }
+
+        return fieldCoordsFromRobotCoords(visionInputs.nearestNoteRobotFrame.get()).toTranslation2d();
+    }
+
     /**
      * Gets the angle that the front of the robot needs to aim at in order to intake the nearest ring
      * seen on the intake camera. This is used for the rotation override during auto.
@@ -519,7 +535,7 @@ public class Drivetrain extends SubsystemBase {
         double maxAccel = 2.35; // 2.35 [meters per second per second] (emperically determined)
 
         double distanceToNote = visionInputs.nearestNoteRobotFrame.get().toTranslation2d().getDistance(new Translation2d());
-        
+
 
         // Physics 101: under constant accel -> v_final^2 = v_initial^2 + 2 * accel * displacement
         // displacement = finalDistanceToNote - currentDistanceToNote = 0 - currentDistanceToNote
@@ -650,6 +666,8 @@ public class Drivetrain extends SubsystemBase {
 
         ChassisSpeeds v = DrivetrainConstants.swerveKinematics.toChassisSpeeds(getModuleStates());
         double s = Math.hypot(v.vxMetersPerSecond, v.vyMetersPerSecond);
+        
+
         Logger.recordOutput("drivetrain/speed", s);
     }
 }

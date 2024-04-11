@@ -65,14 +65,14 @@ public class PrepShot extends Command {
         this.target = target;
 
         super.addRequirements(arm, flywheels);
+        ledFeedbackCommand = leds.playAimingAnimationCommand(arm::getErrorDegrees, flywheels::getWorstError, () -> {return 0.;});
         if (translationController != null) {
             super.addRequirements(drivetrain);
+            ledFeedbackCommand = leds.playAimingAnimationCommand(arm::getErrorDegrees, flywheels::getWorstError, drivetrain::getAngleError);
         }
-
 
         // TODO: have drivetrain always on target if not required? how to deal with this in auto?
         //       This will prob be part of the LED re-write to use progress instead of error?
-        ledFeedbackCommand = leds.playAimingAnimationCommand(arm::getErrorDegrees, flywheels::getWorstError, drivetrain::getAngleError);
     }
 
     @Override
@@ -136,13 +136,19 @@ public class PrepShot extends Command {
         }
         if (target == FieldElement.CARPET) {
             // shart
-            Translation3d targetOnCarpet = drivetrain.fieldCoordsFromRobotCoords(new Translation3d(1, 0, 0));
+            Translation3d unitVectorOnCarpet = drivetrain.fieldCoordsFromRobotCoords(new Translation3d(1, 0, 0));
+            Translation3d targetOnCarpet = unitVectorOnCarpet.times(1.2);
             armDesiredDegrees = getSimpleArmDesiredDegrees(targetOnCarpet);
         }
 
         arm.setDesiredDegrees(armDesiredDegrees);
         if (translationController != null) {
-            drivetrain.fieldOrientedDriveWhileAiming(translationController.get(), driveDesiredAngle);
+            if (target == FieldElement.AMP) {
+                drivetrain.fieldOrientedDriveOnALine(translationController.get(), FieldElement.AMP.getPose().toPose2d());
+            }
+            else {
+                drivetrain.fieldOrientedDriveWhileAiming(translationController.get(), driveDesiredAngle);
+            }
         }
 
         setpointsAreFresh = true;

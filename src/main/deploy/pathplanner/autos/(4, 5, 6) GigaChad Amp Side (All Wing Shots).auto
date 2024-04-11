@@ -16,22 +16,9 @@
           "data": {
             "commands": [
               {
-                "type": "sequential",
+                "type": "path",
                 "data": {
-                  "commands": [
-                    {
-                      "type": "wait",
-                      "data": {
-                        "waitTime": 1.75
-                      }
-                    },
-                    {
-                      "type": "named",
-                      "data": {
-                        "name": "intakeNote"
-                      }
-                    }
-                  ]
+                  "pathName": "Starting Line to Ring 4"
                 }
               },
               {
@@ -39,14 +26,14 @@
                 "data": {
                   "name": "resetShooter"
                 }
-              },
-              {
-                "type": "path",
-                "data": {
-                  "pathName": "Starting Line to Ring 4"
-                }
               }
             ]
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "intakeTowardsNote"
           }
         },
         {
@@ -92,22 +79,9 @@
           "data": {
             "commands": [
               {
-                "type": "sequential",
+                "type": "path",
                 "data": {
-                  "commands": [
-                    {
-                      "type": "wait",
-                      "data": {
-                        "waitTime": 0.5
-                      }
-                    },
-                    {
-                      "type": "named",
-                      "data": {
-                        "name": "intakeNote"
-                      }
-                    }
-                  ]
+                  "pathName": "Wing Shot to Ring 5"
                 }
               },
               {
@@ -115,14 +89,14 @@
                 "data": {
                   "name": "resetShooter"
                 }
-              },
-              {
-                "type": "path",
-                "data": {
-                  "pathName": "Wing Shot to Ring 5"
-                }
               }
             ]
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "intakeTowardsNote"
           }
         },
         {
@@ -168,25 +142,6 @@
           "data": {
             "commands": [
               {
-                "type": "sequential",
-                "data": {
-                  "commands": [
-                    {
-                      "type": "wait",
-                      "data": {
-                        "waitTime": 0.5
-                      }
-                    },
-                    {
-                      "type": "named",
-                      "data": {
-                        "name": "intakeNote"
-                      }
-                    }
-                  ]
-                }
-              },
-              {
                 "type": "path",
                 "data": {
                   "pathName": "Wing Shot to Ring 6 (Amp Side)"
@@ -199,6 +154,12 @@
                 }
               }
             ]
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "intakeTowardsNote"
           }
         },
         {

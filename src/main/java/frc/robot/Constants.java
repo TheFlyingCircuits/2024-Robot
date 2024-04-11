@@ -225,8 +225,8 @@ public final class Constants {
 
         /**Maximum angle of the arm, in degrees. This value should be positive and greater than 90, as it is beyond the vertical. */
         // original value 137, changed to 129 for inspection.
-        // As of 4/3/2024, now has to be 122 due to new black banebot wheels for hardstop
-        public final static double armMaxAngleDegrees = 122.0;  
+        // As of 4/3/2024, now has to be 123 due to new black banebot wheels for hardstop
+        public final static double armMaxAngleDegrees = 123.0;  
 
         public final static double armMaxVelDegreesPerSecond = 360.;
 

@@ -6,8 +6,11 @@ package frc.robot;
 
 import frc.robot.Constants.ArmConstants;
 import frc.robot.Constants.DrivetrainConstants;
+import frc.robot.Constants.FieldConstants;
 import frc.robot.Constants.FieldElement;
+import frc.robot.Constants.LEDConstants;
 import frc.robot.commands.MeasureWheelDiameter;
+import frc.robot.commands.UnderStageTrapRoutine;
 import frc.robot.commands.PrepShot;
 import frc.robot.commands.TrapRoutine;
 import frc.robot.subsystems.HumanDriver;
@@ -128,21 +131,27 @@ public class RobotContainer {
         climb.setDefaultCommand(Commands.run(() -> {climb.setVolts(0);}, climb));
         arm.setDefaultCommand(arm.holdCurrentPositionCommand().ignoringDisable(true));
 
-        Trigger overTheMidlineInAuto = new Trigger(() -> {
-            // TODO: double check this and move it to a better place?
-            //       I don't think it worked the first time we tried it.
+
+        Trigger noteIsTooFarForPickupInAuto = new Trigger(() -> {
+            if (!drivetrain.intakeSeesNote()) {
+                return false; // keep driving if you don't see anything
+            }
+
             Optional<Alliance> alliance  = DriverStation.getAlliance();
             if (!alliance.isPresent()) {
-                return true;
+                return true; // stop driving if we don't know what alliance we're on
             }
-            double midlineX = 8.27;
-            double bumperLength = 0.91;
-            double overshootAllowance = bumperLength / 4;
-            double robotX = drivetrain.getPoseMeters().getX();
-            boolean over = (alliance.get() == Alliance.Blue) && (robotX >= (midlineX + overshootAllowance));
-            over |= (alliance.get() == Alliance.Red) && (robotX <= (midlineX - overshootAllowance));
+
+            double noteX = drivetrain.getNearestNoteLocation().getX();
+            double midlineX = FieldConstants.midField.getX();
+            double overshootAllowance = 1.0; // TODO: tune!
+
+            boolean over = (alliance.get() == Alliance.Blue) && (noteX >= (midlineX + overshootAllowance));
+            over = over || (alliance.get() == Alliance.Red) && (noteX <= (midlineX - overshootAllowance));
             return over;
         });
+
+
         
         NamedCommands.registerCommand("prepShot", prepAutoSpeakerShot());
         NamedCommands.registerCommand("shootFromAnywhere", speakerShot());
@@ -151,7 +160,7 @@ public class RobotContainer {
         NamedCommands.registerCommand("intakeNote", intakeNote().withTimeout(1.5));
         NamedCommands.registerCommand("rapidFire", prepAutoSpeakerShot().alongWith(runIntake()));
         NamedCommands.registerCommand("resetShooter", resetShooter());
-        NamedCommands.registerCommand("intakeTowardsNote", intakeTowardsNote().until(overTheMidlineInAuto));
+        NamedCommands.registerCommand("intakeTowardsNote", intakeTowardsNote().until(noteIsTooFarForPickupInAuto).withTimeout(2.5));
         NamedCommands.registerCommand("fireNote", fireNote());
 
 
@@ -174,9 +183,10 @@ public class RobotContainer {
     }
 
     private Command reverseIntake() {
-        return indexer.run(() -> {indexer.setVolts(-8);})
-               .alongWith(intake.setVoltsCommand(-8));
+        // return indexer.run(() -> {indexer.setVolts(-8);})
+        //        .alongWith(intake.setVoltsCommand(-8));
                // TODO: reverse LEDs when barfing?
+        return intake.setVoltsCommand(-8);
     }
 
     /** Starts running the intake, and finishes when a note is detected by the bottom intake sensor.
@@ -195,8 +205,9 @@ public class RobotContainer {
 
     private Command indexNote() {
         return this.runIntake().until(indexer::isNoteIndexed)
-               .andThen(new InstantCommand(() -> {indexer.setVolts(0); intake.setVolts(0);}))
-               .andThen(new ScheduleCommand(leds.solidOrangeCommand()));
+               .andThen(new InstantCommand(() -> {indexer.setVolts(0); intake.setVolts(0);})
+                        .alongWith(new ScheduleCommand(leds.solidOrangeCommand()))
+               );
     }
     
 
@@ -214,7 +225,8 @@ public class RobotContainer {
     /** Moves the arm back and spins up the flywheels to prepare for an amp shot. */
     Command prepAmpShot() {
         // no auto align is currently used for the amp. add a translation controller to turn on auto align.
-        return new PrepShot(drivetrain, arm, shooter, null, leds, FieldElement.AMP);
+        // TODO: ONLY AUTO ALIGN WHEN CLOSE TO AMP SO THE WE CAN STILL AMP SHOT TO EJECT WHEN FAR AWAY.
+        return new PrepShot(drivetrain, arm, shooter, charlie::getRequestedFieldOrientedVelocity, leds, FieldElement.AMP);
     }
 
     Command prepLobShot() {
@@ -252,11 +264,6 @@ public class RobotContainer {
     private Command intakeTowardsNote() {
         return drivetrain.run(() -> {drivetrain.driveTowardsNote(charlie::getRequestedFieldOrientedVelocity);})
                .raceWith(intakeNote());
-    }
-
-    private Command indexTowardsNote() {
-        return intakeTowardsNote()
-               .andThen(new ScheduleCommand(indexNote()));
     }
 
     private Command pathfindToNote(FieldElement note) {
@@ -317,8 +324,10 @@ public class RobotContainer {
         CommandXboxController controller = charlie.getXboxController();
         /** INTAKE **/
         controller.rightTrigger()
-            .onTrue(indexTowardsNote());
-            // .onTrue(intakeNote().andThen(indexNote()))
+            .onTrue(intakeTowardsNote().andThen(new ScheduleCommand(
+                indexNote().andThen(reverseIntake().withTimeout(2))
+            )));
+            //.onTrue(intakeNote().andThen(indexNote()));
             //.onTrue(indexNote().raceWith(resetShooter())); // reset never ends, indexNote does.
     
         controller.leftTrigger().whileTrue(reverseIntake());
@@ -337,7 +346,7 @@ public class RobotContainer {
         //lob shot (prep while holding, release to fire)
         Command prepLobShot = prepLobShot(); // <- grab a single instance so we can check if it's cancelled.
         controller.rightBumper().and(inSpeakerShotRange.negate())
-            .onTrue(prepLobShot())
+            .onTrue(prepLobShot)
             .onFalse(this.fireNote()
                          .andThen(new ScheduleCommand(this.resetShooter()))
                      .unless(() -> {return !prepLobShot.isScheduled();})
@@ -352,16 +361,19 @@ public class RobotContainer {
             // use a schedule command so the onFalse sequence doesn't cancel the aiming while the note is being shot.
             
         controller.b().onTrue(shart().andThen(new ScheduleCommand(this.resetShooter())));
+        // TODO: raise shart a tad
 
         /** CLIMB **/
         
         controller.povUp().onTrue(climb.raiseHooksCommand());
-        // controller.povDown().onTrue(climb.lowerHooksCommand().until((climb::climbArmsZero)));
+        controller.povRight().onTrue(climb.lowerHooksCommand().until((climb::climbArmsZero)));
         controller.povDown().whileTrue(climb.lowerHooksCommand().until(climb::atQuickClimbSetpoint));
-        controller.a().whileTrue(new TrapRoutine(charlie::getRequestedFieldOrientedVelocity, climb, arm, shooter, indexer, leds, drivetrain));
+        controller.a().whileTrue(new UnderStageTrapRoutine(charlie::getRequestedFieldOrientedVelocity, climb, arm, shooter, indexer, leds, drivetrain));
+
+        //controller.povLeft().onTrue(arm.setDesiredDegreesCommand(ArmConstants.armMaxAngleDegrees));
 
         /** MISC **/
-        controller.y().onTrue(new InstantCommand(() -> drivetrain.setPoseToVisionMeasurement()));
+        controller.y().onTrue(new InstantCommand(() -> drivetrain.setPoseToVisionMeasurement()).repeatedly().until(drivetrain::seesTag));
         // ben.y().onTrue(new InstantCommand(() -> drivetrain.setPoseToVisionMeasurement()));
         // controller.y().onTrue(new InstantCommand(() -> drivetrain.setRobotFacingForward()));
 
