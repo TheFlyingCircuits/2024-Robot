@@ -1,4 +1,5 @@
 import 'package:diagnostic_page/services/subsystem_state.dart';
+import 'package:diagnostic_page/widgets/status_card.dart';
 import 'package:flutter/material.dart';
 
 class DiagnosticPage extends StatefulWidget {
@@ -68,12 +69,10 @@ class _DiagnosticPageState extends State<DiagnosticPage> {
                         ),
                         Column(
                           children: [
-                            // _swerveStatusCard(),
-                            _armStatusCard(),
-                            // _turretStatusCard(),
-                            // _jawStatusCard(),
-                            // _intakeStatusCard(),
-                            // _manhattanStatusCard(),
+                            // statusCard("intake"),
+
+                            statusCard("arm"),
+
                             const SizedBox(height: 4),
                             const SizedBox(
                               width: 500,
@@ -112,83 +111,6 @@ class _DiagnosticPageState extends State<DiagnosticPage> {
           ],
         ),
       ],
-    );
-  }
-
-  Widget _armStatusCard() {
-    return ValueListenableBuilder(
-      valueListenable: SubsystemState.ranCheckNotifier,
-      builder: (context, bool ranCheckValue, child) {
-        return Card(
-          child: SizedBox(
-            width: 500,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                StreamBuilder(
-                  stream: SubsystemState.armStatus(),
-                  builder: (context, snapshot) {
-                    if (!snapshot.hasData) {
-                      return Text(DateTime.now()
-                          .second
-                          .toString()); // Show loading indicator while waiting for data
-                    }
-                    SubsystemStatus status = snapshot.data!;
-                    Color statusColor = Colors.grey;
-                    IconData statusIcon = Icons.question_mark_rounded;
-
-                    if (ranCheckValue) {
-                      switch (status.status) {
-                        case 'NULL':
-                          statusColor = Colors.grey;
-                          statusIcon = Icons.question_mark_rounded;
-                          break;
-                        case 'OK':
-                          statusColor = Colors.green;
-                          statusIcon = Icons.check_circle_outline_rounded;
-                          break;
-                        case 'WARNING':
-                          statusColor = Colors.yellow;
-                          statusIcon = Icons.warning_amber_rounded;
-                          break;
-                        case 'ERROR':
-                          statusColor = Colors.red;
-                          statusIcon = Icons.error_outline_rounded;
-                          break;
-                        default:
-                          statusColor = Colors.grey;
-                          statusIcon = Icons.question_mark_rounded;
-                          break;
-                      }
-                    }
-
-                    return ListTile(
-                      title: const Text(
-                        'Arm',
-                        style: TextStyle(fontSize: 20),
-                      ),
-                      leading: Icon(
-                        statusIcon,
-                        color: statusColor,
-                      ),
-                      subtitle:
-                          status.faults.isNotEmpty ? Text(status.faults) : null,
-                      trailing: ElevatedButton(
-                        onPressed: () async {
-                          // Disable the button while the test is running
-                          await SubsystemState.startArmTest();
-                          // No need to manually update the UI; the stream and ValueNotifier will handle this
-                        },
-                        child: Text('Run Check'),
-                      ),
-                    );
-                  },
-                ),
-              ],
-            ),
-          ),
-        );
-      },
     );
   }
 }

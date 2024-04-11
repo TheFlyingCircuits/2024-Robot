@@ -92,6 +92,62 @@ class SubsystemState {
     }
   }
 
+  static Stream<SubsystemStatus> subsystemStatus(String subsystem) async* {
+    NT4Subscription ranCheckSub;
+    NT4Subscription statusSub;
+    NT4Subscription faultsSub;
+    switch (subsystem.toLowerCase()) {
+      case "arm":
+        ranCheckSub = _armRanCheckSub;
+        statusSub = _armStatusSub;
+        faultsSub = _armFaultsSub;
+      default:
+        ranCheckSub = NT4Subscription(topic: "topic");
+        statusSub = NT4Subscription(topic: "topic");
+        faultsSub = NT4Subscription(topic: "topic");
+    }
+
+    while (true) {
+      // Attempt to safely cast the values. Adjust the types as necessary.
+      bool ranCheck = false;
+      String status = '';
+      String faults = '';
+
+      var ranCheckValue = ranCheckSub.currentValue;
+      if (ranCheckValue is bool) {
+        ranCheck = ranCheckValue;
+      }
+
+      var statusValue = statusSub.currentValue;
+      if (statusValue is String) {
+        status = statusValue;
+      } else if (statusValue is List) {
+        // If the value is a list, handle accordingly. This is just an example.
+        status = statusValue.join(", ");
+      }
+
+      var faultsValue = faultsSub.currentValue;
+      if (faultsValue is String) {
+        faults = faultsValue;
+      } else if (faultsValue is List) {
+        // Handle the list case
+        faults = faultsValue.join(", ");
+      }
+
+      yield SubsystemStatus(ranCheck: ranCheck, status: status, faults: faults);
+      await Future.delayed(
+          const Duration(milliseconds: 500)); // Adjust the delay as needed
+    }
+  }
+
+  static Future<void> startSubsystemTest(String subsystem) async {
+    switch (subsystem.toLowerCase()) {
+      case "arm":
+        return startArmTest();
+      default:
+    }
+  }
+
   static Future<void> startArmTest() async {
     // Assuming this is where you'd start the test
     _client.addSample(_armCheckRunningTopic, true);

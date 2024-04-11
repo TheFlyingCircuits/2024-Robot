@@ -53,7 +53,7 @@ public abstract class DiagnosticSubsystem extends SubsystemBase {
                 Commands.runOnce(() -> {
                     SmartDashboard.putBoolean(statusDirectory + "/RanCheck", false);
                     clearAllFaults();
-                    publishDiagnostics();
+                    publishDiagnostics(SubsystemStatus.NULL);
                 }),
                 autoDiagnoseCommand(),
                 Commands.runOnce(() -> {
@@ -70,6 +70,14 @@ public abstract class DiagnosticSubsystem extends SubsystemBase {
 
     private void publishDiagnostics() {
         SubsystemStatus status = getSubsystemStatus();
+        publishDiagnosticsHelper(status);
+    }
+
+    private void publishDiagnostics(SubsystemStatus initStatus) {
+        SubsystemStatus status = getSubsystemStatus(initStatus);
+        publishDiagnosticsHelper(status);
+    }
+    private void publishDiagnosticsHelper(SubsystemStatus status) {
         SmartDashboard.putString(statusDirectory + "/Status", status.name());
         System.out.println("publishing");
         String[] faultStrings = new String[this.faults.size()];
@@ -154,6 +162,10 @@ public abstract class DiagnosticSubsystem extends SubsystemBase {
         }
         System.out.println("worst status: " +worstStatus);
         return worstStatus;
+    }
+
+    public SubsystemStatus getSubsystemStatus(SubsystemStatus initStatus) {
+        return initStatus;
     }
 
     private void checkForFaults() {

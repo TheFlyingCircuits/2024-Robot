@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:diagnostic_page/pages/diagnostic_page.dart';
 import 'package:diagnostic_page/services/subsystem_state.dart';
 import 'package:flutter/material.dart';
@@ -44,13 +46,29 @@ class MyApp extends StatefulWidget {
 class MyAppState extends State<MyApp> {
   final FocusNode _focusNode = FocusNode();
   final GlobalKey<NavigatorState> _navigatorKey = GlobalKey<NavigatorState>();
+  StreamSubscription<bool>? _connectionStatusSubscription;
 
   @override
   void initState() {
     super.initState();
-    SubsystemState.armStatus().listen(
-      (status) {
-        // print("Received status: ${status.status}");
+
+    // Listen to the connection status
+    _connectionStatusSubscription = SubsystemState.connectionStatus().listen(
+      (connected) {
+        if (connected) {
+          // Navigate to the Diagnostic Page if not already there
+          if (_navigatorKey.currentState?.canPop() ?? false) {
+            _navigatorKey.currentState?.pop();
+          } else {
+            _navigatorKey.currentState?.push(
+                MaterialPageRoute(builder: (_) => const DiagnosticPage()));
+          }
+        } else {
+          // Navigate back to the home screen if the Diagnostic Page is displayed
+          if (_navigatorKey.currentState?.canPop() ?? false) {
+            _navigatorKey.currentState?.pop();
+          }
+        }
       },
       onError: (e) {
         print("Stream error: $e");
@@ -61,6 +79,8 @@ class MyAppState extends State<MyApp> {
   @override
   void dispose() {
     _focusNode.dispose();
+    _connectionStatusSubscription
+        ?.cancel(); // Don't forget to cancel the subscription
     super.dispose();
   }
 
