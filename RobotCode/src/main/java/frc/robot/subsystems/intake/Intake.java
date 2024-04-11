@@ -177,8 +177,9 @@ public class Intake extends DiagnosticSubsystem {
         // TODO: Determine proper speeds and tolerances
         return Commands.sequence(
             Commands.runOnce(() -> {
+                System.out.println("r5ytgtuyjtgkyij");
                 this.setRPM(200);
-            }, this),
+            }),
             Commands.waitSeconds(1.0),
             Commands.runOnce(() -> {
                 this.addFaults(this.frontIntakeMotor.autoDiagnoseIsAtTargetRPS(200, 3, true));

@@ -26,7 +26,7 @@ public class AutoDiagnose extends SubsystemBase {
     @Override
     public void periodic() {
         for (RunnablePeriodic runnablePeriodic : runnablePeriodics) {
-            if(runnablePeriodic.timer.advanceIfElapsed(runnablePeriodic.periodSeconds)) {
+            if(runnablePeriodic.timer.hasElapsed(runnablePeriodic.periodSeconds)) {
                 runnablePeriodic.toRun.run();
             }
         }

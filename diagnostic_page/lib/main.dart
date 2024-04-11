@@ -1,8 +1,12 @@
+import 'package:diagnostic_page/pages/diagnostic_page.dart';
+import 'package:diagnostic_page/services/subsystem_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:window_manager/window_manager.dart';
 
-void main() async {
+Future<void> main() async {
+  SubsystemState.init();
+
   WidgetsFlutterBinding.ensureInitialized();
   await windowManager.ensureInitialized();
 
@@ -30,14 +34,66 @@ void main() async {
   runApp(const MyApp());
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class MyApp extends StatefulWidget {
+  const MyApp({Key? key}) : super(key: key);
 
-  // This widget is the root of your application.
+  @override
+  MyAppState createState() => MyAppState();
+}
+
+class MyAppState extends State<MyApp> {
+  final FocusNode _focusNode = FocusNode();
+  final GlobalKey<NavigatorState> _navigatorKey = GlobalKey<NavigatorState>();
+
+  @override
+  void initState() {
+    super.initState();
+    SubsystemState.armStatus().listen(
+      (status) {
+        // print("Received status: ${status.status}");
+      },
+      onError: (e) {
+        print("Stream error: $e");
+      },
+    );
+  }
+
+  @override
+  void dispose() {
+    _focusNode.dispose();
+    super.dispose();
+  }
+
+  void _handleKeyEvent(KeyEvent event) async {
+    if (event is KeyDownEvent) {
+      if (event.logicalKey == LogicalKeyboardKey.keyN) {
+        if (_navigatorKey.currentState!.canPop()) {
+          _navigatorKey.currentState!.pop();
+        } else {
+          _navigatorKey.currentState!
+              .push(MaterialPageRoute(builder: (_) => const DiagnosticPage()));
+        }
+      }
+      if (event.logicalKey == LogicalKeyboardKey.enter) {
+        print("enter pressed");
+        try {
+          bool isFullScreen = await windowManager.isFullScreen();
+          // No direct null check here since isFullScreen returns a Future<bool>
+          await windowManager.setFullScreen(!isFullScreen);
+        } catch (e) {
+          print('Error toggling full screen: $e');
+        }
+      }
+      // Re-request focus on the main page's FocusNode after navigation
+      WidgetsBinding.instance
+          .addPostFrameCallback((_) => _focusNode.requestFocus());
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Diagnostic Display',
+      title: "Diagnostic Display",
       theme: ThemeData(
         useMaterial3: true,
         colorScheme: ColorScheme.fromSeed(
@@ -46,48 +102,24 @@ class MyApp extends StatelessWidget {
             background: const Color(0xFF181818),
             brightness: Brightness.dark),
       ),
-      home: const DiagnosticDisplay(),
+      home: Scaffold(
+        body: Navigator(
+          key: _navigatorKey,
+          onGenerateRoute: (settings) => MaterialPageRoute(
+            builder: (context) => KeyboardListener(
+              focusNode: _focusNode,
+              onKeyEvent: _handleKeyEvent,
+              child: const Focus(
+                autofocus: true,
+                child: Center(
+                  child: Text(
+                      'Unfinished home screen. Press enter to go fullscreen, press N to switch to diagnostics'),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
     );
-  }
-}
-
-class DiagnosticDisplay extends StatefulWidget {
-  const DiagnosticDisplay({super.key});
-
-  @override
-  State<DiagnosticDisplay> createState() => _DiagnosticDisplayState();
-}
-
-class _DiagnosticDisplayState extends State<DiagnosticDisplay> {
-  @override
-  Widget build(BuildContext context) {
-    // TODO: implement build
-    throw UnimplementedError();
-  }
-
-  bool _onKey(KeyEvent event) {
-    final key = event.logicalKey.keyLabel;
-
-    if (event is KeyDownEvent) {
-      print("Key down: $key");
-    } else if (event is KeyUpEvent) {
-      print("Key up: $key");
-    } else if (event is KeyRepeatEvent) {
-      print("Key repeat: $key");
-    }
-
-    return false;
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    ServicesBinding.instance.keyboard.addHandler(_onKey);
-  }
-
-  @override
-  void dispose() {
-    ServicesBinding.instance.keyboard.removeHandler(_onKey);
-    super.dispose();
   }
 }

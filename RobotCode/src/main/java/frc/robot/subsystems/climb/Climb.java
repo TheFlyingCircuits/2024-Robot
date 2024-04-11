@@ -184,10 +184,10 @@ public class Climb extends DiagnosticSubsystem {
             ),
             Commands.runOnce(()-> {
                 if(!(Math.abs(leftMotor.getPosition()) < 0.02)) {
-                    new Fault("[Auto Diagnose] "+leftMotor.getName()+" did not reach zero setpoint", false);
+                    addFault("[Auto Diagnose] "+leftMotor.getName()+" did not reach zero setpoint", false);
                 }
                 if(!(Math.abs(rightMotor.getPosition()) < 0.02)) {
-                    new Fault("[Auto Diagnose] "+rightMotor.getName()+" did not reach zero setpoint", false);
+                    addFault("[Auto Diagnose] "+rightMotor.getName()+" did not reach zero setpoint", false);
                 }
             })
         ).andThen(this.lowerHooksCommand().until(() -> climbArmsZero()).withTimeout(3));

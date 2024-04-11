@@ -265,27 +265,28 @@ public class Arm extends DiagnosticSubsystem {
             Commands.runOnce(() -> {this.setDisableSetpointChecking(false);}),
             this.setDesiredDegreesCommand(ArmConstants.armMaxAngleDegrees).withTimeout(2),
             Commands.runOnce(() -> {
+                this.addFault("[Auto Diagnose] this is a test lol", false);
                 if(!this.isCloseToTarget()) {
-                    new Fault("[Auto Diagnose] arm not reaching max angle", false);
+                    this.addFault("[Auto Diagnose] arm not reaching max angle", false);
                 }
             }),
             this.setDesiredDegreesCommand(ArmConstants.armMinAngleDegrees).withTimeout(2),
             Commands.runOnce(() -> {
                 if(!this.isCloseToTarget()) {
-                    new Fault("[Auto Diagnose] arm not reaching min angle", false);
+                    this.addFault("[Auto Diagnose] arm not reaching min angle", false);
                 }
             }),
             // AMP ANGLE
             this.setDesiredDegreesCommand(110).withTimeout(2),
             Commands.runOnce(() -> {
                 if(!this.isCloseToTarget()) {
-                    new Fault("[Auto Diagnose] arm not reaching AMP angle", false);
+                    this.addFault("[Auto Diagnose] arm not reaching AMP angle", false);
                 }
             }),
             this.resetShooterAngle().withTimeout(2),
             Commands.runOnce(() -> {
                 if(!this.isCloseToTarget()) {
-                    new Fault("[Auto Diagnose] arm not reaching home", false);
+                    this.addFault("[Auto Diagnose] arm not reaching home", false);
                 }
             })
         ).andThen(this.resetShooterAngle().withTimeout(2));

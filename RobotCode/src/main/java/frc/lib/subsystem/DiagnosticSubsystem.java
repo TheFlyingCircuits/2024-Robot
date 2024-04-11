@@ -26,6 +26,7 @@ import frc.robot.subsystems.AutoDiagnose;
 
 public abstract class DiagnosticSubsystem extends SubsystemBase {
     public enum SubsystemStatus {
+        NULL,
         OK,
         WARNING,
         ERROR,
@@ -33,7 +34,7 @@ public abstract class DiagnosticSubsystem extends SubsystemBase {
 
     private final String statusDirectory;
     private final boolean isReal;
-    private final List<Fault> faults = new ArrayList<Fault>();
+    private final ArrayList<Fault> faults = new ArrayList<Fault>();
     private final List<AutoDiagnoseBase> devices = new ArrayList<AutoDiagnoseBase>();
 
     public DiagnosticSubsystem() {
@@ -70,10 +71,12 @@ public abstract class DiagnosticSubsystem extends SubsystemBase {
     private void publishDiagnostics() {
         SubsystemStatus status = getSubsystemStatus();
         SmartDashboard.putString(statusDirectory + "/Status", status.name());
-
+        System.out.println("publishing");
         String[] faultStrings = new String[this.faults.size()];
+        System.out.println(faults);
         for (int i = 0; i < this.faults.size(); i++) {
             Fault fault = this.faults.get(i);
+            System.out.println(fault.message);
             faultStrings[i] = String.format(("[%.2f] %s"), fault.timestamp, fault.message);
         }
         SmartDashboard.putStringArray(statusDirectory + "/Faults", faultStrings);
@@ -106,9 +109,9 @@ public abstract class DiagnosticSubsystem extends SubsystemBase {
     }
 
     protected void addFault(Fault fault) {
-        if (!this.faults.contains(fault)) {
+        // if (!this.faults.contains(fault)) {
             this.faults.add(fault);
-        }
+        // }
     }
 
     protected void addFault(String message, boolean isJustWarning) {
@@ -128,19 +131,28 @@ public abstract class DiagnosticSubsystem extends SubsystemBase {
     }
 
     public SubsystemStatus getSubsystemStatus() {
-        SubsystemStatus worstStatus = SubsystemStatus.OK;
+        SubsystemStatus worstStatus = SubsystemStatus.NULL;
+        System.out.println("worst status: " +worstStatus);
 
         for (Fault fault : this.faults) {
             if (fault.timestamp > Timer.getFPGATimestamp() - 10) {
                 if (fault.isJustWarning) {
                     if (worstStatus != SubsystemStatus.ERROR) {
                         worstStatus = SubsystemStatus.WARNING;
-                    } else {
-                        worstStatus = SubsystemStatus.ERROR;
                     }
+                } else {
+                    worstStatus = SubsystemStatus.ERROR;
                 }
             }
+            System.out.println("worst status: " +worstStatus);
         }
+        System.out.println("worst status: " +worstStatus);
+        if(
+            worstStatus.equals(SubsystemStatus.NULL)
+        ) {
+            worstStatus = SubsystemStatus.OK;
+        }
+        System.out.println("worst status: " +worstStatus);
         return worstStatus;
     }
 

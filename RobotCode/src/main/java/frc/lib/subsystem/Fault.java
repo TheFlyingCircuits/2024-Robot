@@ -11,6 +11,7 @@ public class Fault {
         this.message = message;
         this.timestamp = Timer.getFPGATimestamp();
         this.isJustWarning = isJustWarning;
+        System.out.println("fault created: " + message + " | " + isJustWarning);
     }
 
     @Override

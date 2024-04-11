@@ -2,7 +2,39 @@
   "NTProvider": {
     "types": {
       "/AdvantageKit/RealOutputs/arm/mech2d": "Mechanism2d",
-      "/FMSInfo": "FMSInfo"
+      "/FMSInfo": "FMSInfo",
+      "/SmartDashboard/Auto Chooser": "String Chooser",
+      "/SmartDashboard/SubsystemStatus/Arm/SubsystemCheck": "Command",
+      "/SmartDashboard/SubsystemStatus/Climb/SubsystemCheck": "Command",
+      "/SmartDashboard/SubsystemStatus/Indexer/SubsystemCheck": "Command",
+      "/SmartDashboard/SubsystemStatus/Intake/SubsystemCheck": "Command",
+      "/SmartDashboard/SubsystemStatus/Shooter/SubsystemCheck": "Command"
+    },
+    "windows": {
+      "/SmartDashboard/SubsystemStatus/Arm/SubsystemCheck": {
+        "window": {
+          "visible": true
+        }
+      }
+    }
+  },
+  "NetworkTables": {
+    "transitory": {
+      "SmartDashboard": {
+        "SubsystemStatus": {
+          "Arm": {
+            "SubsystemCheck": {
+              "open": true
+            },
+            "open": true,
+            "string[]##v_/SmartDashboard/SubsystemStatus/Arm/Faults": {
+              "open": true
+            }
+          },
+          "open": true
+        },
+        "open": true
+      }
     }
   },
   "NetworkTables Info": {

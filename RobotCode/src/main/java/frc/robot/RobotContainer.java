@@ -154,8 +154,8 @@ public class RobotContainer {
 
         ringJustEnteredIntake.onTrue(new InstantCommand(() -> {drivetrain.isTrackingNote = false;}));
 
-        // realBindings();
-        testBindings();
+        realBindings();
+        // testBindings();
     }
 
     Command intakeTowardsNote() {
@@ -297,8 +297,8 @@ public class RobotContainer {
 
         Command command = Commands.sequence(
             // TODO: add drivetrain?
-            // arm.getAutoDiagnoseCommand()//,
-            climb.getAutoDiagnoseCommand()//,
+            arm.getAutoDiagnoseCommand()//,
+            // climb.getAutoDiagnoseCommand()//,
             // intake.getAutoDiagnoseCommand()//,
             // indexer.getAutoDiagnoseCommand()//,
             // shooter.getAutoDiagnoseCommand()
