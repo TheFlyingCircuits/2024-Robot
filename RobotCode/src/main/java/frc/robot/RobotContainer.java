@@ -297,11 +297,11 @@ public class RobotContainer {
 
         Command command = Commands.sequence(
             // TODO: add drivetrain?
-            arm.getAutoDiagnoseCommand()//,
-            // climb.getAutoDiagnoseCommand()//,
-            // intake.getAutoDiagnoseCommand()//,
-            // indexer.getAutoDiagnoseCommand()//,
-            // shooter.getAutoDiagnoseCommand()
+            arm.getAutoDiagnoseCommand(),
+            climb.getAutoDiagnoseCommand(),
+            intake.getAutoDiagnoseCommand(),
+            indexer.getAutoDiagnoseCommand(),
+            shooter.getAutoDiagnoseCommand()
         );
         command.addRequirements(
             arm,

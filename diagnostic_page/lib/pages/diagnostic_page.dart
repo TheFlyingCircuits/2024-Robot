@@ -1,4 +1,5 @@
 import 'package:diagnostic_page/services/subsystem_state.dart';
+import 'package:diagnostic_page/widgets/graph.dart';
 import 'package:diagnostic_page/widgets/status_card.dart';
 import 'package:flutter/material.dart';
 
@@ -42,16 +43,21 @@ class _DiagnosticPageState extends State<DiagnosticPage> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         // TODO: expanded shouldnt be const
-                        const Expanded(
+                        Expanded(
                           child: Column(
                             children: [
                               // const MotorTemps(),
                               // const PDHChannels(),
-                              // TODO: row shouldnt be const
                               Row(
                                 children: [
-                                  Expanded(child: Text("CodePerformanceGraph")),
-                                  Expanded(child: Text("InputVoltageGraph")),
+                                  Expanded(
+                                    child: customGraph("batteryvoltage",
+                                        [Colors.red, Colors.orange], 20,
+                                        horizontalLineHeight: 12),
+                                  ),
+                                  // Expanded(child: Text())
+                                  // Expanded(child: Text("CodePerformanceGraph")),
+                                  // Expanded(child: Text("InputVoltageGraph")),
                                   // Expanded(child: CodePerformanceGraph()),
                                   // Expanded(child: InputVoltageGraph()),
                                 ],
@@ -59,9 +65,14 @@ class _DiagnosticPageState extends State<DiagnosticPage> {
                               Row(
                                 children: [
                                   Expanded(
-                                    child: Text("CANUtilGraph"),
-                                  )
-                                  // Expanded(child: CANUtilGraph()),
+                                      child: customGraph(
+                                    "riocan",
+                                    [Colors.green, Colors.yellow],
+                                    100,
+                                  )),
+                                  Expanded(
+                                      child: customGraph("canivorecan",
+                                          [Colors.green, Colors.yellow], 100)),
                                 ],
                               ),
                             ],
@@ -69,36 +80,21 @@ class _DiagnosticPageState extends State<DiagnosticPage> {
                         ),
                         Column(
                           children: [
-                            // statusCard("intake"),
-
                             statusCard("arm"),
-
+                            statusCard("climb"),
+                            // statusCard("drivetrain"),
+                            statusCard("intake"),
+                            statusCard("indexer"),
+                            statusCard("shooter"),
                             const SizedBox(height: 4),
                             const SizedBox(
                               width: 500,
                               child: FloatingActionButton.extended(
-                                onPressed: SubsystemState.startArmTest,
+                                onPressed:
+                                    SubsystemState.startAllSubsystemTests,
                                 label: Text('Run All Checks'),
                                 icon: Icon(Icons.check),
                               ),
-                            ),
-                            StreamBuilder(
-                              stream: SubsystemState.connectionStatus(),
-                              builder: (context, snapshot) {
-                                bool connected = snapshot.data ?? false;
-
-                                if (connected) {
-                                  return const Text(
-                                    'Robot Status: Connected',
-                                    style: TextStyle(color: Colors.green),
-                                  );
-                                } else {
-                                  return const Text(
-                                    'Robot Status: Disconnected',
-                                    style: TextStyle(color: Colors.red),
-                                  );
-                                }
-                              },
                             ),
                           ],
                         ),

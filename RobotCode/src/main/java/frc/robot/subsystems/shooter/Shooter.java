@@ -132,6 +132,9 @@ public class Shooter extends DiagnosticSubsystem {
         Logger.recordOutput("shooter/rightFlywheelsSetpoint", rightFlywheelsPID.getSetpoint());
         Logger.recordOutput("shooter/flywheelsAtSetpoints", flywheelsAtSetpoints());
 
+        this.clearMotorTemps();
+        this.addMotorTemps(io.getMotorTemps());
+
     }
 
     @Override

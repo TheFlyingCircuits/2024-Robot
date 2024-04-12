@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.littletonrobotics.junction.AutoLog;
 
+import frc.lib.MotorTempObject;
 import frc.lib.subsystem.Fault;
 
 public interface ShooterIO {
@@ -38,4 +39,5 @@ public interface ShooterIO {
 
     public default List<Fault> getRightFaults(double expectedRPS, double tolerance, boolean isForward) { return new ArrayList<Fault>(); };
 
+    public default List<MotorTempObject> getMotorTemps() {return new ArrayList<MotorTempObject>();};
 }

@@ -20,16 +20,24 @@
   },
   "NetworkTables": {
     "transitory": {
+      "AdvantageKit": {
+        "RealOutputs": {
+          "open": true
+        },
+        "SystemStats": {
+          "open": true
+        }
+      },
       "SmartDashboard": {
         "SubsystemStatus": {
           "Arm": {
-            "SubsystemCheck": {
-              "open": true
-            },
             "open": true,
             "string[]##v_/SmartDashboard/SubsystemStatus/Arm/Faults": {
               "open": true
             }
+          },
+          "Climb": {
+            "open": true
           },
           "open": true
         },

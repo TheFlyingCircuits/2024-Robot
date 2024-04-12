@@ -1,6 +1,7 @@
 package frc.lib.subsystem;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import com.ctre.phoenix6.hardware.CANcoder;
@@ -13,6 +14,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.lib.MotorTempObject;
 import frc.lib.VendorWrappers.Kraken;
 import frc.lib.VendorWrappers.Neo;
 import frc.lib.subsystem.autodiagnose.AutoDiagnoseBase;
@@ -36,6 +38,10 @@ public abstract class DiagnosticSubsystem extends SubsystemBase {
     private final boolean isReal;
     private final ArrayList<Fault> faults = new ArrayList<Fault>();
     private final List<AutoDiagnoseBase> devices = new ArrayList<AutoDiagnoseBase>();
+    private final List<Kraken> krakens = new ArrayList<Kraken>();
+    private final List<Neo> neos = new ArrayList<Neo>();
+    private final List<MotorTempObject> motorTemps = new ArrayList<MotorTempObject>();
+
 
     public DiagnosticSubsystem() {
         this.statusDirectory = "SubsystemStatus/" + this.getName();
@@ -88,6 +94,14 @@ public abstract class DiagnosticSubsystem extends SubsystemBase {
             faultStrings[i] = String.format(("[%.2f] %s"), fault.timestamp, fault.message);
         }
         SmartDashboard.putStringArray(statusDirectory + "/Faults", faultStrings);
+        for (MotorTempObject motorTempObject : motorTemps) {
+            SmartDashboard.putNumber(
+                statusDirectory + "/MotorTemps/"+motorTempObject.getName(),
+                motorTempObject.getMotorTemp()
+            );
+        }
+        // motorTemps.forEach(m -> {m.toStringArray();});
+        // SmartDashboard.getStringArray(statusDirectory + "/MotorTemps",);//.toArray(new String[0]));
     }
 
     protected abstract Command autoDiagnoseCommand();
@@ -102,10 +116,12 @@ public abstract class DiagnosticSubsystem extends SubsystemBase {
 
     public void addDevice(String label, Neo sparkMax) {
         devices.add(new AutoDiagnoseCANSparkMAX(sparkMax));
+        neos.add(sparkMax);
     }
 
     public void addDevice(String label, Kraken kraken) {
         devices.add(new AutoDiagnoseKraken(kraken));
+        krakens.add(kraken);
     }
 
     public void addDevice(String label, Pigeon2 pigeon) {
@@ -176,5 +192,35 @@ public abstract class DiagnosticSubsystem extends SubsystemBase {
                 }
             }
         }
+    }
+
+
+    // private void postMotorInfoNT4() {
+    //     motorTemps.clear();
+    //     for(Kraken kraken : krakens) {
+    //         motorTemps.add(kraken.getMotorTempObject());
+    //     }
+    //     for(Neo neo : neos) {
+    //         motorTemps.add(neo.getMotorTempObject());
+    //     }
+    //     SmartDashboard.putStringArray(statusDirectory+"/MotorTemps", motorTemps.toArray(new String[0]));
+    // }
+
+    // protected void postMotorTemps(List<MotorTempObject> motorTemps) {
+    //     // for (List<MotorTempObject> motorTempList : motorTempLists) {
+    //         for (MotorTempObject motorTempObject : motorTemps) {
+    //             motorTemps.add(motorTempObject);
+    //         }
+    //     // }
+    // }
+
+    public void clearMotorTemps() {
+        motorTemps.clear();
+    }
+    public void addMotorTemp(MotorTempObject motorTempObject) {
+        motorTemps.add(motorTempObject);
+    }
+    public void addMotorTemps(List<MotorTempObject> motorTempObjects) {
+        motorTemps.addAll(motorTempObjects);
     }
 }

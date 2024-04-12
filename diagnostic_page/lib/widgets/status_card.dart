@@ -2,6 +2,7 @@ import 'package:diagnostic_page/services/subsystem_state.dart';
 import 'package:flutter/material.dart';
 
 Widget statusCard(String subsystem) {
+  RegExp pattern = RegExp(r'^\[\d+\.\d+\]\s');
   return ValueListenableBuilder(
     valueListenable: SubsystemState.ranCheckNotifier,
     builder: (context, bool ranCheckValue, child) {
@@ -24,10 +25,10 @@ Widget statusCard(String subsystem) {
 
                   if (ranCheckValue) {
                     switch (status.status) {
-                      case 'NULL':
-                        statusColor = Colors.grey;
-                        statusIcon = Icons.question_mark_rounded;
-                        break;
+                      // case 'NULL':
+                      //   statusColor = Colors.grey;
+                      //   statusIcon = Icons.question_mark_rounded;
+                      //   break;
                       case 'OK':
                         statusColor = Colors.green;
                         statusIcon = Icons.check_circle_outline_rounded;
@@ -56,8 +57,12 @@ Widget statusCard(String subsystem) {
                       statusIcon,
                       color: statusColor,
                     ),
-                    subtitle:
-                        status.faults.isNotEmpty ? Text(status.faults) : null,
+                    subtitle: status.faults.isNotEmpty
+                        ? Text(status.faults
+                            .split(", ")
+                            .map((str) => str.replaceAll(pattern, ""))
+                            .join("\n"))
+                        : null,
                     trailing: ElevatedButton(
                       onPressed: () async {
                         // Disable the button while the test is running

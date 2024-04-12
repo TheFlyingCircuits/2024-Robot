@@ -7,6 +7,8 @@ package frc.robot.subsystems;
 import java.util.ArrayList;
 import java.util.List;
 
+import edu.wpi.first.hal.simulation.RoboRioDataJNI;
+import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.lib.subsystem.RunnablePeriodic;
 
@@ -21,7 +23,6 @@ public class AutoDiagnose extends SubsystemBase {
     public static void addPeriodicRunnable(Runnable toRun, double periodSeconds) {
         runnablePeriodics.add(new RunnablePeriodic(toRun, periodSeconds));
     }
-
   
     @Override
     public void periodic() {

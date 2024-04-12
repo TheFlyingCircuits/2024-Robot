@@ -7,6 +7,7 @@ import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
+import frc.lib.MotorTempObject;
 import frc.lib.VendorWrappers.Kraken;
 import frc.lib.subsystem.Fault;
 import frc.robot.Constants.ShooterConstants;
@@ -84,5 +85,13 @@ public class ShooterIOKraken implements ShooterIO {
     @Override
     public List<Fault> getRightFaults(double expectedRPS, double tolerance, boolean isForward) {
         return rightMotor.autoDiagnoseIsAtTargetRPS(expectedRPS, tolerance, isForward);
+    }
+
+    @Override
+    public List<MotorTempObject> getMotorTemps() {
+        ArrayList<MotorTempObject> motorTemps = new ArrayList<MotorTempObject>();
+        motorTemps.add(leftMotor.getMotorTempObject());
+        motorTemps.add(rightMotor.getMotorTempObject());
+        return motorTemps;
     }
 }

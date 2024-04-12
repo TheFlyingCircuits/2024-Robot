@@ -10,6 +10,7 @@ import com.revrobotics.RelativeEncoder;
 import com.revrobotics.SparkRelativeEncoder.Type;
 
 import edu.wpi.first.wpilibj.Timer;
+import frc.lib.MotorTempObject;
 import frc.lib.subsystem.Fault;
 
 public class Neo extends CANSparkMax {
@@ -196,4 +197,12 @@ public class Neo extends CANSparkMax {
     public String getName() {
         return this.name;
     }
+
+    public MotorTempObject getMotorTempObject() {
+        return new MotorTempObject(
+            this.name,
+            this.getMotorTemperature()
+        );
+    }
+
 }

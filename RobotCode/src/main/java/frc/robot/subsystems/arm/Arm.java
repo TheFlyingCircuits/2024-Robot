@@ -15,6 +15,7 @@ import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.units.Measure;
 import edu.wpi.first.units.Voltage;
+import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
@@ -25,6 +26,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Config;
+import frc.lib.MotorTempObject;
 import frc.lib.subsystem.DiagnosticSubsystem;
 import frc.lib.subsystem.Fault;
 import frc.robot.Constants.ArmConstants;
@@ -222,7 +224,9 @@ public class Arm extends DiagnosticSubsystem {
     
     @Override
     public void periodic() {
-        
+        this.clearMotorTemps();
+        this.addMotorTemps(io.getMotorTemps());
+        this.addMotorTemp(new MotorTempObject("test", 23));
 
         Logger.processInputs("armInputs", inputs);
 

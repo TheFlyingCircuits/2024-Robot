@@ -1,5 +1,8 @@
 package frc.robot.subsystems.arm;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.signals.AbsoluteSensorRangeValue;
@@ -7,6 +10,7 @@ import com.ctre.phoenix6.signals.SensorDirectionValue;
 import com.revrobotics.CANSparkBase.IdleMode;
 
 import edu.wpi.first.math.filter.LinearFilter;
+import frc.lib.MotorTempObject;
 import frc.lib.VendorWrappers.Neo;
 import frc.robot.Constants.ArmConstants;
 import frc.robot.subsystems.arm.ArmIO.ArmIOInputs;
@@ -129,6 +133,14 @@ public class ArmIONeo implements ArmIO {
         rightCANCoderConfig.MagnetSensor.SensorDirection = SensorDirectionValue.CounterClockwise_Positive;        
 
         rightAbsoluteEncoder.getConfigurator().apply(rightCANCoderConfig);
+    }
+
+    @Override
+    public List<MotorTempObject> getMotorTemps() {
+        ArrayList<MotorTempObject> motorTemps = new ArrayList<MotorTempObject>();
+        motorTemps.add(leftMotor.getMotorTempObject());
+        motorTemps.add(rightMotor.getMotorTempObject());
+        return motorTemps;
     }
 
 }

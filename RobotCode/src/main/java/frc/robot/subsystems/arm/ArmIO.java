@@ -4,7 +4,12 @@
 
 package frc.robot.subsystems.arm;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.littletonrobotics.junction.AutoLog;
+
+import frc.lib.MotorTempObject;
 public interface ArmIO {
 
     @AutoLog
@@ -54,5 +59,7 @@ public interface ArmIO {
     public default void setCoast(boolean makeCoast) {};
 
     public default boolean isCoast() {return false;};
+
+    public default List<MotorTempObject> getMotorTemps() {return new ArrayList<MotorTempObject>();};
 
 }

@@ -3,6 +3,7 @@ package frc.lib.VendorWrappers;
 import com.ctre.phoenix6.hardware.TalonFX;
 
 import edu.wpi.first.wpilibj.Timer;
+import frc.lib.MotorTempObject;
 import frc.lib.subsystem.Fault;
 
 import java.util.ArrayList;
@@ -100,7 +101,13 @@ public class Kraken extends TalonFX {
         }
         return faults;
     }
-    
+
+    public MotorTempObject getMotorTempObject() {
+        return new MotorTempObject(
+            this.name,
+            this.getDeviceTemp().getValueAsDouble()
+        );
+    }
 
 
     /** 
@@ -112,5 +119,4 @@ public class Kraken extends TalonFX {
     public String getName() {
         return this.name;
     }
-    
 }

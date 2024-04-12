@@ -109,6 +109,9 @@ public class Indexer extends DiagnosticSubsystem {
 
     @Override
     public void periodic() {
+        this.clearMotorTemps();
+        this.addMotorTemp(indexerMotor.getMotorTempObject());
+
         Logger.recordOutput("indexer/amps", indexerMotor.getTorqueCurrent().getValueAsDouble());
         Logger.recordOutput("indexer/isNoteIndexed()", isNoteIndexed());
         Logger.recordOutput("indexer/indexerRPS", indexerMotor.getVelocity().getValueAsDouble());
