@@ -7,6 +7,7 @@ import com.revrobotics.REVLibError;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.SparkRelativeEncoder.Type;
 
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.Timer;
 
 public class Neo extends CANSparkMax {
@@ -19,6 +20,34 @@ public class Neo extends CANSparkMax {
     private double mostRecentGoodAppliedOutput = 0;
     private double mostRecentGoodBusVoltage = 0;
     private double mostRecentGoodOutputCurrent = 0;
+
+
+    // physics constants
+    /** How many volts were applied to the motor by the manufacturer when determining its electrical characteristics. */
+    public static final double nominalVoltage = 12;
+
+    /** How quickly the motor turns (radians per second) when 12 volts are applied and there is no load on the motor. */
+    public static final double freeSpeed = Units.rotationsPerMinuteToRadiansPerSecond(5676);
+
+    /** How much current (amps) flowed through the motor while spinning at the free speed */
+    public static final double freeCurrent = 1.8;
+
+    /** How much torque (newton-meters) the stator exerts on the rotor when the rotor is held still,
+     *  and then 12 volts are applied to the motor. */
+    public static final double stallTorque = 2.6;
+
+    /** How much current (amps) flows through the motor coils when the rotor is held still, and then 12 volts are applied to the motor. */
+    public static final double stallCurrent = 105;
+
+    /** How much torque (newton-meters) the stator will exert on the rotor per amp of current that flows through the motor coils.  */
+    public static final double torquePerAmp = stallTorque / stallCurrent;
+
+    /** How much resistance (ohms) the motor windings have. */
+    public static final double windingResistance = nominalVoltage / stallCurrent;
+
+    /** How many volts are induced in the motor windings by the permanent magnets on the rotor
+     *  for each radian-per-second that the rotor is spinning at. */
+    public static final double kEMF = (nominalVoltage - freeCurrent * windingResistance) / freeSpeed;
 
     public Neo(int canID) {
         this("Neo #"+canID, canID);
