@@ -9,8 +9,6 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.lib.FlyingCircuitUtils;
-import frc.robot.Constants.FieldConstants;
 import frc.robot.Constants.ArmConstants;
 import frc.robot.Constants.FieldElement;
 import frc.robot.subsystems.arm.Arm;
