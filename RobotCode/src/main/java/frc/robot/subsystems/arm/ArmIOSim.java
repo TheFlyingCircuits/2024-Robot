@@ -38,6 +38,17 @@ public class ArmIOSim implements ArmIO {
         inputs.atUpperLimit = armSim.hasHitUpperLimit();
     }
 
+    // @Override
+    // @Override
+    // public List<MotorTempObject> getMotorTemps() {
+    //     ArrayList<MotorTempObject> temps = new ArrayList<MotorTempObject>();
+    //     temps.add(new MotorTempObject("leftPivot", 25));
+    //     leftMotor = new Neo("leftPivot", ArmConstants.leftMotorID);
+    //     rightMotor = new Neo("rightPivot", ArmConstants.rightMotorID);
+    //     // TODO Auto-generated method stub
+    //     return ArmIO.super.getMotorTemps();
+    // }
+
     @Override
     public void setArmMotorVolts(double volts) {
         armSim.setInputVoltage(volts);

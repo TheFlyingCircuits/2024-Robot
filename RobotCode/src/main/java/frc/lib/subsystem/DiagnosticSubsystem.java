@@ -1,7 +1,6 @@
 package frc.lib.subsystem;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 import com.ctre.phoenix6.hardware.CANcoder;
@@ -85,12 +84,9 @@ public abstract class DiagnosticSubsystem extends SubsystemBase {
     }
     private void publishDiagnosticsHelper(SubsystemStatus status) {
         SmartDashboard.putString(statusDirectory + "/Status", status.name());
-        System.out.println("publishing");
         String[] faultStrings = new String[this.faults.size()];
-        System.out.println(faults);
         for (int i = 0; i < this.faults.size(); i++) {
             Fault fault = this.faults.get(i);
-            System.out.println(fault.message);
             faultStrings[i] = String.format(("[%.2f] %s"), fault.timestamp, fault.message);
         }
         SmartDashboard.putStringArray(statusDirectory + "/Faults", faultStrings);
@@ -156,7 +152,6 @@ public abstract class DiagnosticSubsystem extends SubsystemBase {
 
     public SubsystemStatus getSubsystemStatus() {
         SubsystemStatus worstStatus = SubsystemStatus.NULL;
-        System.out.println("worst status: " +worstStatus);
 
         for (Fault fault : this.faults) {
             if (fault.timestamp > Timer.getFPGATimestamp() - 10) {
@@ -168,15 +163,12 @@ public abstract class DiagnosticSubsystem extends SubsystemBase {
                     worstStatus = SubsystemStatus.ERROR;
                 }
             }
-            System.out.println("worst status: " +worstStatus);
         }
-        System.out.println("worst status: " +worstStatus);
         if(
             worstStatus.equals(SubsystemStatus.NULL)
         ) {
             worstStatus = SubsystemStatus.OK;
         }
-        System.out.println("worst status: " +worstStatus);
         return worstStatus;
     }
 

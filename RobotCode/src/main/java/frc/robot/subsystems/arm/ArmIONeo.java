@@ -13,7 +13,6 @@ import edu.wpi.first.math.filter.LinearFilter;
 import frc.lib.MotorTempObject;
 import frc.lib.VendorWrappers.Neo;
 import frc.robot.Constants.ArmConstants;
-import frc.robot.subsystems.arm.ArmIO.ArmIOInputs;
 
 public class ArmIONeo implements ArmIO {
     

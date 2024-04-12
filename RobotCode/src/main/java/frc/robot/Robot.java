@@ -9,7 +9,6 @@ import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.NT4Publisher;
 import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 
-import com.ctre.phoenix6.CANBus;
 import com.pathplanner.lib.auto.AutoBuilder;
 
 import edu.wpi.first.wpilibj.DriverStation;
@@ -86,6 +85,7 @@ public class Robot extends LoggedRobot {
         // TODO: FOR TESTING ONLY
         SmartDashboard.putNumber("RIOCANUtil", 60 + (int)(Math.random() * 11));
         SmartDashboard.putNumber("CANivoreCANUtil", 35 + (int)(Math.random() * 11));
+
         SmartDashboard.putNumber("BatteryVoltage", (12.60 + (Math.random() * (12.60 - 12.03))));
 
     }

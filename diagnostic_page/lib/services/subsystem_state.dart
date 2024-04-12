@@ -9,12 +9,7 @@ class SubsystemState {
   static bool _isConnected = false;
   static late NT4Client _client;
 
-// arm,
-//             climb,
-//             drivetrain,
-//             intake,
-//             indexer,
-//             shooter
+  static final List<NT4Subscription> _motorTempSubs = [];
 
   static late NT4Subscription _armRanCheckSub;
   static late NT4Subscription _armStatusSub;
@@ -85,6 +80,11 @@ class SubsystemState {
         _isConnected = false;
       },
     );
+
+    _motorTempSubs.add(_client.subscribePeriodic(
+        "/SmartDashboard/SubsystemStatus/Arm/MotorTemps/leftPivot"));
+    _motorTempSubs.add(_client.subscribePeriodic(
+        "/SmartDashboard/SubsystemStatus/Arm/MotorTemps/rightPivot"));
 
     _armRanCheckSub = _client
         .subscribePeriodic('/SmartDashboard/SubsystemStatus/Arm/RanCheck');

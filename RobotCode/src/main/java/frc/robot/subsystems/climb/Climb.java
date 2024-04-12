@@ -1,7 +1,5 @@
 package frc.robot.subsystems.climb;
 
-import java.util.ArrayList;
-
 import org.littletonrobotics.junction.Logger;
 
 import com.revrobotics.CANSparkBase.IdleMode;
@@ -9,7 +7,6 @@ import com.revrobotics.CANSparkBase.IdleMode;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
-import frc.lib.MotorTempObject;
 import frc.lib.VendorWrappers.Neo;
 import frc.lib.subsystem.DiagnosticSubsystem;
 import frc.lib.subsystem.Fault;

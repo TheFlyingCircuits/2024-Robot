@@ -68,7 +68,7 @@ Widget customGraph(String graphType, List<Color> gradientColors, double maxY,
                         show: false,
                       ),
                       minX: 0,
-                      minY: 0,
+                      minY: -.01,
                       maxX: 20,
                       maxY: maxY,
                       lineBarsData: [

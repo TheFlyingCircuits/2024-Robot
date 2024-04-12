@@ -11,5 +11,6 @@ public class RunnablePeriodic {
         this.toRun = toRun;
         this.periodSeconds = periodSeconds;
         timer = new Timer();
+        timer.start();
     }
 }
