@@ -8,38 +8,38 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 13.65,
+        "x": 12.65,
         "y": 6.28
       },
       "isLocked": true,
-      "linkedName": "Starting Line (Amp Side)"
+      "linkedName": "Starting Line (Between Ring 1 and 2)"
     },
     {
       "anchor": {
-        "x": 8.65,
-        "y": 5.85
+        "x": 9.977237646782987,
+        "y": 6.265508684863524
       },
       "prevControl": {
-        "x": 11.547777478867205,
-        "y": 6.626457135307562
+        "x": 11.868388413903599,
+        "y": 6.916314935616482
       },
       "nextControl": null,
       "isLocked": true,
-      "linkedName": null
+      "linkedName": "Ring 5 Pickup (From Wing Shot)"
     }
   ],
   "rotationTargets": [],
   "constraintZones": [],
   "eventMarkers": [],
   "globalConstraints": {
-    "maxVelocity": 4.0,
-    "maxAcceleration": 4.0,
+    "maxVelocity": 4.5,
+    "maxAcceleration": 2.5,
     "maxAngularVelocity": 360.0,
     "maxAngularAcceleration": 360.0
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 15.0,
+    "rotation": 18.98,
     "rotateFast": false
   },
   "reversed": false,

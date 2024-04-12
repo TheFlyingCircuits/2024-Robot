@@ -37,11 +37,13 @@ public class Robot extends LoggedRobot {
         Logger.recordMetadata("projectName", "2024Robot");
         Logger.addDataReceiver(new NT4Publisher());
         //Logger.addDataReceiver(new WPILOGWriter()); // <- log to USB stick
-        try (
-        PowerDistribution pdh = new PowerDistribution()) {
+
+        if (Constants.atCompetition) {
+            Logger.addDataReceiver(new WPILOGWriter()); // <- log to USB stick
         }
-                                 // will allow it's values to be logged? 
-                                 // This is what the advantage kit docs imply at least.
+        try (PowerDistribution pdh = new PowerDistribution()) {} // Apparently just constructing a PDH
+                                                                    // will allow it's values to be logged? 
+                                                                    // This is what the advantage kit docs imply at least.
         Logger.start();
     }
 
@@ -62,6 +64,7 @@ public class Robot extends LoggedRobot {
         SmartDashboard.putData("Auto Chooser", autoChooser);
 
         DriverStation.silenceJoystickConnectionWarning(true);
+        System.gc();
     }
 
     /**

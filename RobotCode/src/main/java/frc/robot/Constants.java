@@ -4,15 +4,17 @@
 
 package frc.robot;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Arrays;
 
+import com.pathplanner.lib.path.PathConstraints;
 import com.revrobotics.CANSparkBase.IdleMode;
 
 import edu.wpi.first.apriltag.AprilTag;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
@@ -21,6 +23,9 @@ import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.units.Unit;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 
 /**
@@ -32,11 +37,14 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
  * constants are needed, to reduce verbosity.
  */
 public final class Constants {
+
+    public final static boolean atCompetition = false;
+
+
     public final static class ShooterConstants {
         /**Rotations of the motor per rotations of the wheel; a number greater than 1 represents a reduction. */
         public final static double flywheelGearReduction = 1.;
-
-        public static final double flywheelCircumferenceMeters = Units.inchesToMeters(4)*Math.PI;
+        public final static double flywheelCircumferenceMeters = Units.inchesToMeters(4)*Math.PI;
     
         public final static double kPFlywheelsVoltsSecondsPerMeter = .6;
         public final static double kIFlywheelsVoltsPerMeter = 0.;
@@ -93,7 +101,8 @@ public final class Constants {
             new Translation2d(wheelbaseMeters / 2.0, trackwidthMeters / 2.0),
             new Translation2d(wheelbaseMeters / 2.0, -trackwidthMeters / 2.0),
             new Translation2d(-wheelbaseMeters / 2.0, trackwidthMeters / 2.0),
-            new Translation2d(-wheelbaseMeters / 2.0, -trackwidthMeters / 2.0));
+            new Translation2d(-wheelbaseMeters / 2.0, -trackwidthMeters / 2.0)
+        );
 
 
 
@@ -106,9 +115,14 @@ public final class Constants {
         public static final double krakenFreeSpeedRPM = 5800;
         public static final double krakenFreeSpeedRotationsPerSecond = krakenFreeSpeedRPM / 60.;
         public static final double maxAchievableVelocityMetersPerSecond = krakenFreeSpeedRotationsPerSecond *
-            SwerveModuleConstants.driveGearReduction * SwerveModuleConstants.wheelCircumferenceMeters; // ~5.06 m/s
-                                                                                                       // actual top speed based on characterization is ~4.46 m/s (12 volts / 2.69 (volts / [meter / second]))
-                                                                                                       // top speed that seems controllable in auto is ~4.0 m/s
+            SwerveModuleConstants.driveGearReduction * SwerveModuleConstants.wheelCircumferenceMeters; // ~5.23 using a theoretical wheel radius of 2 inches m/s
+                                                                                                       // ~5.06 when adding 1/16 of an inch of wheel sink into the carpet.
+                                                                                                       // ~5.10 using an emperical measurement of wheel radius on fresh wheels.
+                                                                                                       // Actual top speed based on testing is ~4.7 m/s
+                                                                                                       // (calculating top speed using kv yeilds [12 / 2.42] ~ 4.96 m/s,
+                                                                                                       //  but I don't think we can actually achieve this because 
+                                                                                                       //  the battery voltage will likely drop below 12 when all drive motors are running)
+                                                                                                       // To give ourselves a little breathing room, we use a max speed of 4.5 m/s in auto.
 
         /**
          * This is the max desired speed that will be achievable in teleop.
@@ -125,8 +139,8 @@ public final class Constants {
          * This is a measure of how fast the robot can rotate in place, based off of maxAchievableVelocityMetersPerSecond.
          */
         public static final double maxAchievableAngularVelocityRadiansPerSecond = maxAchievableVelocityMetersPerSecond / drivetrainRadiusMeters; // Theoretical ~1.93 rotations per second
-                                                                                                                                                 // using 4.46 m/s for max linear speed yeilds ~1.7 rotations per second
-                                                                                                                                                 // using 4.0 m/s for max linear speed yeilds 1.52 rotations per second
+                                                                                                                                                 // using 4.7 m/s for max linear speed yeilds ~1.79 rotations per second
+                                                                                                                                                 // using 4.5 m/s for max linear speed yeilds ~1.71 rotations per second
                                                                                                                                                  // we use 1.0 rotations per second in auto to be extra conservative
                                                                                                                                                  // because any time you're rotating, you're taking away from your translational speed.
 
@@ -140,7 +154,9 @@ public final class Constants {
         public static final double maxDesiredTeleopAngularVelocityRadiansPerSecond = Units.rotationsToRadians(0.85);
 
 
-
+        public static final PathConstraints pathfindingConstraints = new PathConstraints(
+                1.0, 1.0,
+                Units.degreesToRadians(360), Units.degreesToRadians(360));
     }
 
     public final static class ControllerConstants {
@@ -170,7 +186,7 @@ public final class Constants {
 
         // The wheels have a 2 inch radius, but sink into the capet about (1/16) of an inch.
         // As an estimate, the wheel radius is Units.inchesToMeters(2.-1./16.), or 0.0492m
-        public static final double wheelRadiusMeters = 0.0488; //use MeasureWheelDiameter for this!
+        public static final double wheelRadiusMeters = 0.0496; //use MeasureWheelDiameter for this!
         public static final double wheelCircumferenceMeters = 2 * Math.PI * wheelRadiusMeters; // ~0.31
 
         // PID + FEEDFORWARD CONSTANTS FOR MOTORS
@@ -185,7 +201,7 @@ public final class Constants {
         public static final double anglekDVoltsPerDegreePerSecond = 0.;
 
         public static final double drivekSVolts = 0.;
-        public static final double drivekVVoltsSecondsPerMeter = 2.69;
+        public static final double drivekVVoltsSecondsPerMeter = 2.42; // TODO: add desmos link
         public static final double drivekAVoltsSecondsSquaredPerMeter = 0.;
 
     }
@@ -209,8 +225,8 @@ public final class Constants {
 
         /**Maximum angle of the arm, in degrees. This value should be positive and greater than 90, as it is beyond the vertical. */
         // original value 137, changed to 129 for inspection.
-        // As of 4/3/2024, now has to be 122 due to new black banebot wheels for hardstop
-        public final static double armMaxAngleDegrees = 122.0;  
+        // As of 4/3/2024, now has to be 123 due to new black banebot wheels for hardstop
+        public final static double armMaxAngleDegrees = 123.0;  
 
         public final static double armMaxVelDegreesPerSecond = 360.;
 
@@ -247,6 +263,14 @@ public final class Constants {
         public final static TrapezoidProfile.Constraints constraints = new TrapezoidProfile.Constraints(
             armMaxVelDegreesPerSecond, armMaxAccelDegreesPerSecondSquared
         );
+
+        /** Distance from the floor to the center of the pivot. This is used for angle calculations for shoot from anywhere. */
+        public final static double pivotHeightMeters = Units.inchesToMeters(23.5);
+        
+        /** Horizontal distance from the robot center to the pivot center */
+        public final static double pivotOffsetMeters = Units.inchesToMeters(9); // 22 centimeters
+
+        public final static double armLengthMeters = Units.inchesToMeters(19);
     }
 
     public final static class ClimbConstants {
@@ -271,36 +295,66 @@ public final class Constants {
 
     public final static class VisionConstants {
 
-        //TODO: add tags for practice field
-        // List<AprilTag> practiceFieldTags = Arrays.asList(
-        //     new AprilTag(0, null),
-        //     new AprilTag(1, null),
-        //     new AprilTag(2, null),
-        //     new AprilTag(3, null),
-        //     new AprilTag(4, null),
-        //     new AprilTag(1, null),
-        //     new AprilTag(2, null),
-        //     new AprilTag(0, null),
-        //     new AprilTag(1, null),
-        //     new AprilTag(2, null),
-        //     new AprilTag(0, null),
-        //     new AprilTag(1, null),
-        //     new AprilTag(2, null),
-        // )
-    
+        //abbreviations so practiceFieldTags isn't heinously long
+        private static double im(double inches) {
+            return Units.inchesToMeters(inches);
+        }
+        private static double dr(double degrees) {
+            return Units.degreesToRadians(degrees);
+        }
 
-        public final static AprilTagFieldLayout aprilTagFieldLayout = AprilTagFields.k2024Crescendo.loadAprilTagLayoutField();
-        // public final static AprilTagFieldLayout aprilTagFieldLayout = new AprilTagFieldLayout(
-        //     tags, 0.0, 0.0
-        // );
+        //tags for practice field: these are identical to the real field,
+        //except the two speaker tags are aligned with the red alliance wall
+        //rather than 1.5 inches into the wall.
+
+        //these only include the red side of the field, since our practice field only uses those tags.
+        //the pose still follows the default field coordinate system, with a blue origin
+        private final static List<AprilTag> practiceFieldTags = Arrays.asList(
+            //source tag
+            new AprilTag(1, new Pose3d(
+                new Translation3d(im(593.68), im(9.68), im(53.38)),
+                new Rotation3d(0, 0, dr(120)))),
+            //source tag
+            new AprilTag(2, new Pose3d(
+                new Translation3d(im(637.21), im(34.79), im(53.38)),
+                new Rotation3d(0, 0, dr(120)))),
+            //speaker tag (shifted relative to real field position)
+            new AprilTag(3, new Pose3d(
+                new Translation3d(im(652.73-1.5), im(196.17), im(57.13)),
+                new Rotation3d(0, 0, dr(180)))),
+            //speaker tag (shifted relative to field field position)
+            new AprilTag(4, new Pose3d(
+                new Translation3d(im(652.73-1.5), im(218.42), im(57.13)),
+                new Rotation3d(0, 0, dr(180)))),
+            //amp tag
+            new AprilTag(5, new Pose3d(
+                new Translation3d(im(578.77), im(323.00), im(53.38)),
+                new Rotation3d(0, 0, dr(270)))),
+            //stage left
+            new AprilTag(11, new Pose3d(
+                new Translation3d(im(468.69), im(146.19), im(52.00)),
+                new Rotation3d(0, 0, dr(300)))),
+            //stage right
+            new AprilTag(12, new Pose3d(
+                new Translation3d(im(468.69), im(177.10), im(52.00)),
+                new Rotation3d(0, 0, dr(60)))),
+            new AprilTag(13, new Pose3d(
+                new Translation3d(im(441.74), im(161.62), im(52.00)),
+                new Rotation3d(0, 0, dr(180))))
+        );
     
+        
+        //for use on practice field:
+        public final static AprilTagFieldLayout aprilTagFieldLayout = atCompetition ? AprilTagFields.k2024Crescendo.loadAprilTagLayoutField()
+                                                                      : new AprilTagFieldLayout(practiceFieldTags, 16, 8.2);
+                                                                      
         public final static Transform3d robotToShooterCamera = new Transform3d(
-            new Translation3d(Units.inchesToMeters(10.25), 0, Units.inchesToMeters(9.5)), // 11.5 inches off the ground, and 8 inches forward from the center of the robot
-            new Rotation3d(0, Math.toRadians(-22), 0)
+            new Translation3d(Units.inchesToMeters(8.75), 0, Units.inchesToMeters(9.875)),
+            new Rotation3d(0, Math.toRadians(-28), 0)
         );
 
         public final static Transform3d robotToTrapCamera = new Transform3d(
-            new Translation3d(Units.inchesToMeters(-11), 0, Units.inchesToMeters(11.5)),
+            new Translation3d(Units.inchesToMeters(-11.5), 0, Units.inchesToMeters(11.25)),
             new Rotation3d(0, Math.toRadians(-33), Math.toRadians(180))
         );
 
@@ -311,46 +365,129 @@ public final class Constants {
     }
 
     public static enum FieldElement {
-        SPEAKER, AMP, STAGE_LEFT, STAGE_RIGHT, CENTER_STAGE, LOB_TARGET, RIGHT_IN_FRONT_OF_YOU // TODO: maybe rename to carpet, which is an actual field element?
+        SPEAKER(4, 7), AMP(5, 6), 
+        STAGE_LEFT(11, 15), STAGE_RIGHT(12, 16), CENTER_STAGE(13, 14), 
+        LOB_TARGET(new Pose3d(AMP.redPose.interpolate(SPEAKER.redPose, 0.4).toPose2d()),
+                   new Pose3d(AMP.bluePose.interpolate(SPEAKER.bluePose, 0.4).toPose2d())
+        ), 
+        CARPET(),
+        NOTE_3(new Translation3d(FieldConstants.maxFieldCoords.getX() - Units.inchesToMeters(114), FieldConstants.midField.getY(), 0),
+               new Translation3d(Units.inchesToMeters(114), FieldConstants.midField.getY(), 0)
+        ),
+        NOTE_2(NOTE_3.redPose.getTranslation().plus(new Translation3d(0, FieldConstants.metersBetweenFrontlineNotes, 0)),
+               NOTE_3.bluePose.getTranslation().plus(new Translation3d(0, FieldConstants.metersBetweenFrontlineNotes, 0))
+        ),
+        NOTE_1(NOTE_2.redPose.getTranslation().plus(new Translation3d(0, FieldConstants.metersBetweenFrontlineNotes, 0)),
+               NOTE_2.bluePose.getTranslation().plus(new Translation3d(0, FieldConstants.metersBetweenFrontlineNotes, 0))
+        ),
+        NOTE_6(new Translation3d(FieldConstants.midField.getX(), FieldConstants.midField.getY(), 0)),
+        NOTE_5(NOTE_6.redPose.getTranslation().plus(new Translation3d(0, FieldConstants.metersBetweenMidlineNotes, 0))),
+        NOTE_4(NOTE_5.redPose.getTranslation().plus(new Translation3d(0, FieldConstants.metersBetweenMidlineNotes, 0))),
+        NOTE_7(NOTE_6.redPose.getTranslation().plus(new Translation3d(0, -FieldConstants.metersBetweenMidlineNotes, 0))),
+        NOTE_8(NOTE_7.redPose.getTranslation().plus(new Translation3d(0, -FieldConstants.metersBetweenMidlineNotes, 0)));
+
+        /* End of Enum Instances */
+
+        private Pose3d redPose;
+        private Pose3d bluePose;
+
+        private FieldElement(int redTagID, int blueTagID) {
+            Optional<Pose3d> redPoseOptional = VisionConstants.aprilTagFieldLayout.getTagPose(redTagID);
+            Optional<Pose3d> bluePoseOptional = VisionConstants.aprilTagFieldLayout.getTagPose(blueTagID);
+
+            if (redPoseOptional.isPresent()) {
+                this.redPose = redPoseOptional.get();
+            }
+            else {
+                this.redPose = AprilTagFields.k2024Crescendo.loadAprilTagLayoutField().getTagPose(redTagID).get();
+            }
+            if (bluePoseOptional.isPresent()) {
+                this.bluePose = bluePoseOptional.get();
+            } else {
+                this.bluePose = AprilTagFields.k2024Crescendo.loadAprilTagLayoutField().getTagPose(blueTagID).get();
+            }
+
+            /* Target the opening of the speaker, rather than the speaker tag */
+            if (redTagID == 4 || blueTagID == 7) {
+                double speakerUpperLipHeightMeters = Units.inchesToMeters(82.90);
+                double speakerLowerLipHeightMeters = Units.inchesToMeters(78.13);
+                double speakerDepthIntoFieldMeters = Units.inchesToMeters(18.11);
+                double speakerHeightMeters = (speakerUpperLipHeightMeters + speakerLowerLipHeightMeters) / 2.;
+
+                double speakerY = Units.inchesToMeters(218.42);
+                double redSpeakerX = Units.inchesToMeters(652.73-1.5) - (speakerDepthIntoFieldMeters / 2.);
+                double blueSpeakerX = 0 + (speakerDepthIntoFieldMeters / 2.);
+
+                Translation3d redLocation = new Translation3d(redSpeakerX, speakerY, speakerHeightMeters);
+                Rotation3d redOrientation = new Rotation3d(0 , 0, Math.toRadians(180));
+                Translation3d blueLocation = new Translation3d(blueSpeakerX, speakerY, speakerHeightMeters);
+                Rotation3d blueOrientation = new Rotation3d(0, 0, 0);
+
+                redPose = new Pose3d(redLocation, redOrientation);
+                bluePose = new Pose3d(blueLocation, blueOrientation);
+            }
+        }
+
+        private FieldElement(Translation3d location) {
+            this.redPose = new Pose3d(location, new Rotation3d());
+            this.bluePose = new Pose3d(location, new Rotation3d());
+        }
+
+        private FieldElement(Translation3d redLocation, Translation3d blueLocation) {
+            this.redPose = new Pose3d(redLocation, new Rotation3d());
+            this.bluePose = new Pose3d(blueLocation, new Rotation3d());
+        }
+
+        private FieldElement(Pose3d redPose, Pose3d bluePose) {
+            this.redPose = redPose;
+            this.bluePose = bluePose;
+        }
+
+        private FieldElement() {
+            // ONLY TO BE USED FOR FieldElement.CARPET,
+            // because the location of the shart depends on the location of the robot.
+            this.redPose = null;
+            this.bluePose = null;
+        }
+
+        public Pose3d getPose() {
+            Optional<Alliance> alliance = DriverStation.getAlliance();
+            if (alliance.isPresent()) {
+                if (alliance.get() == Alliance.Red) {
+                    return redPose;
+                }
+                if (alliance.get() == Alliance.Blue) {
+                    return bluePose;
+                }
+            }
+            // Should never get to this point as long as we're connected to the driver station.
+            return new Pose3d();
+        }
+
+        public Translation3d getLocation() {
+            return getPose().getTranslation();
+        }
+
+        public Rotation3d getOrientation() {
+            return getPose().getRotation();
+        }
+
+        public static Pose2d getClosestTrap(Pose2d yourPoseOnTheField) {
+            Pose2d[] trapLocations = {STAGE_LEFT.getPose().toPose2d(),
+                                      STAGE_RIGHT.getPose().toPose2d(),
+                                      CENTER_STAGE.getPose().toPose2d()};
+
+            return yourPoseOnTheField.nearest(Arrays.asList(trapLocations));
+        }
     }
 
 
 
     public final static class FieldConstants {
-
-        /** Distance from the front edge of the speaker structure to the carpet. */
-        public final static double speakerLowerEdgeHeightMeters = Units.inchesToMeters((6*12)+6);
-        public final static double speakerUpperEdgeHeightMeters = Units.inchesToMeters((6*12) + 10 + (7.0/8.0));
-        public final static double actualSpeakerHeightMeters = (speakerLowerEdgeHeightMeters + speakerUpperEdgeHeightMeters) / 2.0;
-
-        /** Our shot was always landing a few inches too high, so this fudge factor was added
-         *  and seemed to do the trick. If I had to guess, I'd say that this effectively
-         *  accounts for the difference in height between the pivot point of the arm
-         *  and the actual height of the note when it exits the shooter.
-         *  The note will be a few inches higher because the shooter is aimed upward.
-         *  It could also have something to do with the note exiting the shooter
-         *  closer to the front of the robot than the pivot point is?
-         *  Either way, it works for now, and we'll probably just stick with the fudge factor
-         *  in the interest of time.
-         */
-        public final static double speakerHeightFudgeFactorMeters = Units.inchesToMeters(-3.5); // accounts for difference in height between actuall note exit point and the pivot point. exit point is above the pivot, so effective vertical distance is less
-        public final static double speakerHeightMeters = actualSpeakerHeightMeters + speakerHeightFudgeFactorMeters;
-
-        /** X-Y position of the april tag at the center of the red speaker.  
-         *  Copied from https://firstfrc.blob.core.windows.net/frc2024/FieldAssets/2024LayoutMarkingDiagram.pdf
-         */
-        public final static Translation2d blueSpeakerTranslation2d = new Translation2d(Units.inchesToMeters(-1.5), Units.inchesToMeters(218.42));
-
-        /** X-Y position of the april tag at center of the blue speaker.
-         *  Copied from https://firstfrc.blob.core.windows.net/frc2024/FieldAssets/2024LayoutMarkingDiagram.pdf
-         */
-        public final static Translation2d redSpeakerTranslation2d = new Translation2d(Units.inchesToMeters(652.73), Units.inchesToMeters(218.42));
-
-        /** Distance from the floor to the center of the pivot. This is used for angle calculations for shoot from anywhere. */
-        public final static double pivotHeightMeters = Units.inchesToMeters(22);
-        
-        /** Horizontal distance from the robot center to the pivot center */
-        public final static double pivotOffsetMeters = 0.22; // 22 centimeters
+        public final static double metersBetweenMidlineNotes = Units.inchesToMeters(66);
+        public final static double metersBetweenFrontlineNotes = Units.inchesToMeters(57);
+        public final static Translation2d midField = new Translation2d(Units.inchesToMeters((441.74+209.48)/2.), Units.inchesToMeters(161.62));
+        public final static Translation2d maxFieldCoords = midField.times(2);
     }
 
     public final static class IntakeConstants {

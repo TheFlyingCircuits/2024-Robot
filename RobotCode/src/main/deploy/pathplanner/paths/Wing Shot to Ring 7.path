@@ -3,13 +3,13 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 10.71,
-        "y": 1.59
+        "x": 10.815927785701726,
+        "y": 1.5787108497293916
       },
       "prevControl": null,
       "nextControl": {
-        "x": 10.000818462329772,
-        "y": 1.8340523440323586
+        "x": 10.106746248031497,
+        "y": 1.8227631937617501
       },
       "isLocked": true,
       "linkedName": "Wing Shot (Source Side)"
@@ -32,8 +32,8 @@
   "constraintZones": [],
   "eventMarkers": [],
   "globalConstraints": {
-    "maxVelocity": 4.0,
-    "maxAcceleration": 4.0,
+    "maxVelocity": 4.5,
+    "maxAcceleration": 2.5,
     "maxAngularVelocity": 360.0,
     "maxAngularAcceleration": 360.0
   },

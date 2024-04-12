@@ -16,7 +16,7 @@ import edu.wpi.first.wpilibj2.command.ScheduleCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
-import frc.lib.FlyingCircuitUtils;
+import frc.robot.Constants;
 import frc.robot.Constants.ArmConstants;
 import frc.robot.subsystems.arm.Arm;
 import frc.robot.subsystems.climb.Climb;
@@ -35,7 +35,7 @@ public class TrapRoutine extends SequentialCommandGroup {
             
             //while we are driving, do this sequence
             drivetrain.run(() -> {
-                Pose2d nearestTrap = FlyingCircuitUtils.getClosestTrap(drivetrain.getPoseMeters());
+                Pose2d nearestTrap = Constants.FieldElement.getClosestTrap(drivetrain.getPoseMeters());
                 // drivetrain.fieldOrientedDriveOnALine(translationController.get(), nearestTrap);
 
                 Rotation2d nearestTrapRotation = nearestTrap.getRotation();

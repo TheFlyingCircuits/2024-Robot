@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Supplier;
 
 import org.littletonrobotics.junction.Logger;
 
@@ -24,7 +25,8 @@ import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Transform2d;
+import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
@@ -36,9 +38,8 @@ import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.lib.FlyingCircuitUtils;
+import frc.robot.Constants;
 import frc.robot.Constants.DrivetrainConstants;
-import frc.robot.Constants.FieldElement;
 import frc.robot.subsystems.vision.VisionIO;
 import frc.robot.subsystems.vision.VisionIO.VisionIOInputsLogged;
 import frc.robot.subsystems.vision.VisionIO.VisionMeasurement;
@@ -56,7 +57,6 @@ public class Drivetrain extends SubsystemBase {
     private SwerveDrivePoseEstimator fusedPoseEstimator;
     private SwerveDrivePoseEstimator wheelsOnlyPoseEstimator;
 
-    public boolean isTrackingNote = false;
     public boolean isTrackingSpeakerInAuto = false;
 
     private static Orchestra orchestra;
@@ -123,9 +123,10 @@ public class Drivetrain extends SubsystemBase {
             getModulePositions(), 
             new Pose2d());
 
-        angleController = new PIDController(11, 0, 0.5); // kP has units of degreesPerSecond per degree of error.
+        //angleController = new PIDController(11, 0, 0.5); // kP has units of degreesPerSecond per degree of error.
+        angleController = new PIDController(8, 0, 0);
         angleController.enableContinuousInput(-180, 180);
-        angleController.setTolerance(1.0); // degrees.
+        angleController.setTolerance(2.0, 10000.0); // degrees, degreesPerSecond.
 
         translationController = new PIDController(4.0, 0, 0); // kP has units of metersPerSecond per meter of error.
         translationController.setTolerance(0.05); // 5 centimeters
@@ -384,14 +385,29 @@ public class Drivetrain extends SubsystemBase {
      * Takes the best estimated pose from the vision, and sets our current poseEstimator pose to this one.
      */
     public void setPoseToVisionMeasurement() {
-        if (visionInputs.visionMeasurements.size() > 0)
+        if (visionInputs.visionMeasurements.size() > 0) {
             setPoseMeters(visionInputs.visionMeasurements.get(0).robotFieldPose);
+        }
+    }
+
+    public boolean seesTag() {
+        return visionInputs.visionMeasurements.size() > 0;
     }
 
 
     private void updatePoseEstimator() {
 
-        fusedPoseEstimator.update(gyroInputs.robotYawRotation2d, getModulePositions());
+
+        
+
+        double totalAccelMetersPerSecondSquared = Math.hypot(gyroInputs.robotAccelX, gyroInputs.robotAccelY);
+        totalAccelMetersPerSecondSquared = Math.hypot(totalAccelMetersPerSecondSquared, gyroInputs.robotAccelZ);
+
+        Logger.recordOutput("drivetrain/accelMagnitude", totalAccelMetersPerSecondSquared);
+
+        if (totalAccelMetersPerSecondSquared < 10) { //TODO: arbitrary value, tune this
+            fusedPoseEstimator.update(gyroInputs.robotYawRotation2d, getModulePositions());
+        }
         wheelsOnlyPoseEstimator.update(gyroInputs.robotYawRotation2d, getModulePositions());
 
         for (VisionMeasurement visionMeasurement : visionInputs.visionMeasurements) {
@@ -401,7 +417,7 @@ public class Drivetrain extends SubsystemBase {
             // don't add vision measurements that are too far away
             // for reference: it is 6 meters from speaker tags to wing.
             double teleportToleranceMeters = 2.0;
-            if (visionTranslation.getDistance(estimatedTranslation) <= teleportToleranceMeters) {
+            if ((visionTranslation.getDistance(estimatedTranslation) <= teleportToleranceMeters)) { 
                 fusedPoseEstimator.addVisionMeasurement(
                     visionMeasurement.robotFieldPose, 
                     visionMeasurement.timestampSeconds, 
@@ -432,6 +448,36 @@ public class Drivetrain extends SubsystemBase {
     }
 
 
+    public Translation3d fieldCoordsFromRobotCoords(Translation3d robotCoords) {
+        Translation3d robotLocation_fieldFrame = new Translation3d(getPoseMeters().getX(), getPoseMeters().getY(), 0);
+        Rotation3d robotOrientation_fieldFrame = new Rotation3d(0, 0, getPoseMeters().getRotation().getRadians());
+
+        return robotCoords.rotateBy(robotOrientation_fieldFrame).plus(robotLocation_fieldFrame);
+    }
+
+    public Translation2d fieldCoordsFromRobotCoords(Translation2d robotCoords) {
+        return fieldCoordsFromRobotCoords(new Translation3d(robotCoords.getX(), robotCoords.getY(), 0)).toTranslation2d();
+    }
+
+    public Translation3d robotCoordsFromFieldCoords(Translation3d fieldCoords) {
+        Translation3d robotLocation_fieldFrame = new Translation3d(getPoseMeters().getX(), getPoseMeters().getY(), 0);
+        Rotation3d robotOrientation_fieldFrame = new Rotation3d(0, 0, getPoseMeters().getRotation().getRadians());
+        Transform3d robotAxesFromFieldPerspective = new Transform3d(robotLocation_fieldFrame, robotOrientation_fieldFrame);
+        Transform3d fieldAxesFromRobotPerspecitve = robotAxesFromFieldPerspective.inverse();
+
+        return fieldCoords.rotateBy(fieldAxesFromRobotPerspecitve.getRotation()).plus(fieldAxesFromRobotPerspecitve.getTranslation());
+    }
+
+    public Translation2d robotCoordsFromFieldCoords(Translation2d fieldCoords) {
+        return robotCoordsFromFieldCoords(new Translation3d(fieldCoords.getX(), fieldCoords.getY(), 0)).toTranslation2d();
+    }
+
+    public ChassisSpeeds getFieldOrientedVelocity() {
+        ChassisSpeeds robotOrientedSpeeds = DrivetrainConstants.swerveKinematics.toChassisSpeeds(getModuleStates());
+        return ChassisSpeeds.fromRobotRelativeSpeeds(robotOrientedSpeeds, getPoseMeters().getRotation());
+    }
+
+
     //**************** TARGET TRACKING (Speaker, Note, etc.) ****************/
 
 
@@ -439,8 +485,12 @@ public class Drivetrain extends SubsystemBase {
         return visionInputs.nearestNoteRobotFrame.isPresent();
     }
 
-    public boolean shouldTrackNote() {
-        return intakeSeesNote() && isTrackingNote;
+    public Translation2d getNearestNoteLocation() {
+        if (visionInputs.nearestNoteRobotFrame.isEmpty()) {
+            return null; // TODO: decide what to do!
+        }
+
+        return fieldCoordsFromRobotCoords(visionInputs.nearestNoteRobotFrame.get()).toTranslation2d();
     }
 
     /**
@@ -461,14 +511,11 @@ public class Drivetrain extends SubsystemBase {
 
     public Optional<Rotation2d> getAutoRotationOverride() {
         if (isTrackingSpeakerInAuto) {
-            Rotation2d angle = FlyingCircuitUtils.getAngleToFieldElement(FieldElement.SPEAKER, getPoseMeters());
+            Translation2d speakerLocation = Constants.FieldElement.SPEAKER.getLocation().toTranslation2d();
+            Translation2d robotLocation = getPoseMeters().getTranslation();
+            Rotation2d angle = speakerLocation.minus(robotLocation).getAngle();
             Logger.recordOutput("PathPlanner/rotationTargetOverride", angle);
             return Optional.of(angle);
-        }
-        if (isTrackingNote && intakeSeesNote()) {
-            Rotation2d angle = getFieldRelativeRotationToNote();
-            Logger.recordOutput("PathPlanner/rotationTargetOverride", angle);
-            return Optional.empty();//Optional.of(angle);
         }
         else {
             Logger.recordOutput("PathPlanner/rotationTargetOverride", new Rotation2d(0));
@@ -476,15 +523,19 @@ public class Drivetrain extends SubsystemBase {
         }
     }
 
-    public void driveTowardsNote() {
-
+    public void driveTowardsNote(Supplier<ChassisSpeeds> howToDriveWhenNoNoteDetected) {
         if (visionInputs.nearestNoteRobotFrame.isEmpty()) {
+            // will contintue driving at previous speed.
+            // TODO: should have the ability to inject some default value here?
+            //       maybe allow driver control if there is noting detected?
+            this.fieldOrientedDrive(howToDriveWhenNoNoteDetected.get(), true);
             return;
         }
 
-        double maxAccel = 1.0; // [meters per second per second] (emperically determined)
+        double maxAccel = 2.35; // 2.35 [meters per second per second] (emperically determined)
 
         double distanceToNote = visionInputs.nearestNoteRobotFrame.get().toTranslation2d().getDistance(new Translation2d());
+
 
         // Physics 101: under constant accel -> v_final^2 = v_initial^2 + 2 * accel * displacement
         // displacement = finalDistanceToNote - currentDistanceToNote = 0 - currentDistanceToNote
@@ -493,6 +544,8 @@ public class Drivetrain extends SubsystemBase {
         // after some algebra -> v_initial = sqrt(-2 * accel * displacement)
 
         double desiredSpeed = Math.sqrt(-2 * maxAccel * (0 - distanceToNote));
+
+        
 
         // direction to drive is opposite of the direction to point because the
         // intake is in the back of the robot.
@@ -503,6 +556,7 @@ public class Drivetrain extends SubsystemBase {
         desiredVelocity.vxMetersPerSecond = desiredSpeed * directionToDrive.getCos();
         desiredVelocity.vyMetersPerSecond = desiredSpeed * directionToDrive.getSin();
 
+        // TODO: use fieldOrientedDriveOnALine()?
         this.fieldOrientedDriveWhileAiming(desiredVelocity, directionToPoint);
     }
 
@@ -597,18 +651,23 @@ public class Drivetrain extends SubsystemBase {
 
         Logger.recordOutput("drivetrain/anglePIDSetpoint", Rotation2d.fromDegrees(angleController.getSetpoint()));
         Logger.recordOutput("drivetrain/isAligned", isAligned());
-        Logger.recordOutput("drivetrain/isTrackingNote", isTrackingNote);
         Logger.recordOutput("drivetrain/fieldRelativeRotationToNote", getFieldRelativeRotationToNote());
 
 
         // Note tracking visualization
         if (visionInputs.nearestNoteRobotFrame.isPresent()) {
             Translation2d noteRelativeToRobot = visionInputs.nearestNoteRobotFrame.get().toTranslation2d();
-            Pose2d noteRelativeToField = getPoseMeters().plus(new Transform2d(noteRelativeToRobot, new Rotation2d()));
-            Logger.recordOutput("drivetrain/trackedNotePose", noteRelativeToField);
+            Translation2d noteRelativeToField = fieldCoordsFromRobotCoords(noteRelativeToRobot);
+            Logger.recordOutput("drivetrain/trackedNotePose", new Pose2d(noteRelativeToField, new Rotation2d()));
         }
         else {
             Logger.recordOutput("drivetrain/trackedNotePose", getPoseMeters());
         }
+
+        ChassisSpeeds v = DrivetrainConstants.swerveKinematics.toChassisSpeeds(getModuleStates());
+        double s = Math.hypot(v.vxMetersPerSecond, v.vyMetersPerSecond);
+        
+
+        Logger.recordOutput("drivetrain/speed", s);
     }
 }

@@ -96,23 +96,27 @@ public class VisionIOPhotonLib implements VisionIO {
 
 
         PhotonPipelineResult pipelineResult = camera.getLatestResult();
-        if (!pipelineResult.hasTargets())
+        if (!pipelineResult.hasTargets()) {
             return Optional.empty();
+        }
 
         Optional<EstimatedRobotPose> poseEstimatorResult = estimator.update();
-        if (poseEstimatorResult.isEmpty())
+        if (poseEstimatorResult.isEmpty()) {
             return Optional.empty();
+        }
 
         //either use multitag or
         //if there's only one tag on the screen, only trust it if its pose ambiguity is below threshold
         //photonPoseEstimator automatically switches techniques when detecting different number of tags
-        if (pipelineResult.targets.size() == 1 && pipelineResult.getBestTarget().getPoseAmbiguity() > 0.2)
+        if (pipelineResult.targets.size() == 1 && pipelineResult.getBestTarget().getPoseAmbiguity() > 0.2) {
             return Optional.empty();
+        }
 
         output.nearestTagDistanceMeters = pipelineResult.getBestTarget().getBestCameraToTarget().getTranslation().getDistance(new Translation3d());
         
-        if (output.nearestTagDistanceMeters > 5)
+        if (output.nearestTagDistanceMeters > 7) {
             return Optional.empty();
+        }
 
 
         output.robotFieldPose = poseEstimatorResult.get().estimatedPose.toPose2d();
@@ -166,12 +170,14 @@ public class VisionIOPhotonLib implements VisionIO {
         inputs.visionMeasurements = new ArrayList<VisionMeasurement>();
         
         Optional<VisionMeasurement> shooterResult = updateTagCamera(shooterCamera, shooterPoseEstimator);
-        if (shooterResult.isPresent())
+        if (shooterResult.isPresent()) {
             inputs.visionMeasurements.add(shooterResult.get());
+        }
 
         Optional<VisionMeasurement> trapResult = updateTagCamera(trapCamera, trapPoseEstimator);
-        if (trapResult.isPresent())
+        if (trapResult.isPresent()) {
             inputs.visionMeasurements.add(trapResult.get());
+        }
 
 
         //sorts visionMeasurements by standard deviations in the x direction

@@ -3,28 +3,28 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 8.46,
-        "y": 4.31
+        "x": 9.789765733377621,
+        "y": 5.663625173404194
       },
       "prevControl": null,
       "nextControl": {
-        "x": 9.155912796592315,
-        "y": 5.028126297763189
+        "x": 10.272344886798306,
+        "y": 6.161608228925891
       },
       "isLocked": true,
       "linkedName": "Ring 6 Pickup (From Amp Side Wing Shot)"
     },
     {
       "anchor": {
-        "x": 10.71,
-        "y": 6.62
+        "x": 11.664484867431273,
+        "y": 6.670053340106681
       },
       "prevControl": {
-        "x": 10.014087203407687,
-        "y": 5.901873702236811
+        "x": 11.17012711531889,
+        "y": 6.595150650392683
       },
       "nextControl": null,
-      "isLocked": true,
+      "isLocked": false,
       "linkedName": "Wing Shot (Amp Side)"
     }
   ],
@@ -32,8 +32,8 @@
   "constraintZones": [],
   "eventMarkers": [],
   "globalConstraints": {
-    "maxVelocity": 4.0,
-    "maxAcceleration": 4.0,
+    "maxVelocity": 4.5,
+    "maxAcceleration": 2.5,
     "maxAngularVelocity": 360.0,
     "maxAngularAcceleration": 360.0
   },

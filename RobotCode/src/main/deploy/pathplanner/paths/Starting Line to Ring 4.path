@@ -16,15 +16,15 @@
     },
     {
       "anchor": {
-        "x": 8.54,
-        "y": 7.46
+        "x": 10.27324593110725,
+        "y": 7.439674879349759
       },
       "prevControl": {
-        "x": 9.54,
-        "y": 7.46
+        "x": 11.27324593110725,
+        "y": 7.439674879349759
       },
       "nextControl": null,
-      "isLocked": true,
+      "isLocked": false,
       "linkedName": "Ring 4 Pickup (From Starting Line)"
     }
   ],
@@ -32,13 +32,13 @@
   "constraintZones": [],
   "eventMarkers": [],
   "globalConstraints": {
-    "maxVelocity": 4.0,
-    "maxAcceleration": 4.0,
+    "maxVelocity": 4.5,
+    "maxAcceleration": 2.5,
     "maxAngularVelocity": 360.0,
     "maxAngularAcceleration": 360.0
   },
   "goalEndState": {
-    "velocity": 0,
+    "velocity": 4.5,
     "rotation": 0,
     "rotateFast": true
   },

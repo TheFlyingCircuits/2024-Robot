@@ -4,10 +4,14 @@
 
 package frc.robot;
 
+import frc.lib.FlyingCircuitUtils;
 import frc.robot.Constants.ArmConstants;
+import frc.robot.Constants.DrivetrainConstants;
+import frc.robot.Constants.FieldConstants;
 import frc.robot.Constants.FieldElement;
-import frc.robot.commands.AimEverythingAtAmp;
+import frc.robot.Constants.LEDConstants;
 import frc.robot.commands.MeasureWheelDiameter;
+import frc.robot.commands.UnderStageTrapRoutine;
 import frc.robot.commands.PrepShot;
 import frc.robot.commands.TrapRoutine;
 import frc.robot.subsystems.AutoDiagnose;
@@ -32,14 +36,21 @@ import frc.robot.subsystems.vision.VisionIOPhotonLib;
 
 import edu.wpi.first.wpilibj.util.Color;
 
-import com.pathplanner.lib.auto.NamedCommands;
+import java.util.ArrayList;
+import java.util.Optional;
 
+import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.auto.NamedCommands;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotBase;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.ParallelDeadlineGroup;
 import edu.wpi.first.wpilibj2.command.ScheduleCommand;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -53,7 +64,6 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 public class RobotContainer {
 
     public final HumanDriver charlie = new HumanDriver(0);
-
     public final CommandXboxController ben = new CommandXboxController(1);
     // TODO: make everything static but not final or do this (which seems disgusting):
     // public final static Shooter shooter = new Shooter(RobotBase.isReal() ? new ShooterIOKraken() : new ShooterIOSim());
@@ -137,66 +147,68 @@ public class RobotContainer {
         shooter.setDefaultCommand(shooter.setFlywheelSurfaceSpeedCommand(0));
         climb.setDefaultCommand(Commands.run(() -> {climb.setVolts(0);}, climb));
         arm.setDefaultCommand(arm.holdCurrentPositionCommand().ignoringDisable(true));
+
+
+        Trigger noteIsTooFarForPickupInAuto = new Trigger(() -> {
+            if (!drivetrain.intakeSeesNote()) {
+                return false; // keep driving if you don't see anything
+            }
+
+            Optional<Alliance> alliance  = DriverStation.getAlliance();
+            if (!alliance.isPresent()) {
+                return true; // stop driving if we don't know what alliance we're on
+            }
+
+            double noteX = drivetrain.getNearestNoteLocation().getX();
+            double midlineX = FieldConstants.midField.getX();
+            double overshootAllowance = 1.0; // TODO: tune!
+
+            boolean over = (alliance.get() == Alliance.Blue) && (noteX >= (midlineX + overshootAllowance));
+            over = over || (alliance.get() == Alliance.Red) && (noteX <= (midlineX - overshootAllowance));
+            return over;
+        });
+
+
         
         NamedCommands.registerCommand("prepShot", prepAutoSpeakerShot());
         NamedCommands.registerCommand("shootFromAnywhere", speakerShot());
-        NamedCommands.registerCommand("waitIndexNote", indexNote().withTimeout(4).finallyDo(() -> {drivetrain.isTrackingNote = false;}));
-        NamedCommands.registerCommand("indexNote", indexNote().withTimeout(2).finallyDo(() -> {drivetrain.isTrackingNote = false;}));
-        NamedCommands.registerCommand("intakeNote", intakeNote().withTimeout(1.5).finallyDo(() -> {drivetrain.isTrackingNote = false;}));
-        NamedCommands.registerCommand("rapidFire", prepAutoSpeakerShot().alongWith(runIntake(true)));
-        NamedCommands.registerCommand("trackNote", new InstantCommand(() -> {drivetrain.isTrackingNote = true;}));
+        NamedCommands.registerCommand("waitIndexNote", indexNote().withTimeout(4));
+        NamedCommands.registerCommand("indexNote", indexNote().withTimeout(2));
+        NamedCommands.registerCommand("intakeNote", intakeNote().withTimeout(1.5));
+        NamedCommands.registerCommand("rapidFire", prepAutoSpeakerShot().alongWith(runIntake()));
         NamedCommands.registerCommand("resetShooter", resetShooter());
-        NamedCommands.registerCommand("intakeTowardsNote", intakeTowardsNote());
+        NamedCommands.registerCommand("intakeTowardsNote", intakeTowardsNote().until(noteIsTooFarForPickupInAuto).withTimeout(2.5));
+        NamedCommands.registerCommand("fireNote", fireNote());
 
-
-        ringJustEnteredIntake = new Trigger(intake::ringJustEnteredIntake);
-        inSpeakerShotRange = new Trigger(drivetrain::inSpeakerShotRange);
-
-        ringJustEnteredIntake.onTrue(new InstantCommand(() -> {drivetrain.isTrackingNote = false;}));
 
         realBindings();
         // testBindings();
     }
 
-    Command intakeTowardsNote() {
-        return drivetrain.run(drivetrain::driveTowardsNote)
-               .raceWith(intakeNote())
-               .withTimeout(3.0);
-    }
-
-    /**
-     * Aims the flywheels and arm at the speaker, while also setting the Pathplanner rotation override.
-     * This command never finishes.
-     */
-    Command prepAutoSpeakerShot() {
-        return new InstantCommand(() -> {drivetrain.isTrackingSpeakerInAuto = true;})
-                .andThen(new PrepShot(false, drivetrain, arm, shooter, null, leds, FieldElement.SPEAKER))
-                .finallyDo(() -> {drivetrain.isTrackingSpeakerInAuto = false;});
-
-    }
 
     //these command compositions must be separated into their own methods
     //since wpilib requires a new instance of a command to be used in each
     //composition (the same instance of a command cannot be used in multiple compositions).
 
+    /**** INTAKE/INDEX ****///////////////////////////////////////////////////////////////////////
+
     /**
      * @param rapidFire - whether or not we are rapid firing (in auto); if we are, we want to run the indexer faster.
      */
-    public Command runIntake(boolean rapidFire) {
-        return new ScheduleCommand(leds.playIntakeAnimationCommand(drivetrain::shouldTrackNote))
-               .andThen(
-                    indexer.setOrangeWheelsSurfaceSpeedCommand(rapidFire ? 4 : 2.5)
-                    .alongWith(intake.setVoltsCommand(12))
-               );
+    private Command runIntake() {
+        return indexer.setOrangeWheelsSurfaceSpeedCommand(2.5)
+                      .alongWith(intake.setVoltsCommand(12));
     }
 
-    public Command reverseIntake() {
-        return indexer.run(() -> {indexer.setVolts(-8);})
-               .alongWith(intake.setVoltsCommand(-8));
+    private Command reverseIntake() {
+        // return indexer.run(() -> {indexer.setVolts(-8);})
+        //        .alongWith(intake.setVoltsCommand(-8));
                // TODO: reverse LEDs when barfing?
+        return intake.setVoltsCommand(-8);
     }
 
     /** Starts running the intake, and finishes when a note is detected by the bottom intake sensor.
+     *  (or the indexer sensor, for when the note moves so fast past the intake sensor that it doesn't trigger)
      *  Intended to be followed up by indexNote, which will bring the note the rest of the way
      *  into the shooter until it hits the second intake/indexer sensor.
      *  Having intakeNote() be seperate from indexNote() will be usefull for auto,
@@ -204,86 +216,124 @@ public class RobotContainer {
      *  even if it isn't fully indexed yet.
      * @return
      */
-    public Command intakeNote() {
-        return this.runIntake(false).until(() -> {
-            return intake.ringJustEnteredIntake() || indexer.isNoteIndexed();
-        });
+    private Command intakeNote() {
+        return new ScheduleCommand(leds.playIntakeAnimationCommand(drivetrain::intakeSeesNote))
+        .alongWith(this.runIntake().until(intake::ringJustEnteredIntake));
     }
 
-    public Command indexNote() {
-        return this.runIntake(false).until(indexer::isNoteIndexed)
-               .andThen(new InstantCommand(() -> {indexer.setVolts(0); intake.setVolts(0);})) // TODO: remember why we need this.
-               .andThen(new ScheduleCommand(leds.solidOrangeCommand()));
+    private Command indexNote() {
+        return this.runIntake().until(indexer::isNoteIndexed)
+               .andThen(new InstantCommand(() -> {indexer.setVolts(0); intake.setVolts(0);})
+                        .alongWith(new ScheduleCommand(leds.solidOrangeCommand()))
+               );
     }
+    
 
-    public Command signalNoteInIntake() {
-        return new InstantCommand(() -> {
-            // Find whatever pattern the LEDs are currently displaying,
-            // so that we can return to that pattern after we're done with the strobe.
-            Command interruptedPattern = leds.getCurrentCommand();
-            interruptedPattern.equals(interruptedPattern);
-            // TODO: check if the currently scheduled command is itself a strobe, so we don't get duplicate strobes?
 
-            // Generate the strobe command
-            Command strobe = leds.strobeCommand(Color.kWhite, 4, 0.5);
-
-            // Make a command to re-schedule the original command.
-            Command reSchedule = new ScheduleCommand(interruptedPattern);
-
-            // Schedule the whole sequence.
-            // Allow the strobe to happen while the robot is disabled for testing purposes.
-            CommandScheduler.getInstance().schedule(strobe.andThen(reSchedule).ignoringDisable(true));
-        });
-    }
+    /**** ARM/SHOOTER ****///////////////////////////////////////////////////////////////////////
 
     /** Resets the angle and speed of the shooter back to its default idle position. */
-    Command resetShooter() {
+    private Command resetShooter() {
         double desiredAngle = ArmConstants.armMinAngleDegrees+5; // puts the arm at min height to pass under stage
         //desiredAngle = 35;
         return arm.setDesiredDegreesCommand(desiredAngle)
                .alongWith(shooter.setFlywheelSurfaceSpeedCommand(0));
-               //.alongWith(indexer.setIndexerRPMCommand(0)));
     }
 
     /** Moves the arm back and spins up the flywheels to prepare for an amp shot. */
     Command prepAmpShot() {
-        return new AimEverythingAtAmp(false, drivetrain, arm, shooter, charlie::getRequestedFieldOrientedVelocity, leds);
-    }
-
-    /** Moves the arm back and spins up the flywheels to prepare for a trap shot. */
-    Command prepTrapShot() {
-        return arm.setDesiredDegreesCommand(90)
-               .alongWith(shooter.setFlywheelSurfaceSpeedCommand(10));
+        // no auto align is currently used for the amp. add a translation controller to turn on auto align.
+        // TODO: ONLY AUTO ALIGN WHEN CLOSE TO AMP SO THE WE CAN STILL AMP SHOT TO EJECT WHEN FAR AWAY.
+        return new PrepShot(drivetrain, arm, shooter, charlie::getRequestedFieldOrientedVelocity, leds, FieldElement.AMP);
     }
 
     Command prepLobShot() {
-        return new PrepShot(true, drivetrain, arm, shooter, charlie::getRequestedFieldOrientedVelocity, leds, FieldElement.LOB_TARGET);
-    }
-
-    Command shootAtTarget(FieldElement target) {
-        PrepShot aim = new PrepShot(true, drivetrain, arm, shooter, charlie::getRequestedFieldOrientedVelocity, leds, target);
-        Command waitForAlignment = new WaitUntilCommand(aim::readyToShoot);
-        Command fire = fireNote();
-        if (target == FieldElement.SPEAKER || target == FieldElement.LOB_TARGET) {
-            fire = fire.withTimeout(0.2);
-        }
-        return aim.raceWith(waitForAlignment.andThen(fireNote()));
+        return new PrepShot(drivetrain, arm, shooter, charlie::getRequestedFieldOrientedVelocity, leds, FieldElement.LOB_TARGET);
     }
 
     Command shart() {
-        return shootAtTarget(FieldElement.RIGHT_IN_FRONT_OF_YOU);
-    }
-
-    Command lobShot() {
-        return shootAtTarget(FieldElement.LOB_TARGET);
+        PrepShot aim = new PrepShot(drivetrain, arm, shooter, null, leds, FieldElement.CARPET);
+        Command waitForAlignment = new WaitUntilCommand(aim::readyToShoot);
+        Command fire = fireNote();
+        return aim.raceWith(waitForAlignment.andThen(fire));
     }
 
     public Command speakerShot() {
-        return shootAtTarget(FieldElement.SPEAKER);
+        PrepShot aim = new PrepShot(drivetrain, arm, shooter, charlie::getRequestedFieldOrientedVelocity, leds, FieldElement.SPEAKER);
+        Command waitForAlignment = new WaitUntilCommand(aim::readyToShoot);
+        Command fire = fireNote();
+        return aim.raceWith(waitForAlignment.andThen(fire));
+    }
+    
+
+    /**** AUTO ****///////////////////////////////////////////////////////////////////////
+
+    /**
+     * Aims the flywheels and arm at the speaker, while also setting the Pathplanner rotation override.
+     * This command never finishes.
+     */
+    private Command prepAutoSpeakerShot() {
+        return new InstantCommand(() -> {drivetrain.isTrackingSpeakerInAuto = true;})
+                .andThen(new PrepShot(drivetrain, arm, shooter, null, leds, FieldElement.SPEAKER))
+                .finallyDo(() -> {drivetrain.isTrackingSpeakerInAuto = false;});
+
     }
 
+    private Command intakeTowardsNote() {
+        return drivetrain.run(() -> {drivetrain.driveTowardsNote(charlie::getRequestedFieldOrientedVelocity);})
+               .raceWith(intakeNote());
+    }
+
+    private Command pathfindToNote(FieldElement note) {
+
+        Pose2d targetPose = FlyingCircuitUtils.pickupAtNote(
+                drivetrain.getPoseMeters().getTranslation(),
+                note.getLocation().toTranslation2d(), 
+                1);
+
+
+        return AutoBuilder.pathfindToPose(
+                targetPose,
+                DrivetrainConstants.pathfindingConstraints,
+                2.0
+            );
+    }
+
+
+
+    public Command pathfindingAuto(ArrayList<FieldElement> targetNotes, Pose2d scoringPose) {
+
+        //TODO: figure out how to navigate to nearest scoring location instead of a preset one
+        //use lambdas or something for scoringPose
+        Command intakeAndThenShoot = new SequentialCommandGroup(
+            intakeTowardsNote(),
+            new ParallelDeadlineGroup(
+                AutoBuilder.pathfindToPose(scoringPose, DrivetrainConstants.pathfindingConstraints),
+                prepAutoSpeakerShot()
+            ),
+            speakerShot()
+        );
+
+        Command autoCommand = new InstantCommand();
+
+        for (int noteInd = 0; noteInd < targetNotes.size(); noteInd++) {
+            autoCommand = autoCommand
+                .andThen(pathfindToNote(targetNotes.get(noteInd)).deadlineWith(resetShooter()))
+                .andThen(intakeAndThenShoot.onlyIf(drivetrain::intakeSeesNote));
+        }
+
+        return autoCommand;
+    }
+    
     public Command fireNote() {
-        return indexer.setOrangeWheelsSurfaceSpeedCommand(7).withTimeout(0.4)
+        return indexer.setOrangeWheelsSurfaceSpeedCommand(7).withTimeout(0.1)
+               .alongWith(new ScheduleCommand(leds.playFireNoteAnimationCommand()));
+    }
+
+    public Command fireNoteThroughHood() {
+        // The flywheels need to run longer than normal to make sure the note
+        // makes it all the way through the slam dunk hood.
+        return indexer.setOrangeWheelsSurfaceSpeedCommand(7).withTimeout(0.5)
                .alongWith(new ScheduleCommand(leds.playFireNoteAnimationCommand()));
     }
 
@@ -319,9 +369,10 @@ public class RobotContainer {
         CommandXboxController controller = charlie.getXboxController();
         /** INTAKE **/
         controller.rightTrigger()
-            //.onTrue(intakeNote().raceWith(resetShooter()));
-            //.whileTrue(new NoteTrackingIndexNote(intake, indexer, drivetrain, charlie::getRequestedFieldOrientedVelocity));
-            .whileTrue(intakeTowardsNote());
+            .onTrue(intakeTowardsNote().andThen(new ScheduleCommand(
+                indexNote().andThen(reverseIntake().withTimeout(2))
+            )));
+            //.onTrue(intakeNote().andThen(indexNote()));
             //.onTrue(indexNote().raceWith(resetShooter())); // reset never ends, indexNote does.
     
         controller.leftTrigger().whileTrue(reverseIntake());
@@ -330,46 +381,55 @@ public class RobotContainer {
         /** SCORING **/
         
         //speaker shot
+        Trigger inSpeakerShotRange = new Trigger(drivetrain::inSpeakerShotRange);
         controller.rightBumper().and(inSpeakerShotRange)
             .onTrue(
                 this.speakerShot()
-                .andThen(new ScheduleCommand(this.resetShooter())));
+                .andThen(new ScheduleCommand(this.resetShooter()))
+            );
 
         //lob shot (prep while holding, release to fire)
+        Command prepLobShot = prepLobShot(); // <- grab a single instance so we can check if it's cancelled.
         controller.rightBumper().and(inSpeakerShotRange.negate())
-            .onTrue(prepLobShot())
+            .onTrue(prepLobShot)
             .onFalse(this.fireNote()
-                .andThen(new ScheduleCommand(this.resetShooter()))
-                .unless(() -> arm.getDegrees() < 15));
+                         .andThen(new ScheduleCommand(this.resetShooter()))
+                     .unless(() -> {return !prepLobShot.isScheduled();})
+                     // only fire if the lob shot wasn't cancelled
+            );
             
 
 
         controller.leftBumper()
             .onTrue(prepAmpShot())
-            .onFalse(this.fireNote().andThen(new ScheduleCommand(this.resetShooter())));
+            .onFalse(this.fireNoteThroughHood().andThen(new ScheduleCommand(this.resetShooter())));
             // use a schedule command so the onFalse sequence doesn't cancel the aiming while the note is being shot.
             
         controller.b().onTrue(shart().andThen(new ScheduleCommand(this.resetShooter())));
+        // TODO: raise shart a tad
 
         /** CLIMB **/
         
         controller.povUp().onTrue(climb.raiseHooksCommand());
-        // controller.povDown().onTrue(climb.lowerHooksCommand().until((climb::climbArmsZero)));
+        controller.povRight().onTrue(climb.lowerHooksCommand().until((climb::climbArmsZero)));
         controller.povDown().whileTrue(climb.lowerHooksCommand().until(climb::atQuickClimbSetpoint));
-        controller.a().whileTrue(new TrapRoutine(charlie::getRequestedFieldOrientedVelocity, climb, arm, shooter, indexer, leds, drivetrain));
+        controller.a().whileTrue(new UnderStageTrapRoutine(charlie::getRequestedFieldOrientedVelocity, climb, arm, shooter, indexer, leds, drivetrain));
+
+        //controller.povLeft().onTrue(arm.setDesiredDegreesCommand(ArmConstants.armMaxAngleDegrees));
 
         /** MISC **/
-        // controller.y().onTrue(new InstantCommand(() -> drivetrain.setPoseToVisionMeasurement()));
+        controller.y().onTrue(new InstantCommand(() -> drivetrain.setPoseToVisionMeasurement()).repeatedly().until(drivetrain::seesTag));
         // ben.y().onTrue(new InstantCommand(() -> drivetrain.setPoseToVisionMeasurement()));
-        controller.y().onTrue(new InstantCommand(() -> drivetrain.setRobotFacingForward()));
+        // controller.y().onTrue(new InstantCommand(() -> drivetrain.setRobotFacingForward()));
 
         controller.x().onTrue(new InstantCommand(() -> arm.setDisableSetpointChecking(false)).andThen(resetShooter()));
 
         controller.start().whileTrue(new MeasureWheelDiameter(drivetrain));
 
         /** Driver Feedback **/
-        ringJustEnteredIntake.onTrue(charlie.rumbleController(0.25, 0.5)); // lol this happens even during auto
-        ringJustEnteredIntake.onTrue(this.signalNoteInIntake().ignoringDisable(true));
+        Trigger ringJustEnteredIntake = new Trigger(intake::ringJustEnteredIntake);
+        ringJustEnteredIntake.onTrue(charlie.rumbleController(0.5).withTimeout(0.25)); // lol this happens even during auto
+        ringJustEnteredIntake.onTrue(leds.temporarilySwitchPattern(leds.strobeCommand(Color.kWhite, 4, 0.5).ignoringDisable(true)).ignoringDisable(true));
         // TODO: prevent flash on reverse? Either condition with positive wheel speeds,
         //       or no seperate schedule command?
     }

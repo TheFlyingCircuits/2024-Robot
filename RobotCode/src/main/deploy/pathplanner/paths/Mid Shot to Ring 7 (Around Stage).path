@@ -23,38 +23,22 @@
         "x": 11.346331186464253,
         "y": 1.6126985463185501
       },
-      "nextControl": {
-        "x": 9.413668813535748,
-        "y": 2.12730145368145
-      },
-      "isLocked": true,
-      "linkedName": "Around Stage Left"
-    },
-    {
-      "anchor": {
-        "x": 8.54,
-        "y": 2.36
-      },
-      "prevControl": {
-        "x": 9.023165593232125,
-        "y": 2.231349273159275
-      },
       "nextControl": null,
       "isLocked": true,
-      "linkedName": "Ring 7 Pickup (From Mid Shot)"
+      "linkedName": "Around Stage Left"
     }
   ],
   "rotationTargets": [],
   "constraintZones": [],
   "eventMarkers": [],
   "globalConstraints": {
-    "maxVelocity": 4.0,
-    "maxAcceleration": 4.0,
+    "maxVelocity": 4.5,
+    "maxAcceleration": 2.5,
     "maxAngularVelocity": 360.0,
     "maxAngularAcceleration": 360.0
   },
   "goalEndState": {
-    "velocity": 0,
+    "velocity": 4.5,
     "rotation": -14.910000000000025,
     "rotateFast": true
   },

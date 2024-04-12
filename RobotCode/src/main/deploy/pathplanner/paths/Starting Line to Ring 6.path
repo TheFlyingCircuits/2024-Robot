@@ -16,28 +16,28 @@
     },
     {
       "anchor": {
-        "x": 12.0,
-        "y": 4.67
+        "x": 12.58211054883649,
+        "y": 4.755866434809793
       },
       "prevControl": {
-        "x": 12.958968313515195,
-        "y": 4.953513268955454
+        "x": 14.239756941052349,
+        "y": 4.903870576971923
       },
       "nextControl": {
-        "x": 10.743751509295086,
-        "y": 4.298597617668351
+        "x": 11.866650299663773,
+        "y": 4.691986055419371
       },
       "isLocked": true,
       "linkedName": "Stage Right Passthrough"
     },
     {
       "anchor": {
-        "x": 8.55,
-        "y": 4.1
+        "x": 10.677790586354384,
+        "y": 4.361188722380683
       },
       "prevControl": {
-        "x": 9.55,
-        "y": 4.1
+        "x": 11.496746839651507,
+        "y": 4.568394521407666
       },
       "nextControl": null,
       "isLocked": true,
@@ -48,15 +48,15 @@
   "constraintZones": [],
   "eventMarkers": [],
   "globalConstraints": {
-    "maxVelocity": 4.0,
-    "maxAcceleration": 4.0,
+    "maxVelocity": 4.5,
+    "maxAcceleration": 2.5,
     "maxAngularVelocity": 360.0,
     "maxAngularAcceleration": 360.0
   },
   "goalEndState": {
-    "velocity": 0,
-    "rotation": 0,
-    "rotateFast": true
+    "velocity": 4.0,
+    "rotation": 7.26265605659319,
+    "rotateFast": false
   },
   "reversed": false,
   "folder": "5 Piece Center Side",

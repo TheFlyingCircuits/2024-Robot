@@ -16,28 +16,9 @@
           "data": {
             "commands": [
               {
-                "type": "sequential",
+                "type": "path",
                 "data": {
-                  "commands": [
-                    {
-                      "type": "wait",
-                      "data": {
-                        "waitTime": 1.75
-                      }
-                    },
-                    {
-                      "type": "named",
-                      "data": {
-                        "name": "trackNote"
-                      }
-                    },
-                    {
-                      "type": "named",
-                      "data": {
-                        "name": "intakeNote"
-                      }
-                    }
-                  ]
+                  "pathName": "Starting Line to Ring 8"
                 }
               },
               {
@@ -45,14 +26,14 @@
                 "data": {
                   "name": "resetShooter"
                 }
-              },
-              {
-                "type": "path",
-                "data": {
-                  "pathName": "Starting Line to Ring 8"
-                }
               }
             ]
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "intakeTowardsNote"
           }
         },
         {
@@ -105,12 +86,6 @@
                       "type": "wait",
                       "data": {
                         "waitTime": 0.5
-                      }
-                    },
-                    {
-                      "type": "named",
-                      "data": {
-                        "name": "trackNote"
                       }
                     },
                     {
@@ -187,12 +162,6 @@
                       "type": "wait",
                       "data": {
                         "waitTime": 0.5
-                      }
-                    },
-                    {
-                      "type": "named",
-                      "data": {
-                        "name": "trackNote"
                       }
                     },
                     {

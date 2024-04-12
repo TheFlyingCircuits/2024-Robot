@@ -16,15 +16,15 @@
     },
     {
       "anchor": {
-        "x": 8.53,
-        "y": 0.86
+        "x": 10.549520329809893,
+        "y": 1.4504405931888795
       },
       "prevControl": {
-        "x": 9.454479510203518,
-        "y": 1.241231734269149
+        "x": 11.473999840013411,
+        "y": 1.8316723274580282
       },
       "nextControl": null,
-      "isLocked": true,
+      "isLocked": false,
       "linkedName": "Ring 8 Pickup (From Starting Line)"
     }
   ],
@@ -32,13 +32,13 @@
   "constraintZones": [],
   "eventMarkers": [],
   "globalConstraints": {
-    "maxVelocity": 4.0,
-    "maxAcceleration": 4.0,
+    "maxVelocity": 4.5,
+    "maxAcceleration": 2.5,
     "maxAngularVelocity": 360.0,
     "maxAngularAcceleration": 360.0
   },
   "goalEndState": {
-    "velocity": 0,
+    "velocity": 4.5,
     "rotation": 22.409999999999997,
     "rotateFast": true
   },

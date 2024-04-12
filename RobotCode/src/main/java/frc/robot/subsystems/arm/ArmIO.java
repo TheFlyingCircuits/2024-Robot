@@ -43,6 +43,9 @@ public interface ArmIO {
 
         public boolean atUpperLimit = false;
         public boolean atLowerLimit = false;
+
+        public double leftMotorAmps = 0.0;
+        public double rightMotorAmps = 0.0;
     }
 
     /** Updates the set of loggable inputs. */

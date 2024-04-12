@@ -11,6 +11,8 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.ScheduleCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.LEDConstants;
@@ -269,22 +271,25 @@ public class LEDs extends SubsystemBase {
 
     public Command playAimingAnimationCommand(Supplier<Double> armErrorDegrees, Supplier<Double> flywheelErrorMetersPerSecond, Supplier<Double> drivetrainErrorDegrees) {
         return this.run(() -> {
-            // TODO: get tollerances from subsystems
+            double minProgress = 0.05;
+            double maxProgress = 1.0;
+            // TODO: get tolerances from subsystems
             // multiply by 3 so that we're at yellow/green when within tolerance.
             // Arm
             double maxArmErrorToShow = 3 * 1.0;
             double armProgress = 1.0 - ( Math.abs(armErrorDegrees.get()) / maxArmErrorToShow );
-            armProgress = MathUtil.clamp(armProgress, 0.0, 1.0);
+            armProgress = MathUtil.clamp(armProgress, minProgress, maxProgress);
 
             // Flywheels
-            double maxFlywheelErrorToShow = 3 * 0.5;
+            // TODO: use seperate strip segments for left and right flywheel?
+            double maxFlywheelErrorToShow = 3 * 1.0;
             double flywheelProgress = 1.0 - ( Math.abs(flywheelErrorMetersPerSecond.get()) / maxFlywheelErrorToShow );
-            flywheelProgress = MathUtil.clamp(flywheelProgress, 0.0, 1.0);
+            flywheelProgress = MathUtil.clamp(flywheelProgress, minProgress, maxProgress);
 
             // Drivetrain
             double maxDrivetrainErrorToShow = 3 * 2.0;
             double drivetrainProgress = 1.0 - ( Math.abs(drivetrainErrorDegrees.get()) / maxDrivetrainErrorToShow );
-            drivetrainProgress = MathUtil.clamp(drivetrainProgress, 0.0, 1.0);
+            drivetrainProgress = MathUtil.clamp(drivetrainProgress, minProgress, maxProgress);
 
             this.showProgressOnTopThird(armProgress);
             this.showProgressNearFlywheels(flywheelProgress);
@@ -321,5 +326,31 @@ public class LEDs extends SubsystemBase {
         return this.solidColorCommand(green).withTimeout(0.05)
                .andThen(this.playWipeToColorCommand(timeForEachSegment, orange))
                .andThen(this.playWipeToAllianceColorCommand(timeForEachSegment));
+    }
+
+    public Command temporarilySwitchPattern(Command patternToSwitchTo) {
+        return new InstantCommand(() -> {
+            // System.out.println("starting instant command");
+            // Find whatever pattern the LEDs are currently displaying,
+            // so that we can return to that pattern after we're done with the new patter.
+            Command interruptedPattern = this.getCurrentCommand();
+            if (interruptedPattern.equals(patternToSwitchTo)) {
+                // don't let a pattern interrupt itself.
+                // TODO: use a more robust equality check than .equals(),
+                //       becuase it just checks for reference equality by default?
+                // System.out.println("rejected");
+                return;
+            }
+
+            // Schedule the whole sequence.
+            // System.out.println("switchToMe: " + patternToSwitchTo.runsWhenDisabled());
+            // System.out.println("interruptMe: " + interruptedPattern.runsWhenDisabled());
+            Command fullCommand = patternToSwitchTo.asProxy().andThen(new ScheduleCommand(interruptedPattern));
+            fullCommand.addRequirements(this);
+            fullCommand.schedule();
+            // System.out.println("fullCommand: " + fullCommand.runsWhenDisabled());
+            // fullCommand.schedule();
+            // System.out.println("done with instant command");
+        });
     }
 }

@@ -7,6 +7,7 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -36,14 +37,12 @@ public class HumanDriver {
         return this.getRequestedRobotVelocity(false);
     }
 
-    /** Generates a command to rumble the controller for a given duration and strength.
-     * @param seconds - Time to rumble the controller for, in seconds.
+    /** Generates a command to rumble the controller at a given strength.
      * @param strength - Strength to rumble the controller at, from 0 to 1.
      */
-    public Command rumbleController(double seconds, double strength) {
-        return new InstantCommand(() -> controller.getHID().setRumble(RumbleType.kBothRumble, strength))
-            .andThen(new WaitCommand(seconds))
-            .andThen(new InstantCommand(() -> controller.getHID().setRumble(RumbleType.kBothRumble, 0)));
+    public Command rumbleController(double strength) {
+        return Commands.runEnd(() -> {controller.getHID().setRumble(RumbleType.kBothRumble, strength);},
+                               () -> {controller.getHID().setRumble(RumbleType.kBothRumble, 0);});
     }
 
     private ChassisSpeeds getRequestedRobotVelocity(boolean fieldRelative) {
