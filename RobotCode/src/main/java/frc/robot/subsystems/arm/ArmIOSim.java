@@ -4,8 +4,12 @@
 
 package frc.robot.subsystems.arm;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
+import frc.lib.MotorTempObject;
 import frc.robot.Constants.ArmConstants;
 
 /** Add your docs here. */
@@ -38,16 +42,13 @@ public class ArmIOSim implements ArmIO {
         inputs.atUpperLimit = armSim.hasHitUpperLimit();
     }
 
-    // @Override
-    // @Override
-    // public List<MotorTempObject> getMotorTemps() {
-    //     ArrayList<MotorTempObject> temps = new ArrayList<MotorTempObject>();
-    //     temps.add(new MotorTempObject("leftPivot", 25));
-    //     leftMotor = new Neo("leftPivot", ArmConstants.leftMotorID);
-    //     rightMotor = new Neo("rightPivot", ArmConstants.rightMotorID);
-    //     // TODO Auto-generated method stub
-    //     return ArmIO.super.getMotorTemps();
-    // }
+    @Override
+    public List<MotorTempObject> getMotorTemps() {
+        ArrayList<MotorTempObject> temps = new ArrayList<MotorTempObject>();
+        temps.add(new MotorTempObject("leftPivot", 25));
+        temps.add(new MotorTempObject("rightPivot", 25));
+        return temps;
+    }
 
     @Override
     public void setArmMotorVolts(double volts) {

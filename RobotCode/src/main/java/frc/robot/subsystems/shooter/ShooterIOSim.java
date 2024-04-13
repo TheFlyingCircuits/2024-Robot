@@ -1,7 +1,11 @@
 package frc.robot.subsystems.shooter;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.wpilibj.simulation.FlywheelSim;
+import frc.lib.MotorTempObject;
 import frc.robot.Constants.*;
 
 
@@ -40,5 +44,13 @@ public class ShooterIOSim implements ShooterIO {
     @Override
     public void setRightMotorVolts(double volts) {
         rightSim.setInputVoltage(volts);
+    }
+
+        @Override
+    public List<MotorTempObject> getMotorTemps() {
+        ArrayList<MotorTempObject> temps = new ArrayList<MotorTempObject>();
+        temps.add(new MotorTempObject("leftShooter", 25));
+        temps.add(new MotorTempObject("rightShooter", 25));
+        return temps;
     }
 }

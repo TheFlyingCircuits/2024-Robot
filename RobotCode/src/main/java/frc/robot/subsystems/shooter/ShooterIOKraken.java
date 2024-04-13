@@ -20,10 +20,10 @@ public class ShooterIOKraken implements ShooterIO {
     public ShooterIOKraken() {
 
         /**Left motor config */
-        leftMotor = new Kraken(ShooterConstants.leftMotorID, "CTRENetwork");
+        leftMotor = new Kraken("leftShooter", ShooterConstants.leftMotorID, "CTRENetwork");
 
         /**Right motor config */
-        rightMotor = new Kraken(ShooterConstants.rightMotorID, "CTRENetwork");
+        rightMotor = new Kraken("rightShooter", ShooterConstants.rightMotorID, "CTRENetwork");
 
         configMotors();
 

@@ -5,10 +5,19 @@ import 'package:nt4/nt4.dart';
 
 class SubsystemState {
   static const String _robotIP =
-      "127.0.0.1"; // real: 10.17.87.2  |  debug: 127.0.0.1
+      "127.0.0.1"; // real: 10.17.87.2  |  sim: 127.0.0.1
   static bool _isConnected = false;
   static late NT4Client _client;
 
+  static final Map<Subsystem, ValueNotifier<bool>> ranCheckNotifiers = {
+    Subsystem.arm: ValueNotifier<bool>(false),
+    Subsystem.climb: ValueNotifier<bool>(false),
+    Subsystem.intake: ValueNotifier<bool>(false),
+    Subsystem.indexer: ValueNotifier<bool>(false),
+    Subsystem.shooter: ValueNotifier<bool>(false),
+  };
+  //   // static final ValueNotifier<bool> ranCheckNotifier =
+  //     ValueNotifier<bool>(false);
   static final List<NT4Subscription> _motorTempSubs = [];
 
   static late NT4Subscription _armRanCheckSub;
@@ -51,8 +60,8 @@ class SubsystemState {
   static late NT4Subscription _canivoreCANUtilSub;
   static late NT4Subscription _batteryVoltageSub;
 
-  static final ValueNotifier<bool> ranCheckNotifier =
-      ValueNotifier<bool>(false);
+  // static final ValueNotifier<bool> ranCheckNotifier =
+  //     ValueNotifier<bool>(false);
   // static late NT4Topic _allSystemsCheckRunningTopic;
 
   static Stream<bool> connectionStatus() async* {
@@ -81,11 +90,6 @@ class SubsystemState {
       },
     );
 
-    _motorTempSubs.add(_client.subscribePeriodic(
-        "/SmartDashboard/SubsystemStatus/Arm/MotorTemps/leftPivot"));
-    _motorTempSubs.add(_client.subscribePeriodic(
-        "/SmartDashboard/SubsystemStatus/Arm/MotorTemps/rightPivot"));
-
     _armRanCheckSub = _client
         .subscribePeriodic('/SmartDashboard/SubsystemStatus/Arm/RanCheck');
     _armStatusSub =
@@ -100,6 +104,11 @@ class SubsystemState {
       '/SmartDashboard/SubsystemStatus/Arm/SubsystemCheck/running',
     );
 
+    _motorTempSubs.add(_client.subscribePeriodic(
+        "/SmartDashboard/SubsystemStatus/Arm/MotorTemps/leftPivot"));
+    _motorTempSubs.add(_client.subscribePeriodic(
+        "/SmartDashboard/SubsystemStatus/Arm/MotorTemps/rightPivot"));
+
     _climbRanCheckSub = _client
         .subscribePeriodic('/SmartDashboard/SubsystemStatus/Climb/RanCheck');
     _climbStatusSub = _client
@@ -113,6 +122,11 @@ class SubsystemState {
     _climbCheckRunningSub = _client.subscribePeriodic(
       '/SmartDashboard/SubsystemStatus/Climb/SubsystemCheck/running',
     );
+
+    _motorTempSubs.add(_client.subscribePeriodic(
+        "/SmartDashboard/SubsystemStatus/Climb/MotorTemps/leftClimb"));
+    _motorTempSubs.add(_client.subscribePeriodic(
+        "/SmartDashboard/SubsystemStatus/Climb/MotorTemps/rightClimb"));
 
     // _drivetrainRanCheckSub = _client.subscribePeriodic(
     //     '/SmartDashboard/SubsystemStatus/Drivetrain/RanCheck');
@@ -142,6 +156,11 @@ class SubsystemState {
       '/SmartDashboard/SubsystemStatus/Intake/SubsystemCheck/running',
     );
 
+    _motorTempSubs.add(_client.subscribePeriodic(
+        "/SmartDashboard/SubsystemStatus/Intake/MotorTemps/frontIntake"));
+    _motorTempSubs.add(_client.subscribePeriodic(
+        "/SmartDashboard/SubsystemStatus/Intake/MotorTemps/backIntake"));
+
     _indexerRanCheckSub = _client
         .subscribePeriodic('/SmartDashboard/SubsystemStatus/Indexer/RanCheck');
     _indexerStatusSub = _client
@@ -155,6 +174,9 @@ class SubsystemState {
     _indexerCheckRunningSub = _client.subscribePeriodic(
       '/SmartDashboard/SubsystemStatus/Indexer/SubsystemCheck/running',
     );
+
+    _motorTempSubs.add(_client.subscribePeriodic(
+        "/SmartDashboard/SubsystemStatus/Indexer/MotorTemps/indexer"));
 
     _shooterRanCheckSub = _client
         .subscribePeriodic('/SmartDashboard/SubsystemStatus/Shooter/RanCheck');
@@ -170,6 +192,11 @@ class SubsystemState {
       '/SmartDashboard/SubsystemStatus/Shooter/SubsystemCheck/running',
     );
 
+    _motorTempSubs.add(_client.subscribePeriodic(
+        "/SmartDashboard/SubsystemStatus/Shooter/MotorTemps/leftShooter"));
+    _motorTempSubs.add(_client.subscribePeriodic(
+        "/SmartDashboard/SubsystemStatus/Shooter/MotorTemps/rightShooter"));
+
     _rioCANUtilSub = _client.subscribePeriodic('/SmartDashboard/RIOCANUtil');
     _canivoreCANUtilSub =
         _client.subscribePeriodic('/SmartDashboard/CANivoreCANUtil');
@@ -178,27 +205,29 @@ class SubsystemState {
     //     _client.subscribePeriodic("/AdvantageKit/SystemStats/BatteryVoltage");
     _batteryVoltageSub =
         _client.subscribePeriodic("/SmartDashboard/BatteryVoltage");
+
+    // for (int i = 0; i < _motorTempSubs.length; i++) {
+    //   print(_motorTempSubs[i].topic);
+    // }
   }
 
-  static final Map<String, StreamController<SubsystemStatus>>
+  static final Map<Subsystem, StreamController<SubsystemStatus>>
       _statusControllers = {};
 
-  static Stream<SubsystemStatus> subsystemStatus(String subsystem) {
-    subsystem = subsystem.toLowerCase(); // Normalize the subsystem name
-
+  static Stream<SubsystemStatus> subsystemStatus(Subsystem subsystem) {
     NT4Subscription ranCheckSub;
     NT4Subscription statusSub;
     NT4Subscription faultsSub;
     NT4Subscription checkRunningSub;
 
     switch (subsystem) {
-      case "arm":
+      case Subsystem.arm:
         ranCheckSub = _armRanCheckSub;
         statusSub = _armStatusSub;
         faultsSub = _armFaultsSub;
         checkRunningSub = _armCheckRunningSub;
         break;
-      case "climb":
+      case Subsystem.climb:
         ranCheckSub = _climbRanCheckSub;
         statusSub = _climbStatusSub;
         faultsSub = _climbFaultsSub;
@@ -210,19 +239,19 @@ class SubsystemState {
       //   faultsSub = _drivetrainFaultsSub;
       //   checkRunningSub = _drivetrainCheckRunningSub;
       //   break;
-      case "intake":
+      case Subsystem.intake:
         ranCheckSub = _intakeRanCheckSub;
         statusSub = _intakeStatusSub;
         faultsSub = _intakeFaultsSub;
         checkRunningSub = _intakeCheckRunningSub;
         break;
-      case "indexer":
+      case Subsystem.indexer:
         ranCheckSub = _indexerRanCheckSub;
         statusSub = _indexerStatusSub;
         faultsSub = _indexerFaultsSub;
         checkRunningSub = _indexerCheckRunningSub;
         break;
-      case "shooter":
+      case Subsystem.shooter:
         ranCheckSub = _shooterRanCheckSub;
         statusSub = _shooterStatusSub;
         faultsSub = _shooterFaultsSub;
@@ -291,48 +320,57 @@ class SubsystemState {
 
   static Future<void> startAllSubsystemTests() async {}
 
-  static Future<void> startSubsystemTest(String subsystem) async {
+  static Future<void> startSubsystemTest(Subsystem subsystem) async {
     NT4Topic checkRunningTopic;
-    switch (subsystem.toLowerCase()) {
-      case "arm":
+    NT4Subscription checkRunningSub;
+    switch (subsystem) {
+      case Subsystem.arm:
         checkRunningTopic = _armCheckRunningTopic;
+        checkRunningSub = _armCheckRunningSub;
         break;
-      case "climb":
+      case Subsystem.climb:
         checkRunningTopic = _climbCheckRunningTopic;
+        checkRunningSub = _climbCheckRunningSub;
         break;
-      // case "drivetrain":
+      // case Subsystem.drivetrain:
       //   checkRunningTopic = _drivetrainCheckRunningTopic;
+      //   checkRunningSub = _drivetrainCheckRunningSub;
       //   break;
-      case "intake":
+      case Subsystem.intake:
         checkRunningTopic = _intakeCheckRunningTopic;
+        checkRunningSub = _intakeCheckRunningSub;
         break;
-      case "indexer":
+      case Subsystem.indexer:
         checkRunningTopic = _indexerCheckRunningTopic;
+        checkRunningSub = _indexerCheckRunningSub;
         break;
-      case "shooter":
+      case Subsystem.shooter:
         checkRunningTopic = _shooterCheckRunningTopic;
+        checkRunningSub = _shooterCheckRunningSub;
         break;
       default:
         checkRunningTopic = _client.publishNewTopic(
             '/SmartDashboard/SubsystemStatus/ERROR/SubsystemCheck/running',
             NT4TypeStr.typeBool);
+        checkRunningSub = _client.subscribePeriodic(
+            '/SmartDashboard/SubsystemStatus/ERROR/SubsystemCheck/running');
     }
-    // Assuming this is where you'd start the test
     _client.addSample(checkRunningTopic, true);
 
-    // Wait for the test to "start"
     await Future.delayed(const Duration(milliseconds: 200));
-    // This is a simplistic approach. Ideally, you'd wait for a signal that the test has indeed completed.
-
-    // Signal that the check has run
-    ranCheckNotifier.value = true;
-
-    // Optionally, wait for a certain condition to be met before proceeding
-    // This is a placeholder for any additional logic you need to ensure the test is complete
+    checkRunningSub.stream().listen((data) {
+      if (data is bool && !data) {
+        ranCheckNotifiers[subsystem]!.value = true;
+      }
+    });
   }
 
-  static void isRan() async {
-    print(_armRanCheckSub.currentValue);
+  static Stream<double> getMotorTemp(int motorIndex) async* {
+    await for (Object? value in _motorTempSubs[motorIndex].stream()) {
+      if (value != null) {
+        yield value as double;
+      }
+    }
   }
 
   static Stream<List<double>> getPlot(String graphType) async* {
@@ -376,4 +414,12 @@ class SubsystemStatus {
     required this.faults,
     required this.checkRunning,
   });
+}
+
+enum Subsystem {
+  arm,
+  climb,
+  intake,
+  indexer,
+  shooter,
 }

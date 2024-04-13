@@ -30,14 +30,14 @@ Future<void> main() async {
       ), () async {
     await windowManager.show();
     await windowManager.focus();
-    await windowManager.setFullScreen(false);
+    await windowManager.setFullScreen(true);
   });
 
   runApp(const MyApp());
 }
 
 class MyApp extends StatefulWidget {
-  const MyApp({Key? key}) : super(key: key);
+  const MyApp({super.key});
 
   @override
   MyAppState createState() => MyAppState();

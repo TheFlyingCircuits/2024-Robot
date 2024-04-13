@@ -72,7 +72,8 @@ Widget customGraph(String graphType, List<Color> gradientColors, double maxY,
                       maxX: 20,
                       maxY: maxY,
                       lineBarsData: [
-                        staticHorizontalLine(horizontalLineHeight),
+                        staticHorizontalLine(
+                            horizontalLineHeight, gradientColors),
                         LineChartBarData(
                           spots: data,
                           isCurved: true,
@@ -81,7 +82,7 @@ Widget customGraph(String graphType, List<Color> gradientColors, double maxY,
                           ),
                           barWidth: 2,
                           isStrokeCapRound: true,
-                          dotData: FlDotData(show: false),
+                          dotData: const FlDotData(show: false),
                           belowBarData: BarAreaData(
                             show: true,
                             gradient: LinearGradient(
@@ -108,7 +109,8 @@ Widget customGraph(String graphType, List<Color> gradientColors, double maxY,
   );
 }
 
-LineChartBarData staticHorizontalLine(double horizontalLineHeight) {
+LineChartBarData staticHorizontalLine(
+    double horizontalLineHeight, List<Color> gradientColors) {
   List<FlSpot> data = [];
   for (int i = 0; i < 608; i++) {
     data.add(FlSpot(0.033 * i, horizontalLineHeight));
@@ -116,9 +118,8 @@ LineChartBarData staticHorizontalLine(double horizontalLineHeight) {
 
   LineChartBarData bar = LineChartBarData(
       spots: data,
-      gradient: LinearGradient(colors: [Colors.red, Colors.orange]),
-      // color: Colors.red,
-      dotData: FlDotData(show: false),
+      gradient: LinearGradient(colors: gradientColors),
+      dotData: const FlDotData(show: false),
       barWidth: 1,
       show: horizontalLineHeight > 0 ? true : false);
   return bar;

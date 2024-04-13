@@ -181,7 +181,6 @@ public class Intake extends DiagnosticSubsystem {
         // TODO: Determine proper speeds and tolerances
         return Commands.sequence(
             Commands.runOnce(() -> {
-                System.out.println("r5ytgtuyjtgkyij");
                 this.setRPM(200);
             }),
             Commands.waitSeconds(1.0),

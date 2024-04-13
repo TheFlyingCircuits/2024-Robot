@@ -40,6 +40,7 @@ public abstract class DiagnosticSubsystem extends SubsystemBase {
     private final List<Kraken> krakens = new ArrayList<Kraken>();
     private final List<Neo> neos = new ArrayList<Neo>();
     private final List<MotorTempObject> motorTemps = new ArrayList<MotorTempObject>();
+    private SubsystemStatus status;
 
 
     public DiagnosticSubsystem() {
@@ -49,6 +50,7 @@ public abstract class DiagnosticSubsystem extends SubsystemBase {
         autoDiagnoseCommand.setName(this.getName() + "Check");
         SmartDashboard.putData(statusDirectory + "/SubsystemCheck", autoDiagnoseCommand);
         SmartDashboard.putBoolean(statusDirectory + "/RanCheck", false);
+        this.status = null;
 
         addPeriodicRunnables();
     }
@@ -58,12 +60,15 @@ public abstract class DiagnosticSubsystem extends SubsystemBase {
                 Commands.runOnce(() -> {
                     SmartDashboard.putBoolean(statusDirectory + "/RanCheck", false);
                     clearAllFaults();
-                    publishDiagnostics(SubsystemStatus.NULL);
+                    this.status = SubsystemStatus.NULL;
+                    SmartDashboard.putString(statusDirectory + "/Status", SubsystemStatus.NULL.name());
+                    publishDiagnostics();
                 }),
                 autoDiagnoseCommand(),
                 Commands.runOnce(() -> {
                     publishDiagnostics();
                     SmartDashboard.putBoolean(statusDirectory + "/RanCheck", true);
+                    SmartDashboard.putString(statusDirectory + "/Status", getSubsystemStatus().name());
                 }));
     }
 
@@ -74,16 +79,6 @@ public abstract class DiagnosticSubsystem extends SubsystemBase {
     }
 
     private void publishDiagnostics() {
-        SubsystemStatus status = getSubsystemStatus();
-        publishDiagnosticsHelper(status);
-    }
-
-    private void publishDiagnostics(SubsystemStatus initStatus) {
-        SubsystemStatus status = getSubsystemStatus(initStatus);
-        publishDiagnosticsHelper(status);
-    }
-    private void publishDiagnosticsHelper(SubsystemStatus status) {
-        SmartDashboard.putString(statusDirectory + "/Status", status.name());
         String[] faultStrings = new String[this.faults.size()];
         for (int i = 0; i < this.faults.size(); i++) {
             Fault fault = this.faults.get(i);
@@ -96,8 +91,6 @@ public abstract class DiagnosticSubsystem extends SubsystemBase {
                 motorTempObject.getMotorTemp()
             );
         }
-        // motorTemps.forEach(m -> {m.toStringArray();});
-        // SmartDashboard.getStringArray(statusDirectory + "/MotorTemps",);//.toArray(new String[0]));
     }
 
     protected abstract Command autoDiagnoseCommand();
@@ -129,9 +122,10 @@ public abstract class DiagnosticSubsystem extends SubsystemBase {
     }
 
     protected void addFault(Fault fault) {
-        // if (!this.faults.contains(fault)) {
-            this.faults.add(fault);
-        // }
+        this.faults.add(fault);
+        this.status = fault.isJustWarning ? SubsystemStatus.WARNING : SubsystemStatus.ERROR;
+
+        SmartDashboard.putString(statusDirectory + "/Status", this.status.name());
     }
 
     protected void addFault(String message, boolean isJustWarning) {
@@ -140,6 +134,14 @@ public abstract class DiagnosticSubsystem extends SubsystemBase {
 
     protected void addFaults(List<Fault> faults) {
         this.faults.addAll(faults);
+        for (Fault fault: faults) {
+            if((fault.isJustWarning) && (!this.status.equals(SubsystemStatus.ERROR))) {
+                this.status = SubsystemStatus.ERROR;
+            } else {
+                this.status = SubsystemStatus.ERROR;
+            }
+        }
+        SmartDashboard.putString(statusDirectory + "/Status", this.status.toString());
     }
 
     public List<Fault> getFaults() {
@@ -164,11 +166,10 @@ public abstract class DiagnosticSubsystem extends SubsystemBase {
                 }
             }
         }
-        if(
-            worstStatus.equals(SubsystemStatus.NULL)
-        ) {
+        if(worstStatus.equals(SubsystemStatus.NULL)) {
             worstStatus = SubsystemStatus.OK;
         }
+        this.status = worstStatus;
         return worstStatus;
     }
 
@@ -185,26 +186,6 @@ public abstract class DiagnosticSubsystem extends SubsystemBase {
             }
         }
     }
-
-
-    // private void postMotorInfoNT4() {
-    //     motorTemps.clear();
-    //     for(Kraken kraken : krakens) {
-    //         motorTemps.add(kraken.getMotorTempObject());
-    //     }
-    //     for(Neo neo : neos) {
-    //         motorTemps.add(neo.getMotorTempObject());
-    //     }
-    //     SmartDashboard.putStringArray(statusDirectory+"/MotorTemps", motorTemps.toArray(new String[0]));
-    // }
-
-    // protected void postMotorTemps(List<MotorTempObject> motorTemps) {
-    //     // for (List<MotorTempObject> motorTempList : motorTempLists) {
-    //         for (MotorTempObject motorTempObject : motorTemps) {
-    //             motorTemps.add(motorTempObject);
-    //         }
-    //     // }
-    // }
 
     public void clearMotorTemps() {
         motorTemps.clear();

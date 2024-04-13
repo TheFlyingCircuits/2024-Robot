@@ -1,10 +1,10 @@
 import 'package:diagnostic_page/services/subsystem_state.dart';
 import 'package:flutter/material.dart';
 
-Widget statusCard(String subsystem) {
+Widget statusCard(Subsystem subsystem) {
   RegExp pattern = RegExp(r'^\[\d+\.\d+\]\s');
   return ValueListenableBuilder(
-    valueListenable: SubsystemState.ranCheckNotifier,
+    valueListenable: SubsystemState.ranCheckNotifiers[subsystem]!,
     builder: (context, bool ranCheckValue, child) {
       return Card(
         child: SizedBox(
@@ -14,10 +14,10 @@ Widget statusCard(String subsystem) {
             children: [
               StreamBuilder(
                 stream: SubsystemState.subsystemStatus(subsystem),
-                builder: (context, snapshot) {
+                builder: (context, AsyncSnapshot<SubsystemStatus> snapshot) {
                   if (!snapshot.hasData) {
                     return const Text(
-                        "waiting for data"); // Show loading indicator while waiting for data
+                        "Waiting for data"); // Show loading indicator while waiting for data
                   }
                   SubsystemStatus status = snapshot.data!;
                   Color statusColor = Colors.grey;
@@ -25,10 +25,6 @@ Widget statusCard(String subsystem) {
 
                   if (ranCheckValue) {
                     switch (status.status) {
-                      // case 'NULL':
-                      //   statusColor = Colors.grey;
-                      //   statusIcon = Icons.question_mark_rounded;
-                      //   break;
                       case 'OK':
                         statusColor = Colors.green;
                         statusIcon = Icons.check_circle_outline_rounded;
@@ -46,30 +42,46 @@ Widget statusCard(String subsystem) {
                         statusIcon = Icons.question_mark_rounded;
                         break;
                     }
+                  } else {
+                    // Set neutral icons and colors if ranCheck is not true yet
+                    statusColor = Colors.grey;
+                    statusIcon = Icons.question_mark_rounded;
                   }
+
+                  bool isRunning = !ranCheckValue &&
+                      snapshot.connectionState == ConnectionState.waiting;
 
                   return ListTile(
                     title: Text(
-                      "${subsystem[0].toUpperCase()}${subsystem.substring(1).toLowerCase()}",
-                      style: TextStyle(fontSize: 20),
+                      "${subsystem.name[0].toUpperCase()}${subsystem.name.substring(1).toLowerCase()}",
+                      style: const TextStyle(fontSize: 20),
                     ),
                     leading: Icon(
                       statusIcon,
                       color: statusColor,
                     ),
-                    subtitle: status.faults.isNotEmpty
+                    subtitle: ranCheckValue && status.faults.isNotEmpty
                         ? Text(status.faults
                             .split(", ")
                             .map((str) => str.replaceAll(pattern, ""))
                             .join("\n"))
                         : null,
                     trailing: ElevatedButton(
-                      onPressed: () async {
-                        // Disable the button while the test is running
-                        await SubsystemState.startSubsystemTest(subsystem);
-                        // No need to manually update the UI; the stream and ValueNotifier will handle this
-                      },
-                      child: Text('Run Check'),
+                      onPressed: isRunning
+                          ? null
+                          : () async {
+                              // Begin subsystem test and wait for the result
+                              await SubsystemState.startSubsystemTest(
+                                  subsystem);
+                            },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: isRunning
+                            ? Colors.grey
+                            : Theme.of(context).primaryColor,
+                        disabledBackgroundColor:
+                            Colors.grey, // Color when disabled
+                      ),
+                      child: Text(isRunning ? 'Running' : 'Run Check'),
                     ),
                   );
                 },
