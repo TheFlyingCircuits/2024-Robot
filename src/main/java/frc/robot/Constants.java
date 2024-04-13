@@ -40,7 +40,6 @@ public final class Constants {
 
     public final static boolean atCompetition = false;
 
-
     public final static class ShooterConstants {
         /**Rotations of the motor per rotations of the wheel; a number greater than 1 represents a reduction. */
         public final static double flywheelGearReduction = 1.;
@@ -349,19 +348,37 @@ public final class Constants {
                                                                       : new AprilTagFieldLayout(practiceFieldTags, 16, 8.2);
                                                                       
         public final static Transform3d robotToShooterCamera = new Transform3d(
-            new Translation3d(Units.inchesToMeters(8.75), 0, Units.inchesToMeters(10.5)),
-            new Rotation3d(0, Math.toRadians(-29), 0)
+            new Translation3d(Units.inchesToMeters(9.25), 0, Units.inchesToMeters(10.625)),
+            new Rotation3d(0, Math.toRadians(-28), 0)
         );
 
         public final static Transform3d robotToTrapCamera = new Transform3d(
-            new Translation3d(Units.inchesToMeters(-11.5), 0, Units.inchesToMeters(11.25)),
-            new Rotation3d(0, Math.toRadians(-33), Math.toRadians(180))
+            new Translation3d(Units.inchesToMeters(-9.625), 0, Units.inchesToMeters(10.63)),
+            new Rotation3d(0, Math.toRadians(-32), Math.toRadians(180))
         );
 
-        public final static Transform3d robotToNoteCamera = new Transform3d(
-            new Translation3d(Units.inchesToMeters(-11.25), 0, Units.inchesToMeters(15.25)),
-            new Rotation3d(0, Math.toRadians(24), Math.toRadians(180))
+        public final static Transform3d robotToLeftCamera = new Transform3d(
+            new Translation3d(Units.inchesToMeters(-5.438), Units.inchesToMeters(12.375), Units.inchesToMeters((16.875))),
+            new Rotation3d(0, Math.toRadians(-27), Math.toRadians(90))
         );
+        
+        public final static Transform3d robotToRightCamera = new Transform3d(
+            new Translation3d(Units.inchesToMeters(-5.438), Units.inchesToMeters(-12), Units.inchesToMeters(16.025)),
+            new Rotation3d(0, Math.toRadians(-27), Math.toRadians(-90))
+        );
+
+        public final static Transform3d tagCameraTransforms[] = {
+            robotToShooterCamera,
+            robotToTrapCamera,
+            robotToLeftCamera,
+            robotToRightCamera
+        };
+
+        public final static Transform3d robotToNoteCamera = new Transform3d(
+            new Translation3d(Units.inchesToMeters(-10.437), 0, Units.inchesToMeters(14.325)),
+            new Rotation3d(0, Math.toRadians(23), Math.toRadians(180))
+        );
+
     }
 
     public static enum FieldElement {
@@ -480,8 +497,6 @@ public final class Constants {
             return yourPoseOnTheField.nearest(Arrays.asList(trapLocations));
         }
     }
-
-
 
     public final static class FieldConstants {
         public final static double metersBetweenMidlineNotes = Units.inchesToMeters(66);

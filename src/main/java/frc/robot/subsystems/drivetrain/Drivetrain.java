@@ -212,7 +212,6 @@ public class Drivetrain extends SubsystemBase {
         this.robotOrientedDrive(robotOrientedSpeeds, closedLoop);
     }
 
-
     /**
      * Drives the robot at a desired chassis speeds, while automatically aiming
      * at a rotation target. The coordinate system is the same as the one as the 
@@ -283,7 +282,6 @@ public class Drivetrain extends SubsystemBase {
         // 7) Now rotate the robot so it's facing in the same direction as the line
         this.fieldOrientedDriveWhileAiming(desiredVelocity, lineToDriveOn.getRotation());
     }
-
 
     //could be used for a drivetrain command in the future; leave this as its own function
     private void setModuleStates(SwerveModuleState[] desiredStates, boolean closedLoop) {
@@ -397,16 +395,12 @@ public class Drivetrain extends SubsystemBase {
 
 
     private void updatePoseEstimator() {
-
-
-        
-
         double totalAccelMetersPerSecondSquared = Math.hypot(gyroInputs.robotAccelX, gyroInputs.robotAccelY);
         totalAccelMetersPerSecondSquared = Math.hypot(totalAccelMetersPerSecondSquared, gyroInputs.robotAccelZ);
 
         Logger.recordOutput("drivetrain/accelMagnitude", totalAccelMetersPerSecondSquared);
 
-        if (totalAccelMetersPerSecondSquared < 10) { //TODO: arbitrary value, tune this
+        if (totalAccelMetersPerSecondSquared < 10) {
             fusedPoseEstimator.update(gyroInputs.robotYawRotation2d, getModulePositions());
         }
         wheelsOnlyPoseEstimator.update(gyroInputs.robotYawRotation2d, getModulePositions());

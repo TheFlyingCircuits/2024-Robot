@@ -1,8 +1,10 @@
 package frc.robot.subsystems.vision;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.List;
 import java.util.Optional;
 
 import org.littletonrobotics.junction.Logger;
@@ -26,31 +28,33 @@ import frc.robot.Constants.VisionConstants;
 
 public class VisionIOPhotonLib implements VisionIO {
     
-    PhotonCamera shooterCamera;
-    PhotonCamera trapCamera;
+
+    List<PhotonCamera> tagCameras;
+    List<PhotonPoseEstimator> poseEstimators;
+
     PhotonCamera noteCamera;
-    PhotonPoseEstimator shooterPoseEstimator;
-    PhotonPoseEstimator trapPoseEstimator;
 
     public VisionIOPhotonLib() {
-        shooterCamera = new PhotonCamera("shooterCamera");
-        trapCamera = new PhotonCamera("trapCamera");
         noteCamera = new PhotonCamera("noteCamera");
 
-
-        shooterPoseEstimator = new PhotonPoseEstimator(
-            VisionConstants.aprilTagFieldLayout, 
-            PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
-            shooterCamera,
-            VisionConstants.robotToShooterCamera
+        tagCameras = Arrays.asList(
+            new PhotonCamera("shooterCamera"),
+            new PhotonCamera("trapCamera"),
+            new PhotonCamera("leftCamera"),
+            new PhotonCamera("rightCamera")
         );
 
-        trapPoseEstimator = new PhotonPoseEstimator(
-            VisionConstants.aprilTagFieldLayout, 
-            PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
-            trapCamera,
-            VisionConstants.robotToTrapCamera
-        );
+        for (int i = 0; i < tagCameras.size(); i++) {
+            poseEstimators.add(
+                new PhotonPoseEstimator(
+                    VisionConstants.aprilTagFieldLayout,
+                    PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
+                    tagCameras.get(i),
+                    VisionConstants.tagCameraTransforms[i]
+                )
+            );
+        }
+
     }
 
     /**
@@ -169,16 +173,15 @@ public class VisionIOPhotonLib implements VisionIO {
     public void updateInputs(VisionIOInputs inputs) {
         inputs.visionMeasurements = new ArrayList<VisionMeasurement>();
         
-        Optional<VisionMeasurement> shooterResult = updateTagCamera(shooterCamera, shooterPoseEstimator);
-        if (shooterResult.isPresent()) {
-            inputs.visionMeasurements.add(shooterResult.get());
-        }
+        for (int i = 0; i < tagCameras.size(); i++) {
+            Optional<VisionMeasurement> camResult = updateTagCamera(
+                tagCameras.get(i), poseEstimators.get(i)
+            );
 
-        Optional<VisionMeasurement> trapResult = updateTagCamera(trapCamera, trapPoseEstimator);
-        if (trapResult.isPresent()) {
-            inputs.visionMeasurements.add(trapResult.get());
+            if (camResult.isPresent()) {
+                inputs.visionMeasurements.add(camResult.get());
+            }
         }
-
 
         //sorts visionMeasurements by standard deviations in the x direction
         Collections.sort(inputs.visionMeasurements, new Comparator<VisionMeasurement>() {
