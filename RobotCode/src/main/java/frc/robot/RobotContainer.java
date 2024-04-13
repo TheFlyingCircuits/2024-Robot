@@ -195,7 +195,7 @@ public class RobotContainer {
     /**
      * @param rapidFire - whether or not we are rapid firing (in auto); if we are, we want to run the indexer faster.
      */
-    private Command runIntake() {
+    public Command runIntake() {
         return indexer.setOrangeWheelsSurfaceSpeedCommand(2.5)
                       .alongWith(intake.setVoltsCommand(12));
     }
@@ -216,7 +216,7 @@ public class RobotContainer {
      *  even if it isn't fully indexed yet.
      * @return
      */
-    private Command intakeNote() {
+    public Command intakeNote() {
         return new ScheduleCommand(leds.playIntakeAnimationCommand(drivetrain::intakeSeesNote))
         .alongWith(this.runIntake().until(intake::ringJustEnteredIntake));
     }

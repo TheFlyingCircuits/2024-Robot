@@ -27,7 +27,7 @@ class _DiagnosticPageState extends State<DiagnosticPage> {
             child: FittedBox(
               fit: BoxFit.contain,
               child: Image.asset(
-                "images/logo.png",
+                "assets/images/logo.png",
                 filterQuality: FilterQuality.medium,
               ),
             ),

@@ -231,7 +231,6 @@ public class Arm extends DiagnosticSubsystem {
     public void periodic() {
         this.clearMotorTemps();
         this.addMotorTemps(io.getMotorTemps());
-        // this.addMotorTemp(new MotorTempObject("test", 23));
 
         Logger.processInputs("armInputs", inputs);
 
@@ -274,7 +273,6 @@ public class Arm extends DiagnosticSubsystem {
             Commands.runOnce(() -> {this.setDisableSetpointChecking(false);}),
             this.setDesiredDegreesCommand(ArmConstants.armMaxAngleDegrees).withTimeout(2),
             Commands.runOnce(() -> {
-                this.addFault("[Auto Diagnose] this is a test lol", false);
                 if(!this.isCloseToTarget()) {
                     this.addFault("[Auto Diagnose] arm not reaching max angle", false);
                 }

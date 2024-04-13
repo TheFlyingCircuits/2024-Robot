@@ -14,6 +14,7 @@ import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import frc.lib.VendorWrappers.Neo;
 import frc.lib.subsystem.DiagnosticSubsystem;
 import frc.robot.Constants.IntakeConstants;
@@ -86,6 +87,7 @@ public class Intake extends DiagnosticSubsystem {
      * 
      * @param rpm - RPM to have the motors spin at. A positive value will intake the
      *            note.
+     * @return 
      */
     public void setRPM(double rpm) {
         double frontFeedforwardOutputVolts = frontFeedforward.calculate(rpm);
@@ -180,21 +182,21 @@ public class Intake extends DiagnosticSubsystem {
     protected Command autoDiagnoseCommand() {
         // TODO: Determine proper speeds and tolerances
         return Commands.sequence(
-            Commands.runOnce(() -> {
-                this.setRPM(200);
-            }),
-            Commands.waitSeconds(1.0),
-            Commands.runOnce(() -> {
-                this.addFaults(this.frontIntakeMotor.autoDiagnoseIsAtTargetRPS(200, 3, true));
-                this.addFaults(this.backIntakeMotor.autoDiagnoseIsAtTargetRPS(200, 3, true));
-                this.setRPM(-200);
-            }, this),
-            Commands.waitSeconds(1.0),
-            Commands.runOnce(() -> {
-                this.addFaults(this.frontIntakeMotor.autoDiagnoseIsAtTargetRPS(-200, 3, false));
-                this.addFaults(this.backIntakeMotor.autoDiagnoseIsAtTargetRPS(-200, 3, false));
-                this.setRPM(0.0);
-            }, this)).until(() -> getFaults().size() > 0).withTimeout(6.5)
+            Commands.parallel(
+                new InstantCommand(() -> this.setRPM(200)).repeatedly(),
+                Commands.waitSeconds(1).andThen(() -> {
+                    this.addFaults(this.frontIntakeMotor.autoDiagnoseIsAtTargetRPS(200, 3, true));
+                    this.addFaults(this.backIntakeMotor.autoDiagnoseIsAtTargetRPS(200, 3, true));
+                })
+            ).withTimeout(1.25),
+            Commands.parallel(
+                new InstantCommand(() -> this.setRPM(-200)).repeatedly(),
+                Commands.waitSeconds(1).andThen(() -> {
+                    this.addFaults(this.frontIntakeMotor.autoDiagnoseIsAtTargetRPS(-200, 3, true));
+                    this.addFaults(this.backIntakeMotor.autoDiagnoseIsAtTargetRPS(-200, 3, true));
+                })
+            ).withTimeout(1.25)
+        ).until(() -> getFaults().size() > 0).withTimeout(6.5)
             .andThen(() -> {
                 frontIntakeMotor.set(0.0);
             }

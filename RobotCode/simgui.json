@@ -31,7 +31,6 @@
       "SmartDashboard": {
         "SubsystemStatus": {
           "Arm": {
-            "open": true,
             "string[]##v_/SmartDashboard/SubsystemStatus/Arm/Faults": {
               "open": true
             }

@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:diagnostic_page/pages/diagnostic_page.dart';
+import 'package:diagnostic_page/pages/slideshow_page.dart';
 import 'package:diagnostic_page/services/subsystem_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -71,7 +72,7 @@ class MyAppState extends State<MyApp> {
         }
       },
       onError: (e) {
-        print("Stream error: $e");
+        debugPrint("Stream error: $e");
       },
     );
   }
@@ -90,18 +91,19 @@ class MyAppState extends State<MyApp> {
         if (_navigatorKey.currentState!.canPop()) {
           _navigatorKey.currentState!.pop();
         } else {
-          _navigatorKey.currentState!
-              .push(MaterialPageRoute(builder: (_) => const DiagnosticPage()));
+          _navigatorKey.currentState!.push(PageRouteBuilder(
+            pageBuilder: (context, animation1, animation2) =>
+                const DiagnosticPage(),
+            transitionDuration: Duration(seconds: 0), // No transition time
+          ));
         }
       }
       if (event.logicalKey == LogicalKeyboardKey.enter) {
-        print("enter pressed");
         try {
           bool isFullScreen = await windowManager.isFullScreen();
-          // No direct null check here since isFullScreen returns a Future<bool>
           await windowManager.setFullScreen(!isFullScreen);
         } catch (e) {
-          print('Error toggling full screen: $e');
+          debugPrint('Error toggling full screen: $e');
         }
       }
       // Re-request focus on the main page's FocusNode after navigation
@@ -125,18 +127,18 @@ class MyAppState extends State<MyApp> {
       home: Scaffold(
         body: Navigator(
           key: _navigatorKey,
-          onGenerateRoute: (settings) => MaterialPageRoute(
-            builder: (context) => KeyboardListener(
-              focusNode: _focusNode,
-              onKeyEvent: _handleKeyEvent,
-              child: const Focus(
-                autofocus: true,
-                child: Center(
-                  child: Text(
-                      'Unfinished home screen. Press enter to go fullscreen, press N to switch to diagnostics'),
+          onGenerateRoute: (settings) => PageRouteBuilder(
+            pageBuilder: (context, animation1, animation2) {
+              return KeyboardListener(
+                focusNode: _focusNode,
+                onKeyEvent: _handleKeyEvent,
+                child: const Focus(
+                  autofocus: true,
+                  child: Center(child: SlideshowPage()),
                 ),
-              ),
-            ),
+              );
+            },
+            transitionDuration: Duration(seconds: 0), // No transition time
           ),
         ),
       ),
