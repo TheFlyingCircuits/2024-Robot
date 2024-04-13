@@ -11,6 +11,7 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.ParallelRaceGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
@@ -36,50 +37,45 @@ public class UnderStageTrapRoutine extends SequentialCommandGroup {
         this.translationController = translationController;
         
         addCommands(
+            // drive to the trap and wait until we're in position for Ronnie to take over
+            snapToTrap().until(() -> {return getTrapToRobot().getNorm() < Units.inchesToMeters(3);}),
+            // Raise the arm as we drive forward
             new ParallelRaceGroup(
-                snapToTrap(),
-                new SequentialCommandGroup(
-                    // Wait until we're in position to start raising the arm
-                    new WaitUntilCommand(() -> {return getTrapToRobot().getNorm() < Units.inchesToMeters(3);}),
-                    // Raise the arm as we drive forward
-                    new ParallelRaceGroup(
-                        // Start raising the arm as we move out from under the stage
-                        arm.run(() -> {
-                            double chainDistanceFromTrap = Units.inchesToMeters(12 + 4 + (5./8.));
-                            double chainHeight = Units.inchesToMeters((2 * 12) + 4 + (1./4.));
-                            double deltaY = chainHeight - ArmConstants.pivotHeightMeters;
-                            double deltaX = chainDistanceFromTrap - getPivotDistanceAlongTrapAxis();
-                            arm.setDesiredDegrees(Math.toDegrees(Math.atan2(deltaY, deltaX)));
-                        }).until(() -> {return arm.getDegrees() >= 95;}),
-                        // Slowly spin the flywheels to help the chain pass over the arm.
-                        shooter.setFlywheelSurfaceSpeedCommand(1)
-                    ),
-                    // Drive back into the stage to trigger the climb
-                    new ParallelCommandGroup(
-                        // Raise the hooks
-                        climb.raiseHooksCommand().until(climb::climbArmsUp),
-                        
-                        // Push the arm into the stage until we reach the trigger angle.
-                        new SequentialCommandGroup(
-                            arm.setCoastCommand(true),
-                            arm.holdCurrentPositionCommand().until(() -> {return arm.getDegrees() <= 80;}),
-                            arm.setCoastCommand(false)
-                        )
-                    ),
-                    // Start the climb
-                    new ParallelRaceGroup(
-                        climb.lowerHooksCommand().until(climb::climbArmsDown),
-                        arm.setDesiredDegreesCommand(95),
-                        shooter.setFlywheelSurfaceSpeedCommand(10)
-                    ),
-                    // Wait for the swinging to stop
-                    new WaitCommand(0.5), // TODO: are we sinking here because the climb command finishes when arms are down?
-                    // Score in the trap
-                    fireNoteCommand.get(),
-                    // Lower down a tad so we're not hanging on the trap opening
-                    climb.raiseHooksCommand(4).withTimeout(0.5)
-                )
-            )
+                arm.run(() -> {
+                    double chainDistanceFromTrap = Units.inchesToMeters(12 + 4 + (5./8.));
+                    double chainHeight = Units.inchesToMeters((2 * 12) + 4 + (1./4.));
+                    double deltaY = chainHeight - ArmConstants.pivotHeightMeters;
+                    double deltaX = chainDistanceFromTrap - getPivotDistanceAlongTrapAxis();
+                    arm.setDesiredDegrees(Math.toDegrees(Math.atan2(deltaY, deltaX)));
+                }).until(() -> {return arm.getDegrees() >= 95;}),
+
+                // Slowly spin the flywheels to help the chain pass over the arm.
+                shooter.setFlywheelSurfaceSpeedCommand(1),
+                this.autoDriveOnTrapAxis(0.01)
+            ),
+            // Stop, enter coast, and wait for the hooks to come up.
+            new ParallelRaceGroup(
+                drivetrain.run(() -> {drivetrain.fieldOrientedDrive(new ChassisSpeeds(), true);}),
+                climb.raiseHooksCommand().until(climb::climbArmsUp),
+                arm.setCoastCommand(true).andThen(arm.holdCurrentPositionCommand())
+            ),
+            // Push the arm into the stage until we reach the trigger angle
+            new ParallelRaceGroup(
+                arm.holdCurrentPositionCommand().until(() -> {return arm.getDegrees() <= 80;}).andThen(arm.setCoastCommand(false)),
+                this.autoDriveOnTrapAxis(-0.01)
+            ),
+            // Start the climb
+            new ParallelRaceGroup(
+                climb.lowerHooksCommand().until(climb::climbArmsDown),
+                arm.setDesiredDegreesCommand(95),
+                shooter.setFlywheelSurfaceSpeedCommand(10)
+            ),
+            // Wait for the swinging to stop
+            new WaitCommand(0.5), // TODO: are we sinking here because the climb command finishes when arms are down?
+            // Score in the trap
+            fireNoteCommand.get(),
+            // Lower down a tad so we're not hanging on the trap opening
+            climb.raiseHooksCommand(4).withTimeout(0.5)
         );    
     }
 
@@ -87,6 +83,14 @@ public class UnderStageTrapRoutine extends SequentialCommandGroup {
         return drivetrain.run(() -> {
             Pose2d nearestTrap = FieldElement.getClosestTrap(drivetrain.getPoseMeters());
             drivetrain.fieldOrientedDriveOnALine(translationController.get(), nearestTrap);
+        });
+    }
+
+    private Command autoDriveOnTrapAxis(double speedAlongAxis) {
+        return drivetrain.run(() -> {
+            Pose2d nearestTrap = FieldElement.getClosestTrap(drivetrain.getPoseMeters());
+            ChassisSpeeds directionToDrive = new ChassisSpeeds(nearestTrap.getRotation().getCos(), nearestTrap.getRotation().getSin(), 0);
+            drivetrain.fieldOrientedDriveOnALine(directionToDrive.times(speedAlongAxis), nearestTrap);
         });
     }
 
