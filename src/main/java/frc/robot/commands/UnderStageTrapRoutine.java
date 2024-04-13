@@ -66,6 +66,7 @@ public class UnderStageTrapRoutine extends SequentialCommandGroup {
             ),
             // Start the climb
             new ParallelRaceGroup(
+                drivetrain.run(() -> {drivetrain.fieldOrientedDrive(new ChassisSpeeds(), true);}),
                 climb.lowerHooksCommand().until(climb::climbArmsDown),
                 arm.setDesiredDegreesCommand(95),
                 shooter.setFlywheelSurfaceSpeedCommand(10)
