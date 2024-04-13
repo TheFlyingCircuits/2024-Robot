@@ -23,6 +23,7 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
+import edu.wpi.first.wpilibj.DriverStation;
 import frc.robot.FlyingCircuitUtils;
 import frc.robot.Constants.VisionConstants;
 
@@ -43,6 +44,8 @@ public class VisionIOPhotonLib implements VisionIO {
             new PhotonCamera("leftCamera"),
             new PhotonCamera("rightCamera")
         );
+
+        poseEstimators = new ArrayList<PhotonPoseEstimator>();
 
         for (int i = 0; i < tagCameras.size(); i++) {
             poseEstimators.add(
@@ -68,14 +71,26 @@ public class VisionIOPhotonLib implements VisionIO {
         double slopeStdDevMetersPerMeterY;
 
 
-        if (useMultitag) {
-            slopeStdDevMetersPerMeterX = 0.004;
-            slopeStdDevMetersPerMeterY = 0.009;
-        }
+        if (DriverStation.isAutonomous()) {
+            if (useMultitag) {
+                slopeStdDevMetersPerMeterX = 0.06;
+                slopeStdDevMetersPerMeterY = 0.06;
+            }
 
+            else {
+                slopeStdDevMetersPerMeterX = 0.08;
+                slopeStdDevMetersPerMeterY = 0.08;
+            }
+        }
         else {
-            slopeStdDevMetersPerMeterX = 0.008;
-            slopeStdDevMetersPerMeterY = 0.008;
+            if (useMultitag) {
+                slopeStdDevMetersPerMeterX = 0.008;
+                slopeStdDevMetersPerMeterY = 0.008;
+            }
+            else {
+                slopeStdDevMetersPerMeterX = 0.008;
+                slopeStdDevMetersPerMeterY = 0.008;
+            }
         }
 
         double slopeStdDevRadiansPerMeter = 1000;
@@ -126,6 +141,7 @@ public class VisionIOPhotonLib implements VisionIO {
         output.robotFieldPose = poseEstimatorResult.get().estimatedPose.toPose2d();
         output.timestampSeconds = poseEstimatorResult.get().timestampSeconds;
         output.stdDevs = getVisionStdDevs(output.nearestTagDistanceMeters, (pipelineResult.targets.size() > 1));  //different standard devs for different methods of detecting apriltags
+        output.cameraName = camera.getName();
 
         return Optional.of(output);
     }
@@ -183,11 +199,11 @@ public class VisionIOPhotonLib implements VisionIO {
             }
         }
 
-        //sorts visionMeasurements by standard deviations in the x direction
+        //sorts visionMeasurements by standard deviations in the x direction, biggest to smallest
         Collections.sort(inputs.visionMeasurements, new Comparator<VisionMeasurement>() {
             @Override
             public int compare(VisionMeasurement o1, VisionMeasurement o2) {
-                return Double.compare(o1.stdDevs.get(0,0), o2.stdDevs.get(0,0));
+                return -Double.compare(o1.stdDevs.get(0,0), o2.stdDevs.get(0,0));
             }
         });
 

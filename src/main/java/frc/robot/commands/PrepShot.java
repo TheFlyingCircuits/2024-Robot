@@ -112,7 +112,7 @@ public class PrepShot extends Command {
         double armDesiredDegrees = arm.getDegrees();
         Rotation2d driveDesiredAngle = drivetrain.getPoseMeters().getRotation();
         if (target == FieldElement.SPEAKER) {
-            Translation3d shootOnTheMoveTarget = getShootOnTheMoveTarget(target.getLocation(), estimatedExitVelocity, false);
+            Translation3d shootOnTheMoveTarget = target.getLocation();//getShootOnTheMoveTarget(target.getLocation(), estimatedExitVelocity, false);
             double armDesiredRadians = getGravCompensatedArmDesiredRadians(shootOnTheMoveTarget, estimatedExitVelocity, false);
             armDesiredDegrees = Math.toDegrees(armDesiredRadians);
             driveDesiredAngle = shootOnTheMoveTarget.toTranslation2d().minus(drivetrain.getPoseMeters().getTranslation()).getAngle();

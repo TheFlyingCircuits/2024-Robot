@@ -8,26 +8,26 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 11.4921246802663,
-        "y": 4.567246926518877
+        "x": 11.17999241009076,
+        "y": 4.488265319919328
       },
       "isLocked": true,
       "linkedName": "Ring 6 Pickup (From Center Stage)"
     },
     {
       "anchor": {
-        "x": 12.58211054883649,
-        "y": 4.755866434809793
+        "x": 12.357338494990826,
+        "y": 4.918551349228233
       },
       "prevControl": {
-        "x": 11.864960981740735,
-        "y": 4.691862541065955
+        "x": 11.93574837934269,
+        "y": 4.89512967613667
       },
       "nextControl": {
-        "x": 14.235538717418367,
-        "y": 4.903430967608085
+        "x": 13.10567807859606,
+        "y": 4.960125770539634
       },
-      "isLocked": true,
+      "isLocked": false,
       "linkedName": "Stage Right Passthrough"
     },
     {
@@ -36,11 +36,11 @@
         "y": 4.825
       },
       "prevControl": {
-        "x": 13.65,
-        "y": 4.825
+        "x": 13.516711313023198,
+        "y": 4.988816368502922
       },
       "nextControl": null,
-      "isLocked": true,
+      "isLocked": false,
       "linkedName": "Starting Line (Between Ring 2 and 3)"
     }
   ],

@@ -46,6 +46,8 @@ public interface VisionIO {
          */
         public Matrix<N3, N1> stdDevs;
 
+        public String cameraName;
+
         /**
          * Creates a new VisionMeasurement object. See the definition of this class for further documentation.
          */
@@ -101,6 +103,7 @@ public interface VisionIO {
                 table.put(rootString+"/StdDevX", meas.stdDevs.get(0, 0));
                 table.put(rootString+"/StdDevY", meas.stdDevs.get(1, 0));
                 table.put(rootString+"/StdDevRot", meas.stdDevs.get(2, 0));
+                table.put(rootString+"/CameraName", meas.cameraName);
             }
 
 
@@ -127,8 +130,8 @@ public interface VisionIO {
                 double stdDevX = table.get(rootString+"/StdDevX", meas.stdDevs.get(0, 0));
                 double stdDevY = table.get(rootString+"/StdDevY", meas.stdDevs.get(1, 0));
                 double stdDevRot = table.get(rootString+"/StdDevRot", meas.stdDevs.get(2, 0));
-
                 meas.stdDevs = VecBuilder.fill(stdDevX, stdDevY, stdDevRot);
+                meas.cameraName = table.get(rootString+"/CameraName", "");
             }
 
             //if there's no note seen, the table will return a default translation3d

@@ -152,7 +152,7 @@ public class RobotContainer {
 
             double noteX = drivetrain.getNearestNoteLocation().getX();
             double midlineX = FieldConstants.midField.getX();
-            double overshootAllowance = 1.0; // TODO: tune!
+            double overshootAllowance = 2.0; // TODO: tune!
 
             boolean over = (alliance.get() == Alliance.Blue) && (noteX >= (midlineX + overshootAllowance));
             over = over || (alliance.get() == Alliance.Red) && (noteX <= (midlineX - overshootAllowance));
@@ -381,15 +381,15 @@ public class RobotContainer {
         
         controller.povUp().onTrue(climb.raiseHooksCommand());
         controller.povRight().onTrue(climb.lowerHooksCommand().until((climb::climbArmsZero)));
-        controller.povDown().whileTrue(climb.lowerHooksCommand().until(climb::atQuickClimbSetpoint));
+        controller.povDown().onTrue(climb.lowerHooksCommand().until(climb::atQuickClimbSetpoint));
         controller.a().whileTrue(new UnderStageTrapRoutine(charlie::getRequestedFieldOrientedVelocity, climb, arm, shooter, drivetrain, this::fireNoteThroughHood));
 
         //controller.povLeft().onTrue(arm.setDesiredDegreesCommand(ArmConstants.armMaxAngleDegrees));
 
         /** MISC **/
-        //controller.y().onTrue(new InstantCommand(() -> drivetrain.setPoseToVisionMeasurement()).repeatedly().until(drivetrain::seesTag));
+        controller.y().onTrue(new InstantCommand(() -> drivetrain.setPoseToVisionMeasurement()).repeatedly().until(drivetrain::seesTag));
         // ben.y().onTrue(new InstantCommand(() -> drivetrain.setPoseToVisionMeasurement()));
-        controller.y().onTrue(new InstantCommand(() -> drivetrain.setRobotFacingForward()));
+        // controller.y().onTrue(new InstantCommand(() -> drivetrain.setRobotFacingForward()));
 
         controller.x().onTrue(new InstantCommand(() -> arm.setDisableSetpointChecking(false)).andThen(resetShooter()));
 

@@ -31,6 +31,7 @@ public class UnderStageTrapRoutine extends SequentialCommandGroup {
 
     private Drivetrain drivetrain;
     private Supplier<ChassisSpeeds> translationController;
+    private double autoDriveSpeed = 0.5;
 
     public UnderStageTrapRoutine(Supplier<ChassisSpeeds> translationController, Climb climb, Arm arm, Shooter shooter, Drivetrain drivetrain, Supplier<Command> fireNoteCommand) {
         this.drivetrain = drivetrain;
@@ -51,7 +52,7 @@ public class UnderStageTrapRoutine extends SequentialCommandGroup {
 
                 // Slowly spin the flywheels to help the chain pass over the arm.
                 shooter.setFlywheelSurfaceSpeedCommand(1),
-                this.autoDriveOnTrapAxis(0.01)
+                this.autoDriveOnTrapAxis(autoDriveSpeed)
             ),
             // Stop, enter coast, and wait for the hooks to come up.
             new ParallelRaceGroup(
@@ -62,7 +63,7 @@ public class UnderStageTrapRoutine extends SequentialCommandGroup {
             // Push the arm into the stage until we reach the trigger angle
             new ParallelRaceGroup(
                 arm.holdCurrentPositionCommand().until(() -> {return arm.getDegrees() <= 80;}).andThen(arm.setCoastCommand(false)),
-                this.autoDriveOnTrapAxis(-0.01)
+                this.autoDriveOnTrapAxis(-autoDriveSpeed)
             ),
             // Start the climb
             new ParallelRaceGroup(
