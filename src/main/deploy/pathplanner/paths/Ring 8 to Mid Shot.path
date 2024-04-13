@@ -3,28 +3,28 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 10.549520329809893,
-        "y": 1.4504405931888795
+        "x": 9.780954454918895,
+        "y": 1.3116136931275284
       },
       "prevControl": null,
       "nextControl": {
-        "x": 11.484779153424165,
-        "y": 1.804405185841373
+        "x": 10.716213278533168,
+        "y": 1.6655782857800219
       },
-      "isLocked": true,
+      "isLocked": false,
       "linkedName": "Ring 8 Pickup (From Starting Line)"
     },
     {
       "anchor": {
-        "x": 12.68,
-        "y": 2.43
+        "x": 12.966301995371465,
+        "y": 2.599805713163495
       },
       "prevControl": {
-        "x": 11.744741176385727,
-        "y": 2.0760354073475065
+        "x": 12.031043171757192,
+        "y": 2.245841120511001
       },
       "nextControl": null,
-      "isLocked": true,
+      "isLocked": false,
       "linkedName": "Mid Shot (Source Side)"
     }
   ],

@@ -88,7 +88,7 @@ public class ArmIONeo implements ArmIO {
     }
 
     private void configMotors() {
-        int ampLimit = 40;
+        int ampLimit = 30;
         rightMotor.restoreFactoryDefaults();
         rightMotor.setSmartCurrentLimit(ampLimit);
         rightMotor.setInverted(false);

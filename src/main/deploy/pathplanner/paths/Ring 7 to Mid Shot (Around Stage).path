@@ -8,39 +8,23 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 9.023165593232125,
-        "y": 2.231349273159275
+        "x": 10.401628791845315,
+        "y": 1.5341195874973776
       },
-      "isLocked": true,
+      "isLocked": false,
       "linkedName": "Ring 7 Pickup (From Mid Shot)"
     },
     {
       "anchor": {
-        "x": 10.38,
-        "y": 1.87
+        "x": 12.966301995371465,
+        "y": 2.599805713163495
       },
       "prevControl": {
-        "x": 9.413668813535747,
-        "y": 2.1273014536814507
-      },
-      "nextControl": {
-        "x": 11.346331186464255,
-        "y": 1.6126985463185497
-      },
-      "isLocked": true,
-      "linkedName": "Around Stage Left"
-    },
-    {
-      "anchor": {
-        "x": 12.68,
-        "y": 2.43
-      },
-      "prevControl": {
-        "x": 12.24698729810778,
-        "y": 2.1799999999999997
+        "x": 11.338495715507834,
+        "y": 1.5224087509515962
       },
       "nextControl": null,
-      "isLocked": true,
+      "isLocked": false,
       "linkedName": "Mid Shot (Source Side)"
     }
   ],

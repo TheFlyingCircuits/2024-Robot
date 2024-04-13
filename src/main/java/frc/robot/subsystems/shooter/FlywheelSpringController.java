@@ -1,4 +1,4 @@
-package frc.robot.subsystems.arm;
+package frc.robot.subsystems.shooter;
 
 import org.littletonrobotics.junction.Logger;
 
@@ -11,7 +11,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Constants.ArmConstants;
 import frc.robot.VendorWrappers.Neo;
 
-public class ArmSpringController {
+public class FlywheelSpringController {
 
     private Timer timer = new Timer();
 
@@ -39,8 +39,8 @@ public class ArmSpringController {
             return 0;
         }
 
-        measuredRadians = measuredPositionFilter.calculate(measuredRadians);
-        desiredRadians = desiredPositionFilter.calculate(desiredRadians);
+        // measuredRadians = measuredPositionFilter.calculate(measuredRadians);
+        // desiredRadians = desiredPositionFilter.calculate(desiredRadians);
 
         // Calculate some kinematic variables for the arm
         double measuredVelocity = (measuredRadians - prevMeasuredRadians) / deltaT;

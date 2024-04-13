@@ -35,16 +35,24 @@ import frc.robot.subsystems.vision.VisionIOPhotonLib;
 import edu.wpi.first.wpilibj.util.Color;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
+import java.util.function.Supplier;
+
+import org.littletonrobotics.junction.Logger;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelDeadlineGroup;
 import edu.wpi.first.wpilibj2.command.ScheduleCommand;
@@ -217,16 +225,16 @@ public class RobotContainer {
     /** Resets the angle and speed of the shooter back to its default idle position. */
     private Command resetShooter() {
         double desiredAngle = ArmConstants.armMinAngleDegrees+5; // puts the arm at min height to pass under stage
-        //desiredAngle = 35;
+        // desiredAngle = 35;
         return arm.setDesiredDegreesCommand(desiredAngle)
                .alongWith(shooter.setFlywheelSurfaceSpeedCommand(0));
     }
 
     /** Moves the arm back and spins up the flywheels to prepare for an amp shot. */
     Command prepAmpShot() {
-        // no auto align is currently used for the amp. add a translation controller to turn on auto align.
-        // TODO: ONLY AUTO ALIGN WHEN CLOSE TO AMP SO THE WE CAN STILL AMP SHOT TO EJECT WHEN FAR AWAY.
-        return new PrepShot(drivetrain, arm, shooter, charlie::getRequestedFieldOrientedVelocity, leds, FieldElement.AMP);
+        Command autoAlignAmpShot = new PrepShot(drivetrain, arm, shooter, charlie::getRequestedFieldOrientedVelocity, leds, FieldElement.AMP);
+        Command noAlignAmpShot = new PrepShot(drivetrain, arm, shooter, null, leds, FieldElement.AMP);
+        return new ConditionalCommand(autoAlignAmpShot, noAlignAmpShot, drivetrain::inAmpShotRange);
     }
 
     Command prepLobShot() {
@@ -262,32 +270,33 @@ public class RobotContainer {
     }
 
     private Command intakeTowardsNote() {
+        // keep charlie control for auto? he will stop, which is what we want if nothing is seen?
         return drivetrain.run(() -> {drivetrain.driveTowardsNote(charlie::getRequestedFieldOrientedVelocity);})
                .raceWith(intakeNote());
     }
+
 
     private Command pathfindToNote(FieldElement note) {
 
         Pose2d targetPose = FlyingCircuitUtils.pickupAtNote(
                 drivetrain.getPoseMeters().getTranslation(),
                 note.getLocation().toTranslation2d(), 
-                1);
+                0.);
 
 
         return AutoBuilder.pathfindToPose(
                 targetPose,
                 DrivetrainConstants.pathfindingConstraints,
-                2.0
+                0.
             );
     }
 
 
-
-    public Command pathfindingAuto(ArrayList<FieldElement> targetNotes, Pose2d scoringPose) {
-
+    private Command intakeAndThenShoot(Pose2d scoringPose) {
         //TODO: figure out how to navigate to nearest scoring location instead of a preset one
         //use lambdas or something for scoringPose
-        Command intakeAndThenShoot = new SequentialCommandGroup(
+        
+        return new SequentialCommandGroup(
             intakeTowardsNote(),
             new ParallelDeadlineGroup(
                 AutoBuilder.pathfindToPose(scoringPose, DrivetrainConstants.pathfindingConstraints),
@@ -295,13 +304,18 @@ public class RobotContainer {
             ),
             speakerShot()
         );
+    }
+
+    public Command pathfindingAuto(List<FieldElement> targetNotes, Pose2d scoringPose) {
+
+        
 
         Command autoCommand = new InstantCommand();
 
         for (int noteInd = 0; noteInd < targetNotes.size(); noteInd++) {
             autoCommand = autoCommand
                 .andThen(pathfindToNote(targetNotes.get(noteInd)).deadlineWith(resetShooter()))
-                .andThen(intakeAndThenShoot.onlyIf(drivetrain::intakeSeesNote));
+                .andThen(intakeAndThenShoot(scoringPose).onlyIf(drivetrain::intakeSeesNote));
         }
 
         return autoCommand;
@@ -330,7 +344,7 @@ public class RobotContainer {
             //.onTrue(intakeNote().andThen(indexNote()));
             //.onTrue(indexNote().raceWith(resetShooter())); // reset never ends, indexNote does.
     
-        controller.leftTrigger().whileTrue(reverseIntake());
+        controller.leftTrigger().whileTrue(reverseIntake().alongWith(indexer.run(() -> {indexer.setVolts(-8);})));
         
         
         /** SCORING **/
@@ -368,18 +382,27 @@ public class RobotContainer {
         controller.povUp().onTrue(climb.raiseHooksCommand());
         controller.povRight().onTrue(climb.lowerHooksCommand().until((climb::climbArmsZero)));
         controller.povDown().whileTrue(climb.lowerHooksCommand().until(climb::atQuickClimbSetpoint));
-        controller.a().whileTrue(new UnderStageTrapRoutine(charlie::getRequestedFieldOrientedVelocity, climb, arm, shooter, indexer, leds, drivetrain));
+        controller.a().whileTrue(new UnderStageTrapRoutine(charlie::getRequestedFieldOrientedVelocity, climb, arm, shooter, drivetrain, this::fireNoteThroughHood));
 
         //controller.povLeft().onTrue(arm.setDesiredDegreesCommand(ArmConstants.armMaxAngleDegrees));
 
         /** MISC **/
-        controller.y().onTrue(new InstantCommand(() -> drivetrain.setPoseToVisionMeasurement()).repeatedly().until(drivetrain::seesTag));
+        //controller.y().onTrue(new InstantCommand(() -> drivetrain.setPoseToVisionMeasurement()).repeatedly().until(drivetrain::seesTag));
         // ben.y().onTrue(new InstantCommand(() -> drivetrain.setPoseToVisionMeasurement()));
-        // controller.y().onTrue(new InstantCommand(() -> drivetrain.setRobotFacingForward()));
+        controller.y().onTrue(new InstantCommand(() -> drivetrain.setRobotFacingForward()));
 
         controller.x().onTrue(new InstantCommand(() -> arm.setDisableSetpointChecking(false)).andThen(resetShooter()));
 
         controller.start().whileTrue(new MeasureWheelDiameter(drivetrain));
+
+        // controller.back().whileTrue(
+        //     pathfindingAuto(
+        //         Arrays.asList(
+        //             FieldElement.NOTE_1,
+        //             FieldElement.NOTE_2,
+        //             FieldElement.NOTE_3
+        //         ),
+        //         new Pose2d(12, 6.5, new Rotation2d())));
 
         /** Driver Feedback **/
         Trigger ringJustEnteredIntake = new Trigger(intake::ringJustEnteredIntake);

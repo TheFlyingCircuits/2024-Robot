@@ -40,6 +40,7 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Constants.DrivetrainConstants;
+import frc.robot.Constants.FieldElement;
 import frc.robot.subsystems.vision.VisionIO;
 import frc.robot.subsystems.vision.VisionIO.VisionIOInputsLogged;
 import frc.robot.subsystems.vision.VisionIO.VisionMeasurement;
@@ -445,6 +446,15 @@ public class Drivetrain extends SubsystemBase {
         }
 
         return true;
+    }
+
+    public boolean inAmpShotRange() {
+        Translation2d ampLocation = FieldElement.AMP.getLocation().toTranslation2d();
+        Translation2d robotLocation = getPoseMeters().getTranslation();
+
+        boolean closeEnoughX = Math.abs(ampLocation.getX() - robotLocation.getX()) < 3.0;
+        boolean closeEnoughY = Math.abs(ampLocation.getY() - robotLocation.getY()) < 3.0;
+        return closeEnoughX && closeEnoughY;
     }
 
 

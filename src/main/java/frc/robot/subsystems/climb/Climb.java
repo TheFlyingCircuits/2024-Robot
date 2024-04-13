@@ -23,7 +23,7 @@ public class Climb extends SubsystemBase{
     }
 
     public Command raiseHooksCommand() {
-        return this.run(() -> {this.setVoltsClosedLoop(4);});
+        return this.run(() -> {this.setVoltsClosedLoop(7);});
     }
 
     public Command raiseHooksCommand(double volts) {

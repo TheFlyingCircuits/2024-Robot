@@ -24,6 +24,7 @@ import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismRoot2d;
 import edu.wpi.first.wpilibj.sysid.SysIdRoutineLog;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Config;
@@ -54,6 +55,8 @@ public class Arm extends SubsystemBase {
     private SysIdRoutine.Mechanism sysIdMech;
     private SysIdRoutine sysIdRoutine;
     private boolean disableSetpointChecking = false;
+
+    private ArmSpringController spring = new ArmSpringController();
     
 
     public Arm(ArmIO armIO) {
@@ -228,6 +231,10 @@ public class Arm extends SubsystemBase {
     public void setDisableSetpointChecking(boolean isDisabled) {
         disableSetpointChecking = isDisabled;
     }
+
+    public Command setCoastCommand(boolean shouldCoast) {
+        return new InstantCommand(() -> {disableSetpointChecking = shouldCoast;});
+    }
     
     @Override
     public void periodic() {
@@ -246,6 +253,7 @@ public class Arm extends SubsystemBase {
 
         if(!io.isCoast()) {
             followTrapezoidProfile();
+            //io.setArmMotorVolts(spring.getVoltsPerMotor(Math.toRadians(inputs.armAngleDegrees), Math.toRadians(targetAngleDegrees)));
         }
         else {
             io.setArmMotorVolts(0);

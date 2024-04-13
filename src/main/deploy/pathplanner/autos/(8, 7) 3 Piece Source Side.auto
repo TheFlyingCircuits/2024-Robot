@@ -6,6 +6,12 @@
     "data": {
       "commands": [
         {
+          "type": "named",
+          "data": {
+            "name": "shootFromAnywhere"
+          }
+        },
+        {
           "type": "deadline",
           "data": {
             "commands": [
@@ -16,48 +22,9 @@
                 }
               },
               {
-                "type": "sequential",
+                "type": "named",
                 "data": {
-                  "commands": [
-                    {
-                      "type": "race",
-                      "data": {
-                        "commands": [
-                          {
-                            "type": "named",
-                            "data": {
-                              "name": "prepShot"
-                            }
-                          },
-                          {
-                            "type": "sequential",
-                            "data": {
-                              "commands": [
-                                {
-                                  "type": "wait",
-                                  "data": {
-                                    "waitTime": 0.85
-                                  }
-                                },
-                                {
-                                  "type": "named",
-                                  "data": {
-                                    "name": "fireNote"
-                                  }
-                                }
-                              ]
-                            }
-                          }
-                        ]
-                      }
-                    },
-                    {
-                      "type": "named",
-                      "data": {
-                        "name": "resetShooter"
-                      }
-                    }
-                  ]
+                  "name": "resetShooter"
                 }
               }
             ]
@@ -171,9 +138,22 @@
           }
         },
         {
-          "type": "named",
+          "type": "deadline",
           "data": {
-            "name": "resetShooter"
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "Mid Shot to Ring 7 (Around Stage)"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "resetShooter"
+                }
+              }
+            ]
           }
         }
       ]

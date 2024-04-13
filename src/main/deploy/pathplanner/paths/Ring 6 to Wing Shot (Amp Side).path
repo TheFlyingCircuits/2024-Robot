@@ -3,16 +3,16 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 9.789765733377621,
-        "y": 5.663625173404194
+        "x": 8.621581636886527,
+        "y": 4.438407050851191
       },
       "prevControl": null,
       "nextControl": {
-        "x": 10.272344886798306,
-        "y": 6.161608228925891
+        "x": 9.382786012362324,
+        "y": 5.831996599799192
       },
-      "isLocked": true,
-      "linkedName": "Ring 6 Pickup (From Amp Side Wing Shot)"
+      "isLocked": false,
+      "linkedName": null
     },
     {
       "anchor": {
@@ -20,8 +20,8 @@
         "y": 6.670053340106681
       },
       "prevControl": {
-        "x": 11.17012711531889,
-        "y": 6.595150650392683
+        "x": 10.647556359306726,
+        "y": 6.686887667641241
       },
       "nextControl": null,
       "isLocked": false,

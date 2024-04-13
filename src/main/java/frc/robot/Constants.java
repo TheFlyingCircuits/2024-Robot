@@ -349,8 +349,8 @@ public final class Constants {
                                                                       : new AprilTagFieldLayout(practiceFieldTags, 16, 8.2);
                                                                       
         public final static Transform3d robotToShooterCamera = new Transform3d(
-            new Translation3d(Units.inchesToMeters(8.75), 0, Units.inchesToMeters(9.875)),
-            new Rotation3d(0, Math.toRadians(-28), 0)
+            new Translation3d(Units.inchesToMeters(8.75), 0, Units.inchesToMeters(10.5)),
+            new Rotation3d(0, Math.toRadians(-29), 0)
         );
 
         public final static Transform3d robotToTrapCamera = new Transform3d(

@@ -3,16 +3,16 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 9.977237646782987,
-        "y": 6.265508684863524
+        "x": 8.773822511981685,
+        "y": 5.949104965257007
       },
       "prevControl": null,
       "nextControl": {
-        "x": 10.213645687462343,
-        "y": 6.346818206459387
+        "x": 9.01023055266104,
+        "y": 6.03041448685287
       },
-      "isLocked": true,
-      "linkedName": "Ring 5 Pickup (From Wing Shot)"
+      "isLocked": false,
+      "linkedName": null
     },
     {
       "anchor": {
