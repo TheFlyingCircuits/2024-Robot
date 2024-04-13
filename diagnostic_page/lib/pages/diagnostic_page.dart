@@ -27,7 +27,7 @@ class _DiagnosticPageState extends State<DiagnosticPage> {
             child: FittedBox(
               fit: BoxFit.contain,
               child: Image.asset(
-                "assets/images/logo.png",
+                'assets/images/logo.png',
                 filterQuality: FilterQuality.medium,
               ),
             ),
@@ -57,12 +57,12 @@ class _DiagnosticPageState extends State<DiagnosticPage> {
                                 children: [
                                   Expanded(
                                       child: customGraph(
-                                    "riocan",
+                                    'riocan',
                                     [Colors.green, Colors.yellow],
                                     100,
                                   )),
                                   Expanded(
-                                      child: customGraph("canivorecan",
+                                      child: customGraph('canivorecan',
                                           [Colors.green, Colors.yellow], 100)),
                                 ],
                               ),
@@ -73,7 +73,7 @@ class _DiagnosticPageState extends State<DiagnosticPage> {
                                       child: motorTemps(),
                                     ),
                                     Expanded(
-                                      child: customGraph("batteryvoltage",
+                                      child: customGraph('batteryvoltage',
                                           [Colors.red, Colors.orange], 16,
                                           horizontalLineHeight: 12),
                                     ),

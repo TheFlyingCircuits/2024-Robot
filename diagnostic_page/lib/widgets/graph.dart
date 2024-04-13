@@ -11,17 +11,17 @@ Widget customGraph(String graphType, List<Color> gradientColors, double maxY,
   ];
 
   switch (graphType.toLowerCase()) {
-    case "riocan":
-      name = "RoboRIO CAN Utilization";
+    case 'riocan':
+      name = 'RoboRIO CAN Utilization';
       break;
-    case "canivorecan":
-      name = "CANivore CAN Utilization";
+    case 'canivorecan':
+      name = 'CANivore CAN Utilization';
       break;
-    case "batteryvoltage":
-      name = "Battery Voltage";
+    case 'batteryvoltage':
+      name = 'Battery Voltage';
       break;
     default:
-      name = "no graph name set";
+      name = 'no graph name set';
   }
   return Card(
     clipBehavior: Clip.hardEdge,

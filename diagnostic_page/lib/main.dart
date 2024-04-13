@@ -72,7 +72,7 @@ class MyAppState extends State<MyApp> {
         }
       },
       onError: (e) {
-        debugPrint("Stream error: $e");
+        debugPrint('Stream error: $e');
       },
     );
   }
@@ -115,7 +115,7 @@ class MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: "Diagnostic Display",
+      title: 'Diagnostic Display',
       theme: ThemeData(
         useMaterial3: true,
         colorScheme: ColorScheme.fromSeed(

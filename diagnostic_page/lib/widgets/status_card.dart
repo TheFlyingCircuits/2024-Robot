@@ -17,7 +17,7 @@ Widget statusCard(Subsystem subsystem) {
                 builder: (context, AsyncSnapshot<SubsystemStatus> snapshot) {
                   if (!snapshot.hasData) {
                     return const Text(
-                        "Waiting for data"); // Show loading indicator while waiting for data
+                        'Waiting for data'); // Show loading indicator while waiting for data
                   }
                   SubsystemStatus status = snapshot.data!;
                   Color statusColor = Colors.grey;
@@ -53,7 +53,7 @@ Widget statusCard(Subsystem subsystem) {
 
                   return ListTile(
                     title: Text(
-                      "${subsystem.name[0].toUpperCase()}${subsystem.name.substring(1).toLowerCase()}",
+                      '${subsystem.name[0].toUpperCase()}${subsystem.name.substring(1).toLowerCase()}',
                       style: const TextStyle(fontSize: 20),
                     ),
                     leading: Icon(
@@ -62,9 +62,9 @@ Widget statusCard(Subsystem subsystem) {
                     ),
                     subtitle: ranCheckValue && status.faults.isNotEmpty
                         ? Text(status.faults
-                            .split(", ")
-                            .map((str) => str.replaceAll(pattern, ""))
-                            .join("\n"))
+                            .split(', ')
+                            .map((str) => str.replaceAll(pattern, ''))
+                            .join('\n'))
                         : null,
                     trailing: ElevatedButton(
                       onPressed: isRunning

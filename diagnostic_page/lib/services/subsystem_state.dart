@@ -5,7 +5,7 @@ import 'package:nt4/nt4.dart';
 
 class SubsystemState {
   static const String _robotIP =
-      "127.0.0.1"; // real: 10.17.87.2  |  sim: 127.0.0.1
+      '127.0.0.1'; // real: 10.17.87.2  |  sim: 127.0.0.1
   static bool _isConnected = false;
   static late NT4Client _client;
 
@@ -81,11 +81,11 @@ class SubsystemState {
     _client = NT4Client(
       serverBaseAddress: _robotIP,
       onConnect: () {
-        print("connected");
+        print('connected');
         _isConnected = true;
       },
       onDisconnect: () {
-        print("disconnected");
+        print('disconnected');
         _isConnected = false;
       },
     );
@@ -105,9 +105,9 @@ class SubsystemState {
     );
 
     _motorTempSubs.add(_client.subscribePeriodic(
-        "/SmartDashboard/SubsystemStatus/Arm/MotorTemps/leftPivot"));
+        '/SmartDashboard/SubsystemStatus/Arm/MotorTemps/leftPivot'));
     _motorTempSubs.add(_client.subscribePeriodic(
-        "/SmartDashboard/SubsystemStatus/Arm/MotorTemps/rightPivot"));
+        '/SmartDashboard/SubsystemStatus/Arm/MotorTemps/rightPivot'));
 
     _climbRanCheckSub = _client
         .subscribePeriodic('/SmartDashboard/SubsystemStatus/Climb/RanCheck');
@@ -124,9 +124,9 @@ class SubsystemState {
     );
 
     _motorTempSubs.add(_client.subscribePeriodic(
-        "/SmartDashboard/SubsystemStatus/Climb/MotorTemps/leftClimb"));
+        '/SmartDashboard/SubsystemStatus/Climb/MotorTemps/leftClimb'));
     _motorTempSubs.add(_client.subscribePeriodic(
-        "/SmartDashboard/SubsystemStatus/Climb/MotorTemps/rightClimb"));
+        '/SmartDashboard/SubsystemStatus/Climb/MotorTemps/rightClimb'));
 
     // _drivetrainRanCheckSub = _client.subscribePeriodic(
     //     '/SmartDashboard/SubsystemStatus/Drivetrain/RanCheck');
@@ -157,9 +157,9 @@ class SubsystemState {
     );
 
     _motorTempSubs.add(_client.subscribePeriodic(
-        "/SmartDashboard/SubsystemStatus/Intake/MotorTemps/frontIntake"));
+        '/SmartDashboard/SubsystemStatus/Intake/MotorTemps/frontIntake'));
     _motorTempSubs.add(_client.subscribePeriodic(
-        "/SmartDashboard/SubsystemStatus/Intake/MotorTemps/backIntake"));
+        '/SmartDashboard/SubsystemStatus/Intake/MotorTemps/backIntake'));
 
     _indexerRanCheckSub = _client
         .subscribePeriodic('/SmartDashboard/SubsystemStatus/Indexer/RanCheck');
@@ -176,7 +176,7 @@ class SubsystemState {
     );
 
     _motorTempSubs.add(_client.subscribePeriodic(
-        "/SmartDashboard/SubsystemStatus/Indexer/MotorTemps/indexer"));
+        '/SmartDashboard/SubsystemStatus/Indexer/MotorTemps/indexer'));
 
     _shooterRanCheckSub = _client
         .subscribePeriodic('/SmartDashboard/SubsystemStatus/Shooter/RanCheck');
@@ -193,18 +193,18 @@ class SubsystemState {
     );
 
     _motorTempSubs.add(_client.subscribePeriodic(
-        "/SmartDashboard/SubsystemStatus/Shooter/MotorTemps/leftShooter"));
+        '/SmartDashboard/SubsystemStatus/Shooter/MotorTemps/leftShooter'));
     _motorTempSubs.add(_client.subscribePeriodic(
-        "/SmartDashboard/SubsystemStatus/Shooter/MotorTemps/rightShooter"));
+        '/SmartDashboard/SubsystemStatus/Shooter/MotorTemps/rightShooter'));
 
     _rioCANUtilSub = _client.subscribePeriodic('/SmartDashboard/RIOCANUtil');
     _canivoreCANUtilSub =
         _client.subscribePeriodic('/SmartDashboard/CANivoreCANUtil');
     // TODO: testing only!!
     // _batteryVoltageSub =
-    //     _client.subscribePeriodic("/AdvantageKit/SystemStats/BatteryVoltage");
+    //     _client.subscribePeriodic('/AdvantageKit/SystemStats/BatteryVoltage');
     _batteryVoltageSub =
-        _client.subscribePeriodic("/SmartDashboard/BatteryVoltage");
+        _client.subscribePeriodic('/SmartDashboard/BatteryVoltage');
 
     // for (int i = 0; i < _motorTempSubs.length; i++) {
     //   print(_motorTempSubs[i].topic);
@@ -233,7 +233,7 @@ class SubsystemState {
         faultsSub = _climbFaultsSub;
         checkRunningSub = _climbCheckRunningSub;
         break;
-      // case "drivetrain":
+      // case 'drivetrain':
       //   ranCheckSub = _drivetrainRanCheckSub;
       //   statusSub = _drivetrainStatusSub;
       //   faultsSub = _drivetrainFaultsSub;
@@ -258,10 +258,10 @@ class SubsystemState {
         checkRunningSub = _shooterCheckRunningSub;
         break;
       default:
-        ranCheckSub = NT4Subscription(topic: "topic");
-        statusSub = NT4Subscription(topic: "topic");
-        faultsSub = NT4Subscription(topic: "topic");
-        checkRunningSub = NT4Subscription(topic: "topic");
+        ranCheckSub = NT4Subscription(topic: 'topic');
+        statusSub = NT4Subscription(topic: 'topic');
+        faultsSub = NT4Subscription(topic: 'topic');
+        checkRunningSub = NT4Subscription(topic: 'topic');
     }
     // Check if a controller for the subsystem already exists
     if (!_statusControllers.containsKey(subsystem)) {
@@ -288,7 +288,7 @@ class SubsystemState {
           status = statusValue;
         } else if (statusValue is List) {
           // If the value is a list, handle accordingly. This is just an example.
-          status = statusValue.join(", ");
+          status = statusValue.join(', ');
         }
 
         var faultsValue = faultsSub.currentValue;
@@ -296,7 +296,7 @@ class SubsystemState {
           faults = faultsValue;
         } else if (faultsValue is List) {
           // Handle the list case
-          faults = faultsValue.join(", ");
+          faults = faultsValue.join(', ');
         }
 
         var checkRunningValue = checkRunningSub.currentValue;
@@ -377,13 +377,13 @@ class SubsystemState {
     List<double> values = List.generate(608, (index) => 0.0);
     NT4Subscription stream;
     switch (graphType.toLowerCase()) {
-      case "riocan":
+      case 'riocan':
         stream = _rioCANUtilSub;
         break;
-      case "canivorecan":
+      case 'canivorecan':
         stream = _canivoreCANUtilSub;
         break;
-      case "batteryvoltage":
+      case 'batteryvoltage':
         stream = _batteryVoltageSub;
         break;
       default:

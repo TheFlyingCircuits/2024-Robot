@@ -48,7 +48,7 @@ class _SlideshowPageState extends State<SlideshowPage> {
           child: FittedBox(
             fit: BoxFit.contain,
             child: Image.asset(
-              "assets/images/logo.png",
+              'assets/images/logo.png',
               filterQuality: FilterQuality.medium,
             ),
           ),
