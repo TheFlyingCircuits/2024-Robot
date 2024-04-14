@@ -94,7 +94,8 @@ class MyAppState extends State<MyApp> {
           _navigatorKey.currentState!.push(PageRouteBuilder(
             pageBuilder: (context, animation1, animation2) =>
                 const DiagnosticPage(),
-            transitionDuration: Duration(seconds: 0), // No transition time
+            transitionDuration:
+                const Duration(seconds: 0), // No transition time
           ));
         }
       }
@@ -138,7 +139,8 @@ class MyAppState extends State<MyApp> {
                 ),
               );
             },
-            transitionDuration: Duration(seconds: 0), // No transition time
+            transitionDuration:
+                const Duration(seconds: 0), // No transition time
           ),
         ),
       ),

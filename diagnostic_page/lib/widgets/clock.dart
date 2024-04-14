@@ -96,5 +96,9 @@ class TimeDisplayState extends State<TimeDisplay> {
 }
 
 Widget clock() {
-  return const TimeDisplay();
+  return const Positioned(
+    bottom: 16,
+    left: 16,
+    child: TimeDisplay(),
+  );
 }

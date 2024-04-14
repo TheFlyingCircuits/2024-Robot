@@ -16,8 +16,7 @@ Widget statusCard(Subsystem subsystem) {
                 stream: SubsystemState.subsystemStatus(subsystem),
                 builder: (context, AsyncSnapshot<SubsystemStatus> snapshot) {
                   if (!snapshot.hasData) {
-                    return const Text(
-                        'Waiting for data'); // Show loading indicator while waiting for data
+                    return const Text('Waiting for data');
                   }
                   SubsystemStatus status = snapshot.data!;
                   Color statusColor = Colors.grey;
@@ -43,7 +42,6 @@ Widget statusCard(Subsystem subsystem) {
                         break;
                     }
                   } else {
-                    // Set neutral icons and colors if ranCheck is not true yet
                     statusColor = Colors.grey;
                     statusIcon = Icons.question_mark_rounded;
                   }
@@ -70,7 +68,6 @@ Widget statusCard(Subsystem subsystem) {
                       onPressed: isRunning
                           ? null
                           : () async {
-                              // Begin subsystem test and wait for the result
                               await SubsystemState.startSubsystemTest(
                                   subsystem);
                             },
@@ -78,8 +75,7 @@ Widget statusCard(Subsystem subsystem) {
                         backgroundColor: isRunning
                             ? Colors.grey
                             : Theme.of(context).primaryColor,
-                        disabledBackgroundColor:
-                            Colors.grey, // Color when disabled
+                        disabledBackgroundColor: Colors.grey,
                       ),
                       child: Text(isRunning ? 'Running' : 'Run Check'),
                     ),

@@ -33,11 +33,7 @@ class _DiagnosticPageState extends State<DiagnosticPage> {
             ),
           ),
         ),
-        Positioned(
-          bottom: 2 * padding,
-          left: 2 * padding,
-          child: clock(),
-        ),
+        clock(),
         Row(
           children: [
             Expanded(
@@ -78,7 +74,6 @@ class _DiagnosticPageState extends State<DiagnosticPage> {
                                           horizontalLineHeight: 12),
                                     ),
                                   ]),
-                              // Removed the Row containing the Clock widget
                             ],
                           ),
                         ),

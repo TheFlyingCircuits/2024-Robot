@@ -64,6 +64,9 @@ flutter:
   assets:
     # - assets/images/logo.png
     - assets/images/
+    - assets/images/climber/
+    - assets/images/indexer/
+    - assets/images/intake/
   #   - images/a_dot_burr.jpeg
   #   - images/a_dot_ham.jpeg
 
