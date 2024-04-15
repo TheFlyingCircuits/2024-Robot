@@ -54,6 +54,8 @@ public class Drivetrain extends SubsystemBase {
     private VisionIOInputsLogged visionInputs;
 
     private SwerveModule[] swerveModules;
+    //swerve module positions from the last loop iteration, used for bump detection
+    private SwerveModulePosition[] prevSwerveModulePositions;
 
     private SwerveDrivePoseEstimator fusedPoseEstimator;
     private SwerveDrivePoseEstimator wheelsOnlyPoseEstimator;
@@ -98,6 +100,7 @@ public class Drivetrain extends SubsystemBase {
             new SwerveModule(brSwerveModuleIO, 3)
         };
 
+        prevSwerveModulePositions = getModulePositions();
 
         gyroIO.setRobotYaw(0);
 
@@ -400,9 +403,15 @@ public class Drivetrain extends SubsystemBase {
 
         Logger.recordOutput("drivetrain/accelMagnitude", totalAccelMetersPerSecondSquared);
 
-        if (totalAccelMetersPerSecondSquared < 10) {
+        if (totalAccelMetersPerSecondSquared > 10) {
+            //assume the robot hasn't moved if it gets bumped
+            fusedPoseEstimator.update(gyroInputs.robotYawRotation2d, prevSwerveModulePositions);
+        }
+        else {
             fusedPoseEstimator.update(gyroInputs.robotYawRotation2d, getModulePositions());
         }
+
+
         wheelsOnlyPoseEstimator.update(gyroInputs.robotYawRotation2d, getModulePositions());
 
         for (VisionMeasurement visionMeasurement : visionInputs.visionMeasurements) {
@@ -420,6 +429,8 @@ public class Drivetrain extends SubsystemBase {
                 );
             }
         }
+
+        prevSwerveModulePositions = getModulePositions();
     }
 
     public boolean inSpeakerShotRange() {
