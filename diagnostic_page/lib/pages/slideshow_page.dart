@@ -56,6 +56,17 @@ class _SlideshowPageState extends State<SlideshowPage> {
               ),
             ),
           ),
+          const Positioned(
+            bottom: 0,
+            right: 0,
+            child: Padding(
+              padding: EdgeInsets.all(16),
+              child: Text(
+                'The Flying Circuits',
+                style: TextStyle(fontFamily: 'BankGothic', fontSize: 36),
+              ),
+            ),
+          ),
           clock(),
         ],
       ),

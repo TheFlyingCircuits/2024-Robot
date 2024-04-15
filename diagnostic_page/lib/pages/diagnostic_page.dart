@@ -43,7 +43,6 @@ class _DiagnosticPageState extends State<DiagnosticPage> {
                   Padding(
                     padding: const EdgeInsets.all(padding),
                     child: Row(
-                      // mainAxisSize: MainAxisSize.max,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Expanded(
