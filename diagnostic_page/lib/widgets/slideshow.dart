@@ -19,12 +19,24 @@ List<String> slideImageNames = [
   'climber/hardyBoardDoubleHook',
   'climber/assortedClimberPrototypes',
   'climber/hardyBoardHookVarient',
-  // TODO: get higher quality version of this:
+  // TODO: get higher quality version of climber manufactured stuff:
   'climber/manufacturedIsolated',
   'climber/manufacturedFullAssembly',
+  'outreach/first_lego_league/one',
+  'outreach/first_lego_league/two',
+  'outreach/first_lego_league/three',
+  'outreach/first_lego_league/four',
+  'outreach/first_lego_league/five',
+  'outreach/first_lego_league/six',
+  'outreach/first_lego_league/seven',
+  'outreach/first_lego_league/eight',
+  'outreach/trunk_or_treat/one',
+  'outreach/trunk_or_treat/two',
+  'outreach/trunk_or_treat/three',
+  'outreach/trunk_or_treat/four',
+  'outreach/trunk_or_treat/five',
+  'outreach/trunk_or_treat/six',
 ];
-
-List<String> slideVideoNames = [];
 
 List<Image> slideImages = slideImageNames
     .map(
@@ -34,6 +46,29 @@ List<Image> slideImages = slideImageNames
       ),
     )
     .toList();
+
+List<String> slideVideoNames = [
+  'videos/intake/slowmoTest',
+  'videos/intake/rapidFire',
+];
+
+List<String> slideTitles = [
+  'Intake',
+  'Intake Design',
+  'Intake Hardy Board',
+  'Intake Prototype',
+  'Intake Manufacturing',
+  'Claws + Indexer',
+  'Climbers',
+  'Climbers Brainstorming',
+  'Climbers Design',
+  'Climbers Prototyping',
+  'Climbers Manufacturing',
+  'Outreach',
+  'First LEGO League',
+  'Trunk Or Treat',
+  'Trunk Or Treat',
+];
 
 Widget slideshow(Slideshow slide) {
   return Scaffold(
@@ -55,33 +90,41 @@ Widget _getSlideContent(Slideshow slide) {
       return _getSlideTitle(slide);
     case Slideshow.intakeDesign:
       return _slideWithImages(
-          'Intake Design', slideImages.getRange(0, 2).toList());
+          slideTitles[1], slideImages.getRange(0, 2).toList());
     case Slideshow.intakeHardyBoard:
       return _slideWithImages(
-          'Intake Hardy Board', slideImages.getRange(2, 4).toList());
+          slideTitles[2], slideImages.getRange(2, 4).toList());
     case Slideshow.intakePrototype:
+      // return _slideWithVideos(
+      //     slideTitles[3], slideVideoNames.getRange(0, 2).toList());
       return const Text('Need to add images for intake prototype');
     case Slideshow.intakeManufacturing:
       return _slideWithImages(
-          'Intake Manufacturing', slideImages.getRange(4, 6).toList());
+          slideTitles[4], slideImages.getRange(4, 6).toList());
     case Slideshow.indexer:
       return _slideWithImages(
-          'Claws + Indexer', slideImages.getRange(6, 8).toList());
+          slideTitles[5], slideImages.getRange(6, 8).toList());
     case Slideshow.climbersBrainstorm:
       return _slideWithImages(
-          'Climbers Brainstorming', slideImages.getRange(8, 10).toList());
+          slideTitles[7], slideImages.getRange(8, 10).toList());
     case Slideshow.climbersDesign:
       return _slideWithImages(
-          'Climbers Design', slideImages.getRange(10, 15).toList());
+          slideTitles[8], slideImages.getRange(10, 15).toList());
     case Slideshow.climbersPrototype:
       return _slideWithImages(
-          'Climbers Prototyping', slideImages.getRange(15, 18).toList());
+          slideTitles[9], slideImages.getRange(15, 18).toList());
     case Slideshow.climbersManufacturing:
       return _slideWithImages(
-          'Climbers Manufacturing', slideImages.getRange(18, 20).toList());
+          slideTitles[11], slideImages.getRange(18, 20).toList());
     case Slideshow.firstLEGOLeague:
       return _slideWithImagesGrid(
-          'First LEGO League', slideImages.getRange(0, 8).toList());
+          slideTitles[12], slideImages.getRange(20, 28).toList());
+    case Slideshow.trunkOrTreatOne:
+      return _slideWithImages(
+          slideTitles[13], slideImages.getRange(28, 31).toList());
+    case Slideshow.trunkOrTreatTwo:
+      return _slideWithImages(
+          slideTitles[14], slideImages.getRange(31, 34).toList());
     default:
       return Text('Default content for ${slide.toString()}');
   }
@@ -156,7 +199,7 @@ Widget _slideWithImagesGrid(String header, List<Image> images) {
           padding: const EdgeInsets.fromLTRB(10, 10, 10, 0),
           child: Center(
             child: SizedBox(
-              height: 475, // Height as in the original setup
+              height: 475,
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [

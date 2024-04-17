@@ -5,6 +5,7 @@ import 'package:diagnostic_page/pages/slideshow_page.dart';
 import 'package:diagnostic_page/services/subsystem_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:media_kit/media_kit.dart';
 import 'package:window_manager/window_manager.dart';
 
 Future<void> main() async {
@@ -33,6 +34,7 @@ Future<void> main() async {
     await windowManager.focus();
     await windowManager.setFullScreen(true);
   });
+  MediaKit.ensureInitialized();
 
   runApp(const MyApp());
 }
@@ -80,8 +82,7 @@ class MyAppState extends State<MyApp> {
   @override
   void dispose() {
     _focusNode.dispose();
-    _connectionStatusSubscription
-        ?.cancel(); // Don't forget to cancel the subscription
+    _connectionStatusSubscription?.cancel();
     super.dispose();
   }
 
