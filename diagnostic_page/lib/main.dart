@@ -28,7 +28,7 @@ Future<void> main() async {
       WindowOptions(
         center: true,
         title: 'Diagnostic Display',
-        size: Size(width, height),
+        size: Size(1920, 1080),
       ), () async {
     await windowManager.show();
     await windowManager.focus();

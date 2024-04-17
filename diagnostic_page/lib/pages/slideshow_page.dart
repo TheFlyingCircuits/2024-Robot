@@ -29,7 +29,7 @@ class _SlideshowPageState extends State<SlideshowPage> {
 
   void _startAutoSlideShow() {
     if (_timer == null || !_timer!.isActive) {
-      _timer = Timer.periodic(const Duration(seconds: 1), (Timer t) {
+      _timer = Timer.periodic(const Duration(seconds: 5), (Timer t) {
         setState(() {
           slide = Slideshow.values[(slide.index + 1) % Slideshow.values.length];
         });
@@ -125,6 +125,21 @@ class _SlideshowPageState extends State<SlideshowPage> {
                   : Icons.play_arrow),
               onPressed: _toggleSlideShow,
               // tooltip: 'Toggle Slideshow',
+            ),
+          ),
+          Positioned(
+            top: 0,
+            right: 0,
+            child: SizedBox(
+              width: 250,
+              height: 200,
+              child: FittedBox(
+                fit: BoxFit.contain,
+                child: Image.asset(
+                  'assets/images/logo.png',
+                  filterQuality: FilterQuality.medium,
+                ),
+              ),
             ),
           ),
         ],

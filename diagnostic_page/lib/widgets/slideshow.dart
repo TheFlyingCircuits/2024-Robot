@@ -94,10 +94,10 @@ Widget _getSlideContent(Slideshow slide) {
     case Slideshow.intakeHardyBoard:
       return _slideWithImages(
           slideTitles[2], slideImages.getRange(2, 4).toList());
-    case Slideshow.intakePrototype:
-      // return _slideWithVideos(
-      //     slideTitles[3], slideVideoNames.getRange(0, 2).toList());
-      return const Text('Need to add images for intake prototype');
+    // case Slideshow.intakePrototype:
+    // return _slideWithVideos(
+    //     slideTitles[3], slideVideoNames.getRange(0, 2).toList());
+    // return const Text('Need to add images for intake prototype');
     case Slideshow.intakeManufacturing:
       return _slideWithImages(
           slideTitles[4], slideImages.getRange(4, 6).toList());
@@ -139,7 +139,7 @@ Widget _getSlideTitle(Slideshow slide) {
       return Text(
         name[0].toUpperCase() + name.substring(1).toLowerCase(),
         style: const TextStyle(
-          fontSize: 36,
+          fontSize: 100,
           fontWeight: FontWeight.bold,
         ),
       );
@@ -156,7 +156,9 @@ Widget _slideWithImages(String header, List<Image> images) {
           padding: const EdgeInsets.fromLTRB(10, 10, 10, 0),
           child: Center(
             child: SizedBox(
-              height: 475,
+              // height: 475,
+              height: 575,
+
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: (images
@@ -179,7 +181,7 @@ Widget _slideWithImages(String header, List<Image> images) {
           child: Text(
             header,
             style: const TextStyle(
-              fontSize: 24,
+              fontSize: 48,
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -244,7 +246,7 @@ Widget _slideWithImagesGrid(String header, List<Image> images) {
           child: Text(
             header,
             style: const TextStyle(
-              fontSize: 24,
+              fontSize: 48,
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -258,7 +260,7 @@ enum Slideshow {
   intakeTitle,
   intakeDesign,
   intakeHardyBoard,
-  intakePrototype,
+  // intakePrototype,
   intakeManufacturing,
   indexer,
   climbersTitle,

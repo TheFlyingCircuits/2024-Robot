@@ -5,7 +5,7 @@ import 'package:nt4/nt4.dart';
 
 class SubsystemState {
   static const String _robotIP =
-      '127.0.0.1'; // real: 10.17.87.2  |  sim: 127.0.0.1
+      '10.17.87.2'; // real: 10.17.87.2  |  sim: 127.0.0.1
   static bool _isConnected = false;
   static late NT4Client _client;
 
@@ -201,10 +201,10 @@ class SubsystemState {
     _canivoreCANUtilSub =
         _client.subscribePeriodic('/SmartDashboard/CANivoreCANUtil');
     // TODO: testing only!!
-    // _batteryVoltageSub =
-    //     _client.subscribePeriodic('/AdvantageKit/SystemStats/BatteryVoltage');
     _batteryVoltageSub =
-        _client.subscribePeriodic('/SmartDashboard/BatteryVoltage');
+        _client.subscribePeriodic('/AdvantageKit/SystemStats/BatteryVoltage');
+    // _batteryVoltageSub =
+    //     _client.subscribePeriodic('/SmartDashboard/BatteryVoltage');
 
     // for (int i = 0; i < _motorTempSubs.length; i++) {
     //   print(_motorTempSubs[i].topic);
