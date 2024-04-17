@@ -1,9 +1,13 @@
 package frc.robot;
 
+import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.path.PathPlannerPath;
+
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
+import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants.VisionConstants;
 
 public class FlyingCircuitUtils {
@@ -34,5 +38,13 @@ public class FlyingCircuitUtils {
         Translation2d targetTranslation = note.interpolate(robot, radiusMeters/noteToBot.getNorm());
 
         return new Pose2d(targetTranslation, noteToBot.getAngle());
+    }
+
+    /**
+     * Util method to create a path following command given the name of the path in pathplanner.
+     * Make sure to call this after the AutoBuilder is configured.
+     */
+    public static Command followPath(String pathName) {
+        return AutoBuilder.followPath(PathPlannerPath.fromPathFile(pathName));
     }
 }

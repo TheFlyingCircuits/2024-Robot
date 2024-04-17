@@ -79,6 +79,8 @@ public class RobotContainer {
     public final Indexer indexer;
     public final Climb climb;
     public final LEDs leds;
+
+    private Trigger noteIsTooFarForPickupInAuto;
     
     
     public RobotContainer() {
@@ -140,7 +142,7 @@ public class RobotContainer {
         arm.setDefaultCommand(arm.holdCurrentPositionCommand().ignoringDisable(true));
 
 
-        Trigger noteIsTooFarForPickupInAuto = new Trigger(() -> {
+        noteIsTooFarForPickupInAuto = new Trigger(() -> {
             if (!drivetrain.intakeSeesNote()) {
                 return false; // keep driving if you don't see anything
             }
@@ -211,6 +213,12 @@ public class RobotContainer {
         .alongWith(this.runIntake().until(intake::ringJustEnteredIntake));
     }
 
+    private Command intakeTowardsNote() {
+        // keep charlie control for auto? he will stop, which is what we want if nothing is seen?
+        return drivetrain.run(() -> {drivetrain.driveTowardsNote(charlie::getRequestedFieldOrientedVelocity);})
+               .raceWith(intakeNote());
+    }
+
     private Command indexNote() {
         return this.runIntake().until(indexer::isNoteIndexed)
                .andThen(new InstantCommand(() -> {indexer.setVolts(0); intake.setVolts(0);})
@@ -218,6 +226,18 @@ public class RobotContainer {
                );
     }
     
+        
+    public Command fireNote() {
+        return indexer.setOrangeWheelsSurfaceSpeedCommand(7).withTimeout(0.1)
+               .alongWith(new ScheduleCommand(leds.playFireNoteAnimationCommand()));
+    }
+
+    public Command fireNoteThroughHood() {
+        // The flywheels need to run longer than normal to make sure the note
+        // makes it all the way through the slam dunk hood.
+        return indexer.setOrangeWheelsSurfaceSpeedCommand(7).withTimeout(0.5)
+               .alongWith(new ScheduleCommand(leds.playFireNoteAnimationCommand()));
+    }
 
 
     /**** ARM/SHOOTER ****///////////////////////////////////////////////////////////////////////
@@ -266,13 +286,18 @@ public class RobotContainer {
         return new InstantCommand(() -> {drivetrain.isTrackingSpeakerInAuto = true;})
                 .andThen(new PrepShot(drivetrain, arm, shooter, null, leds, FieldElement.SPEAKER))
                 .finallyDo(() -> {drivetrain.isTrackingSpeakerInAuto = false;});
-
     }
 
-    private Command intakeTowardsNote() {
-        // keep charlie control for auto? he will stop, which is what we want if nothing is seen?
-        return drivetrain.run(() -> {drivetrain.driveTowardsNote(charlie::getRequestedFieldOrientedVelocity);})
-               .raceWith(intakeNote());
+    /**
+     * Indexes with a timeout of 2 seconds, and then calls prepAutoSpeakerShot().
+     */
+    private Command autoIndexAndThenPrep() {
+        return indexNote().withTimeout(2).andThen(prepAutoSpeakerShot());
+    }
+
+
+    private Command autoIntakeTowardsNote() {
+        return intakeTowardsNote().until(noteIsTooFarForPickupInAuto).withTimeout(2.5);
     }
 
 
@@ -320,17 +345,27 @@ public class RobotContainer {
 
         return autoCommand;
     }
-    
-    public Command fireNote() {
-        return indexer.setOrangeWheelsSurfaceSpeedCommand(7).withTimeout(0.1)
-               .alongWith(new ScheduleCommand(leds.playFireNoteAnimationCommand()));
-    }
 
-    public Command fireNoteThroughHood() {
-        // The flywheels need to run longer than normal to make sure the note
-        // makes it all the way through the slam dunk hood.
-        return indexer.setOrangeWheelsSurfaceSpeedCommand(7).withTimeout(0.5)
-               .alongWith(new ScheduleCommand(leds.playFireNoteAnimationCommand()));
+
+
+    private Command ampSideAuto() {
+        // return new SequentialCommandGroup(
+        //     speakerShot(),
+        //     new ParallelDeadlineGroup(
+        //         FlyingCircuitUtils.followPath("Starting Line to Ring 4 Pickup"),
+        //         resetShooter()),
+        //     autoIntakeTowardsNote(),
+        //     new ConditionalCommand(
+        //         new ParallelDeadlineGroup(
+        //             FlyingCircuitUtils.followPath("Ring 4 to Wing Shot"),
+        //             autoIndexAndThenPrep()
+        //         ),
+        //         new 
+
+        //     )
+            
+        // )
+        return null;
     }
 
 
@@ -375,7 +410,6 @@ public class RobotContainer {
             // use a schedule command so the onFalse sequence doesn't cancel the aiming while the note is being shot.
             
         controller.b().onTrue(shart().andThen(new ScheduleCommand(this.resetShooter())));
-        // TODO: raise shart a tad
 
         /** CLIMB **/
         

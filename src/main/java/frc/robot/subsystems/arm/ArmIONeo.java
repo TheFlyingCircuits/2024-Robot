@@ -44,17 +44,22 @@ public class ArmIONeo implements ArmIO {
     @Override
     public void updateInputs(ArmIOInputs inputs) {
         
-        inputs.armVelocityDegreesPerSecond = velocityFilter.calculate(
-            rightAbsoluteEncoder.getVelocity().getValueAsDouble()*360);
 
         inputs.leftEncoderReadingDegrees = leftAbsoluteEncoder.getAbsolutePosition().getValueAsDouble()*360;
         inputs.rightEncoderReadingDegrees = rightAbsoluteEncoder.getAbsolutePosition().getValueAsDouble()*360;
 
         if (rightAbsoluteEncoder.getAbsolutePosition().getStatus().isOK()) {
             inputs.armAngleDegrees = inputs.rightEncoderReadingDegrees;
+            
+            inputs.armVelocityDegreesPerSecond = velocityFilter.calculate(
+                rightAbsoluteEncoder.getVelocity().getValueAsDouble()*360);
         }
         else if (leftAbsoluteEncoder.getAbsolutePosition().getStatus().isOK()) {
             inputs.armAngleDegrees = inputs.leftEncoderReadingDegrees;
+
+            
+            inputs.armVelocityDegreesPerSecond = velocityFilter.calculate(
+                leftAbsoluteEncoder.getVelocity().getValueAsDouble()*360);
         }
     
         //getBusVoltage() gets voltage fed into motor controller, getAppliedOutput() gets a percent the motor is running at.
