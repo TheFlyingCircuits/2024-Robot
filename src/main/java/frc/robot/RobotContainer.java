@@ -44,6 +44,8 @@ import org.littletonrobotics.junction.Logger;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
+import com.pathplanner.lib.commands.FollowPathCommand;
+
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
@@ -81,6 +83,9 @@ public class RobotContainer {
     public final LEDs leds;
 
     private Trigger noteIsTooFarForPickupInAuto;
+    private Trigger dontAmpAutoAlign;
+
+    private boolean goodPickup = false;
     
     
     public RobotContainer() {
@@ -161,6 +166,7 @@ public class RobotContainer {
             return over;
         });
 
+        dontAmpAutoAlign = ben.leftBumper();
 
         
         NamedCommands.registerCommand("prepShot", prepAutoSpeakerShot());
@@ -175,6 +181,85 @@ public class RobotContainer {
 
 
         realBindings();
+    }
+
+    private void realBindings() {
+        CommandXboxController controller = charlie.getXboxController();
+        /** INTAKE **/
+        controller.rightTrigger()
+            .onTrue(intakeTowardsNote().andThen(new ScheduleCommand(
+                indexNote().andThen(reverseIntake().withTimeout(2))
+            )));
+            //.onTrue(intakeNote().andThen(indexNote()));
+            //.onTrue(indexNote().raceWith(resetShooter())); // reset never ends, indexNote does.
+    
+        controller.leftTrigger().whileTrue(reverseIntake().alongWith(indexer.run(() -> {indexer.setVolts(-8);})));
+        
+        
+        /** SCORING **/
+        
+        //speaker shot
+        Trigger inSpeakerShotRange = new Trigger(drivetrain::inSpeakerShotRange);
+        controller.rightBumper().and(inSpeakerShotRange)
+            .onTrue(
+                this.speakerShot()
+                .andThen(new ScheduleCommand(this.resetShooter()))
+            );
+
+        //lob shot (prep while holding, release to fire)
+        Command prepLobShot = prepLobShot(); // <- grab a single instance so we can check if it's cancelled.
+        controller.rightBumper().and(inSpeakerShotRange.negate())
+            .onTrue(prepLobShot)
+            .onFalse(this.fireNote()
+                         .andThen(new ScheduleCommand(this.resetShooter()))
+                     .unless(() -> {return !prepLobShot.isScheduled();})
+                     // only fire if the lob shot wasn't cancelled
+            );
+            
+
+
+        controller.leftBumper()
+            .onTrue(prepAmpShot())
+            .onFalse(this.fireNoteThroughHood().andThen(new ScheduleCommand(this.resetShooter())));
+            // use a schedule command so the onFalse sequence doesn't cancel the aiming while the note is being shot.
+            
+        controller.b().onTrue(shart().andThen(new ScheduleCommand(this.resetShooter())));
+
+        /** CLIMB **/
+        
+        controller.povUp().onTrue(climb.raiseHooksCommand());
+        controller.povRight().onTrue(climb.lowerHooksCommand().until((climb::climbArmsZero)));
+        controller.povDown().onTrue(climb.lowerHooksCommand().until(climb::atQuickClimbSetpoint));
+        controller.a().whileTrue(new UnderStageTrapRoutine(charlie::getRequestedFieldOrientedVelocity, climb, arm, shooter, drivetrain, this::fireNoteThroughHood));
+
+        //controller.povLeft().onTrue(arm.setDesiredDegreesCommand(ArmConstants.armMaxAngleDegrees));
+
+        /** MISC **/
+        controller.y().onTrue(new InstantCommand(() -> drivetrain.setPoseToVisionMeasurement()).repeatedly().until(drivetrain::seesTag));
+        ben.y().onTrue(new InstantCommand(() -> drivetrain.setPoseToVisionMeasurement()).repeatedly().until(drivetrain::seesTag));
+        
+        
+        // controller.y().onTrue(new InstantCommand(() -> drivetrain.setRobotFacingForward()));
+
+        controller.x().onTrue(new InstantCommand(() -> arm.setDisableSetpointChecking(false)).andThen(resetShooter()));
+
+        controller.start().whileTrue(new MeasureWheelDiameter(drivetrain));
+
+        // controller.back().whileTrue(
+        //     pathfindingAuto(
+        //         Arrays.asList(
+        //             FieldElement.NOTE_1,
+        //             FieldElement.NOTE_2,
+        //             FieldElement.NOTE_3
+        //         ),
+        //         new Pose2d(12, 6.5, new Rotation2d())));
+
+        /** Driver Feedback **/
+        Trigger ringJustEnteredIntake = new Trigger(intake::ringJustEnteredIntake);
+        ringJustEnteredIntake.onTrue(charlie.rumbleController(0.5).withTimeout(0.25)); // lol this happens even during auto
+        ringJustEnteredIntake.onTrue(leds.temporarilySwitchPattern(leds.strobeCommand(Color.kWhite, 4, 0.5).ignoringDisable(true)).ignoringDisable(true));
+        // TODO: prevent flash on reverse? Either condition with positive wheel speeds,
+        //       or no seperate schedule command?
     }
 
 
@@ -254,7 +339,14 @@ public class RobotContainer {
     Command prepAmpShot() {
         Command autoAlignAmpShot = new PrepShot(drivetrain, arm, shooter, charlie::getRequestedFieldOrientedVelocity, leds, FieldElement.AMP);
         Command noAlignAmpShot = new PrepShot(drivetrain, arm, shooter, null, leds, FieldElement.AMP);
-        return new ConditionalCommand(autoAlignAmpShot, noAlignAmpShot, drivetrain::inAmpShotRange);
+
+        return noAlignAmpShot;
+        // return new ConditionalCommand(
+        //     autoAlignAmpShot,
+        //     noAlignAmpShot,
+        //     () -> {return drivetrain.inAmpShotRange() && !dontAmpAutoAlign.getAsBoolean();});
+        // This was probably spinning because the conditional command as a whole required the drivetrain,
+        // even when we chose the noAlignAmpShot. We should use schedule commands inside the conditional instead.
     }
 
     Command prepLobShot() {
@@ -297,152 +389,156 @@ public class RobotContainer {
 
 
     private Command autoIntakeTowardsNote() {
-        return intakeTowardsNote().until(noteIsTooFarForPickupInAuto).withTimeout(2.5);
-    }
-
-
-    private Command pathfindToNote(FieldElement note) {
-
-        Pose2d targetPose = FlyingCircuitUtils.pickupAtNote(
-                drivetrain.getPoseMeters().getTranslation(),
-                note.getLocation().toTranslation2d(), 
-                0.);
-
-
-        return AutoBuilder.pathfindToPose(
-                targetPose,
-                DrivetrainConstants.pathfindingConstraints,
-                0.
-            );
-    }
-
-
-    private Command intakeAndThenShoot(Pose2d scoringPose) {
-        //TODO: figure out how to navigate to nearest scoring location instead of a preset one
-        //use lambdas or something for scoringPose
-        
         return new SequentialCommandGroup(
-            intakeTowardsNote(),
+            new InstantCommand( () -> {this.goodPickup = false;} ),
+            intakeTowardsNote().finallyDo((boolean interrupted) -> {
+                this.goodPickup = !interrupted;
+            })
+            .until(noteIsTooFarForPickupInAuto).withTimeout(2.5)
+        );
+    }
+
+
+    private Command attemptPickupAfterShot(int ringNumber) {
+        String pathName = "";
+        if (ringNumber == 8) {
+            pathName = "Starting Line to Ring 8";
+        }
+        if (ringNumber == 7) {
+            pathName = "Mid Shot to Ring 7 (Around Stage)";
+        }
+        if (ringNumber == 4) {
+            pathName = "Starting Line to Ring 4 Pickup";
+        }
+        if (ringNumber == 5) {
+            pathName = "Wing Shot to Ring 5";
+        }
+        return new SequentialCommandGroup(
             new ParallelDeadlineGroup(
-                AutoBuilder.pathfindToPose(scoringPose, DrivetrainConstants.pathfindingConstraints),
-                prepAutoSpeakerShot()
+                FlyingCircuitUtils.followPath(pathName),
+                resetShooter()
+            ),
+            autoIntakeTowardsNote()
+        );
+    }
+
+    private Command scoreRingAfterPickup(int ringNumber) {
+        String pathName = "";
+        if (ringNumber == 8) {
+            pathName = "Ring 8 to Mid Shot";
+        }
+        if (ringNumber == 7) {
+            pathName = "Ring 7 to Mid Shot (Around Stage)";
+        }
+        if (ringNumber == 4) {
+            pathName = "Ring 4 to Wing Shot";
+        }
+        if (ringNumber == 5) {
+            pathName = "Ring 5 to Wing Shot";
+        }
+        return new SequentialCommandGroup(
+            new ParallelDeadlineGroup(
+                FlyingCircuitUtils.followPath(pathName),
+                autoIndexAndThenPrep()
             ),
             speakerShot()
         );
     }
 
-    public Command pathfindingAuto(List<FieldElement> targetNotes, Pose2d scoringPose) {
-
-        
-
-        Command autoCommand = new InstantCommand();
-
-        for (int noteInd = 0; noteInd < targetNotes.size(); noteInd++) {
-            autoCommand = autoCommand
-                .andThen(pathfindToNote(targetNotes.get(noteInd)).deadlineWith(resetShooter()))
-                .andThen(intakeAndThenShoot(scoringPose).onlyIf(drivetrain::intakeSeesNote));
-        }
-
-        return autoCommand;
-    }
-
-
 
     private Command ampSideAuto() {
-        // return new SequentialCommandGroup(
-        //     speakerShot(),
-        //     new ParallelDeadlineGroup(
-        //         FlyingCircuitUtils.followPath("Starting Line to Ring 4 Pickup"),
-        //         resetShooter()),
-        //     autoIntakeTowardsNote(),
-        //     new ConditionalCommand(
-        //         new ParallelDeadlineGroup(
-        //             FlyingCircuitUtils.followPath("Ring 4 to Wing Shot"),
-        //             autoIndexAndThenPrep()
-        //         ),
-        //         new 
+        return new SequentialCommandGroup(
+            speakerShot(),
+            attemptPickupAfterShot(4),
+            new ConditionalCommand(new SequentialCommandGroup(
+                                        scoreRingAfterPickup(4),
+                                        attemptPickupAfterShot(5),
+                                        scoreRingAfterPickup(5)
+                                    ), 
+                                   switchToRing7(),
+                                   () -> {return this.goodPickup;}
+            )
+        );
+    }
 
-        //     )
-            
-        // )
-        return null;
+    private Command sourceSideAuto() {
+        return new SequentialCommandGroup(
+            speakerShot(),
+            attemptPickupAfterShot(8),
+            new ConditionalCommand(new SequentialCommandGroup(
+                                        scoreRingAfterPickup(8),
+                                        attemptPickupAfterShot(7),
+                                        scoreRingAfterPickup(7)
+                                    ), 
+                                   switchToRing7(),
+                                   () -> {return this.goodPickup;}
+            )
+        );
+    }
+
+    private Command switchToRing7() {
+        return new SequentialCommandGroup(
+            FlyingCircuitUtils.followPath("Ring 8 to Ring 7"),
+            autoIntakeTowardsNote(),
+            scoreRingAfterPickup(7)
+        );
+    }
+
+    private Command switchToRing5() {
+        return new SequentialCommandGroup(
+            FlyingCircuitUtils.followPath("Ring 4 to Ring 5"),
+            autoIntakeTowardsNote(),
+            scoreRingAfterPickup(5)
+        );
     }
 
 
-    private void realBindings() {
-        CommandXboxController controller = charlie.getXboxController();
-        /** INTAKE **/
-        controller.rightTrigger()
-            .onTrue(intakeTowardsNote().andThen(new ScheduleCommand(
-                indexNote().andThen(reverseIntake().withTimeout(2))
-            )));
-            //.onTrue(intakeNote().andThen(indexNote()));
-            //.onTrue(indexNote().raceWith(resetShooter())); // reset never ends, indexNote does.
-    
-        controller.leftTrigger().whileTrue(reverseIntake().alongWith(indexer.run(() -> {indexer.setVolts(-8);})));
+
+    // private Command pathfindToNote(FieldElement note) {
+
+    //     Pose2d targetPose = FlyingCircuitUtils.pickupAtNote(
+    //             drivetrain.getPoseMeters().getTranslation(),
+    //             note.getLocation().toTranslation2d(), 
+    //             0.);
+
+
+    //     return AutoBuilder.pathfindToPose(
+    //             targetPose,
+    //             DrivetrainConstants.pathfindingConstraints,
+    //             0.
+    //         );
+    // }
+
+
+    // private Command intakeAndThenShoot(Pose2d scoringPose) {
+    //     //TODO: figure out how to navigate to nearest scoring location instead of a preset one
+    //     //use lambdas or something for scoringPose
         
+    //     return new SequentialCommandGroup(
+    //         intakeTowardsNote(),
+    //         new ParallelDeadlineGroup(
+    //             AutoBuilder.pathfindToPose(scoringPose, DrivetrainConstants.pathfindingConstraints),
+    //             prepAutoSpeakerShot()
+    //         ),
+    //         speakerShot()
+    //     );
+    // }
+
+    // public Command pathfindingAuto(List<FieldElement> targetNotes, Pose2d scoringPose) {
+
         
-        /** SCORING **/
-        
-        //speaker shot
-        Trigger inSpeakerShotRange = new Trigger(drivetrain::inSpeakerShotRange);
-        controller.rightBumper().and(inSpeakerShotRange)
-            .onTrue(
-                this.speakerShot()
-                .andThen(new ScheduleCommand(this.resetShooter()))
-            );
 
-        //lob shot (prep while holding, release to fire)
-        Command prepLobShot = prepLobShot(); // <- grab a single instance so we can check if it's cancelled.
-        controller.rightBumper().and(inSpeakerShotRange.negate())
-            .onTrue(prepLobShot)
-            .onFalse(this.fireNote()
-                         .andThen(new ScheduleCommand(this.resetShooter()))
-                     .unless(() -> {return !prepLobShot.isScheduled();})
-                     // only fire if the lob shot wasn't cancelled
-            );
-            
+    //     Command autoCommand = new InstantCommand();
+
+    //     for (int noteInd = 0; noteInd < targetNotes.size(); noteInd++) {
+    //         autoCommand = autoCommand
+    //             .andThen(pathfindToNote(targetNotes.get(noteInd)).deadlineWith(resetShooter()))
+    //             .andThen(intakeAndThenShoot(scoringPose).onlyIf(drivetrain::intakeSeesNote));
+    //     }
+
+    //     return autoCommand;
+    // }
 
 
-        controller.leftBumper()
-            .onTrue(prepAmpShot())
-            .onFalse(this.fireNoteThroughHood().andThen(new ScheduleCommand(this.resetShooter())));
-            // use a schedule command so the onFalse sequence doesn't cancel the aiming while the note is being shot.
-            
-        controller.b().onTrue(shart().andThen(new ScheduleCommand(this.resetShooter())));
 
-        /** CLIMB **/
-        
-        controller.povUp().onTrue(climb.raiseHooksCommand());
-        controller.povRight().onTrue(climb.lowerHooksCommand().until((climb::climbArmsZero)));
-        controller.povDown().onTrue(climb.lowerHooksCommand().until(climb::atQuickClimbSetpoint));
-        controller.a().whileTrue(new UnderStageTrapRoutine(charlie::getRequestedFieldOrientedVelocity, climb, arm, shooter, drivetrain, this::fireNoteThroughHood));
-
-        //controller.povLeft().onTrue(arm.setDesiredDegreesCommand(ArmConstants.armMaxAngleDegrees));
-
-        /** MISC **/
-        controller.y().onTrue(new InstantCommand(() -> drivetrain.setPoseToVisionMeasurement()).repeatedly().until(drivetrain::seesTag));
-        // ben.y().onTrue(new InstantCommand(() -> drivetrain.setPoseToVisionMeasurement()));
-        // controller.y().onTrue(new InstantCommand(() -> drivetrain.setRobotFacingForward()));
-
-        controller.x().onTrue(new InstantCommand(() -> arm.setDisableSetpointChecking(false)).andThen(resetShooter()));
-
-        controller.start().whileTrue(new MeasureWheelDiameter(drivetrain));
-
-        // controller.back().whileTrue(
-        //     pathfindingAuto(
-        //         Arrays.asList(
-        //             FieldElement.NOTE_1,
-        //             FieldElement.NOTE_2,
-        //             FieldElement.NOTE_3
-        //         ),
-        //         new Pose2d(12, 6.5, new Rotation2d())));
-
-        /** Driver Feedback **/
-        Trigger ringJustEnteredIntake = new Trigger(intake::ringJustEnteredIntake);
-        ringJustEnteredIntake.onTrue(charlie.rumbleController(0.5).withTimeout(0.25)); // lol this happens even during auto
-        ringJustEnteredIntake.onTrue(leds.temporarilySwitchPattern(leds.strobeCommand(Color.kWhite, 4, 0.5).ignoringDisable(true)).ignoringDisable(true));
-        // TODO: prevent flash on reverse? Either condition with positive wheel speeds,
-        //       or no seperate schedule command?
-    }
 }

@@ -70,8 +70,7 @@ public class PrepShot extends Command {
             super.addRequirements(drivetrain);
             ledFeedbackCommand = leds.playAimingAnimationCommand(arm::getErrorDegrees, flywheels::getWorstError, drivetrain::getAngleError);
         }
-
-        // TODO: have drivetrain always on target if not required? how to deal with this in auto?
+        
         //       This will prob be part of the LED re-write to use progress instead of error?
     }
 
@@ -95,8 +94,8 @@ public class PrepShot extends Command {
             rightFlywheelMetersPerSecond = 10;
         }
         if (target == FieldElement.AMP) {
-            leftFlywheelMetersPerSecond = 15;
-            rightFlywheelMetersPerSecond = 15;
+            leftFlywheelMetersPerSecond = 10;
+            rightFlywheelMetersPerSecond = 10;
         }
         flywheels.setLeftFlywheelsMetersPerSecond(leftFlywheelMetersPerSecond);
         flywheels.setRightFlywheelsMetersPerSecond(rightFlywheelMetersPerSecond);
@@ -122,7 +121,6 @@ public class PrepShot extends Command {
             driveDesiredAngle = Rotation2d.fromDegrees(-90);
             // facing the back of the robot at the amp (not dependent on alliance color)
 
-            // TODO: maybe fieldOrientedDriveOnALine() or speaker tracking style aiming?
             //       or maybe just full on auto scoring for the amp?
         }
         if (target == FieldElement.LOB_TARGET) {

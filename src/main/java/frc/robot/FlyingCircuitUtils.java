@@ -47,4 +47,15 @@ public class FlyingCircuitUtils {
     public static Command followPath(String pathName) {
         return AutoBuilder.followPath(PathPlannerPath.fromPathFile(pathName));
     }
+
+    /**
+     * Returns true if the fed position is outside of the field.
+     * @param toleranceMeters - Distance outside of the field that will still be considered "in the field"; i.e. the method will still return
+     * true.
+     */
+    public static boolean isOutsideOfField(Translation2d pos, double toleranceMeters) {
+
+        return (pos.getY() > 8.19 + toleranceMeters) || (pos.getY() < 0 - toleranceMeters)
+            ||(pos.getX() > 16.54 + toleranceMeters) || (pos.getX() < 0 - toleranceMeters);
+    }
 }

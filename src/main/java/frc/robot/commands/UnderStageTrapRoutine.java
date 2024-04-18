@@ -69,12 +69,13 @@ public class UnderStageTrapRoutine extends SequentialCommandGroup {
             new ParallelRaceGroup(
                 drivetrain.run(() -> {drivetrain.fieldOrientedDrive(new ChassisSpeeds(), true);}),
                 climb.lowerHooksCommand().until(climb::climbArmsDown),
-                arm.setDesiredDegreesCommand(95),
+                arm.setDesiredDegreesCommand(100),
                 shooter.setFlywheelSurfaceSpeedCommand(10)
             ),
             // Wait for the swinging to stop
-            new WaitCommand(0.5), // TODO: are we sinking here because the climb command finishes when arms are down?
+            new WaitCommand(1), // TODO: are we sinking here because the climb command finishes when arms are down?
             // Score in the trap
+            fireNoteCommand.get(),
             fireNoteCommand.get(),
             // Lower down a tad so we're not hanging on the trap opening
             climb.raiseHooksCommand(4).withTimeout(0.5)

@@ -3,29 +3,29 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 9.780954454918895,
-        "y": 1.3116136931275284
+        "x": 8.309732705384265,
+        "y": 0.7886503601169486
       },
       "prevControl": null,
       "nextControl": {
-        "x": 10.716213278533168,
-        "y": 1.6655782857800219
+        "x": 8.309732705384265,
+        "y": 0.9465550196016848
       },
       "isLocked": false,
-      "linkedName": "Ring 8 Pickup (From Starting Line)"
+      "linkedName": null
     },
     {
       "anchor": {
-        "x": 13.212229562832878,
-        "y": 2.7637574248044356
+        "x": 8.28012348332389,
+        "y": 1.4011058791348356
       },
       "prevControl": {
-        "x": 12.276970739218605,
-        "y": 2.409792832151942
+        "x": 8.329458197377933,
+        "y": 1.0656298235673405
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "Mid Shot (Source Side)"
+      "linkedName": null
     }
   ],
   "rotationTargets": [],
@@ -39,14 +39,14 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 40.34,
-    "rotateFast": false
+    "rotation": -90.0,
+    "rotateFast": true
   },
   "reversed": false,
-  "folder": "3 Piece Source Side",
+  "folder": "Gigachad Auto",
   "previewStartingState": {
-    "rotation": 22.409999999999997,
+    "rotation": 0,
     "velocity": 0
   },
-  "useDefaultConstraints": true
+  "useDefaultConstraints": false
 }

@@ -10,6 +10,7 @@ import org.littletonrobotics.junction.networktables.NT4Publisher;
 import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 
 import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.commands.FollowPathCommand;
 
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.PowerDistribution;
@@ -62,6 +63,7 @@ public class Robot extends LoggedRobot {
         SmartDashboard.putData("Auto Chooser", autoChooser);
 
         DriverStation.silenceJoystickConnectionWarning(true);
+        FollowPathCommand.warmupCommand().schedule();
         System.gc();
     }
 
@@ -108,7 +110,7 @@ public class Robot extends LoggedRobot {
     /** This autonomous runs the autonomous command selected by your {@link RobotContainer} class. */
     @Override
     public void autonomousInit() {
-        System.gc();
+        // System.gc();
         m_robotContainer.drivetrain.setPoseToVisionMeasurement();
 
         //m_autonomousCommand = autoChooser.getSelected();

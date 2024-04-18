@@ -4,12 +4,13 @@
   "holonomicMode": true,
   "pathFolders": [
     "3 Piece Source Side",
-    "Buckeye Paths",
     "4 Piece Amp Side",
     "4 Piece Source Side",
-    "Unused (But Maybe Later)",
+    "5 Piece Center Side",
+    "Buckeye Paths",
     "Pittsburgh Paths",
-    "5 Piece Center Side"
+    "Gigachad Auto",
+    "Unused (But Maybe Later)"
   ],
   "autoFolders": [
     "Pittsburgh",

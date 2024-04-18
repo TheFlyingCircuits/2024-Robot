@@ -39,6 +39,7 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
+import frc.robot.FlyingCircuitUtils;
 import frc.robot.Constants.DrivetrainConstants;
 import frc.robot.Constants.FieldElement;
 import frc.robot.subsystems.vision.VisionIO;
@@ -54,13 +55,13 @@ public class Drivetrain extends SubsystemBase {
     private VisionIOInputsLogged visionInputs;
 
     private SwerveModule[] swerveModules;
-    //swerve module positions from the last loop iteration, used for bump detection
-    private SwerveModulePosition[] prevSwerveModulePositions;
 
     private SwerveDrivePoseEstimator fusedPoseEstimator;
     private SwerveDrivePoseEstimator wheelsOnlyPoseEstimator;
 
     public boolean isTrackingSpeakerInAuto = false;
+    /** True after a bump but before odometry has been corrected, false once a vision target is used to reset odometry. */
+    private boolean hasBeenBumped = false;
 
     private static Orchestra orchestra;
     private String[] songs = {
@@ -99,8 +100,6 @@ public class Drivetrain extends SubsystemBase {
             new SwerveModule(blSwerveModuleIO, 2),
             new SwerveModule(brSwerveModuleIO, 3)
         };
-
-        prevSwerveModulePositions = getModulePositions();
 
         gyroIO.setRobotYaw(0);
 
@@ -392,6 +391,21 @@ public class Drivetrain extends SubsystemBase {
         }
     }
 
+    /**
+     * Sets the translation to the best estimated pose from the vision, while rotation remains
+     * the same as what is currently being read.
+     */
+    private void setTranslationToVisionMeasurement() {
+        if (!visionInputs.visionMeasurements.isEmpty()) {
+            setPoseMeters(
+                new Pose2d(
+                    visionInputs.visionMeasurements.get(0).robotFieldPose.getTranslation(),
+                    getPoseMeters().getRotation()
+                )
+            );
+        }
+    }
+
     public boolean seesTag() {
         return visionInputs.visionMeasurements.size() > 0;
     }
@@ -403,15 +417,16 @@ public class Drivetrain extends SubsystemBase {
 
         Logger.recordOutput("drivetrain/accelMagnitude", totalAccelMetersPerSecondSquared);
 
-        if (totalAccelMetersPerSecondSquared > 10) {
-            //assume the robot hasn't moved if it gets bumped
-            fusedPoseEstimator.update(gyroInputs.robotYawRotation2d, prevSwerveModulePositions);
-        }
-        else {
-            fusedPoseEstimator.update(gyroInputs.robotYawRotation2d, getModulePositions());
-        }
+        // if (totalAccelMetersPerSecondSquared > 10) {
+        //     hasBeenBumped = true;
+        // }
 
+        // if (hasBeenBumped && !visionInputs.visionMeasurements.isEmpty()) {
+        //     hasBeenBumped = false;
+        //     setTranslationToVisionMeasurement();
+        // }
 
+        fusedPoseEstimator.update(gyroInputs.robotYawRotation2d, getModulePositions());
         wheelsOnlyPoseEstimator.update(gyroInputs.robotYawRotation2d, getModulePositions());
 
         for (VisionMeasurement visionMeasurement : visionInputs.visionMeasurements) {
@@ -429,8 +444,6 @@ public class Drivetrain extends SubsystemBase {
                 );
             }
         }
-
-        prevSwerveModulePositions = getModulePositions();
     }
 
     public boolean inSpeakerShotRange() {
@@ -539,10 +552,24 @@ public class Drivetrain extends SubsystemBase {
     }
 
     public void driveTowardsNote(Supplier<ChassisSpeeds> howToDriveWhenNoNoteDetected) {
-        if (visionInputs.nearestNoteRobotFrame.isEmpty()) {
-            // will contintue driving at previous speed.
-            // TODO: should have the ability to inject some default value here?
-            //       maybe allow driver control if there is noting detected?
+
+        boolean dontDriveTowardsNote = false;
+        Optional<Translation3d> noteOptional = visionInputs.nearestNoteRobotFrame;
+
+        if (noteOptional.isEmpty()) {
+            dontDriveTowardsNote = true;
+        }
+        //distance from the robot to note is greater than 2.5 m
+        else if (noteOptional.get().getNorm() > 2.5) {
+            dontDriveTowardsNote = true;
+        }
+        //detected note is outside of field by 0.5 m
+        else if (FlyingCircuitUtils.isOutsideOfField(fieldCoordsFromRobotCoords(noteOptional.get().toTranslation2d()), 0.5)) {
+            dontDriveTowardsNote = true;
+        }
+
+
+        if (dontDriveTowardsNote) {
             this.fieldOrientedDrive(howToDriveWhenNoNoteDetected.get(), true);
             return;
         }
@@ -674,6 +701,7 @@ public class Drivetrain extends SubsystemBase {
             Translation2d noteRelativeToRobot = visionInputs.nearestNoteRobotFrame.get().toTranslation2d();
             Translation2d noteRelativeToField = fieldCoordsFromRobotCoords(noteRelativeToRobot);
             Logger.recordOutput("drivetrain/trackedNotePose", new Pose2d(noteRelativeToField, new Rotation2d()));
+            Logger.recordOutput("drivetrain/trackedNoteDistance", noteRelativeToRobot.getNorm());
         }
         else {
             Logger.recordOutput("drivetrain/trackedNotePose", getPoseMeters());

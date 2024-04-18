@@ -64,14 +64,14 @@ public class TrapRoutine extends SequentialCommandGroup {
             //once we are on the chain, start climbing
             new ParallelRaceGroup(
                 climb.lowerHooksCommand().until(climb::climbArmsDown),
-                arm.setDesiredDegreesCommand(95),
+                arm.setDesiredDegreesCommand(105),
                 shooter.setFlywheelSurfaceSpeedCommand(10)
             ),
 
             new WaitCommand(0.5), // TODO: are we sinking here because the climb command finishes when arms are down?
 
             //fire the note at the top
-            indexer.setOrangeWheelsSurfaceSpeedCommand(7).withTimeout(1)
+            indexer.setOrangeWheelsSurfaceSpeedCommand(7).withTimeout(3)
                 .raceWith(shooter.setFlywheelSurfaceSpeedCommand(10))
                 .alongWith(new ScheduleCommand(leds.playFireNoteAnimationCommand())),
 

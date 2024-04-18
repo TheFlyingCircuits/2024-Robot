@@ -40,9 +40,9 @@ public class VisionIOPhotonLib implements VisionIO {
 
         tagCameras = Arrays.asList(
             new PhotonCamera("shooterCamera"),
-            new PhotonCamera("trapCamera"),
-            new PhotonCamera("leftCamera"),
-            new PhotonCamera("rightCamera")
+            new PhotonCamera("trapCamera")
+            // new PhotonCamera("leftCamera"),
+            // new PhotonCamera("rightCamera")
         );
 
         poseEstimators = new ArrayList<PhotonPoseEstimator>();
@@ -71,27 +71,38 @@ public class VisionIOPhotonLib implements VisionIO {
         double slopeStdDevMetersPerMeterY;
 
 
-        if (DriverStation.isAutonomous()) {
-            if (useMultitag) {
-                slopeStdDevMetersPerMeterX = 0.06;
-                slopeStdDevMetersPerMeterY = 0.06;
-            }
-
-            else {
-                slopeStdDevMetersPerMeterX = 0.08;
-                slopeStdDevMetersPerMeterY = 0.08;
-            }
+        if (useMultitag) {
+            slopeStdDevMetersPerMeterX = 0.004;
+            slopeStdDevMetersPerMeterY = 0.009;
         }
         else {
-            if (useMultitag) {
-                slopeStdDevMetersPerMeterX = 0.008;
-                slopeStdDevMetersPerMeterY = 0.008;
-            }
-            else {
-                slopeStdDevMetersPerMeterX = 0.008;
-                slopeStdDevMetersPerMeterY = 0.008;
-            }
+            slopeStdDevMetersPerMeterX = 0.008;
+            slopeStdDevMetersPerMeterY = 0.008;
         }
+
+        //bad vision from practice match at worlds
+
+        // if (DriverStation.isAutonomous()) {
+        //     if (useMultitag) {
+        //         slopeStdDevMetersPerMeterX = 0.06;
+        //         slopeStdDevMetersPerMeterY = 0.06;
+        //     }
+
+        //     else {
+        //         slopeStdDevMetersPerMeterX = 0.08;
+        //         slopeStdDevMetersPerMeterY = 0.08;
+        //     }
+        // }
+        // else {
+        //     if (useMultitag) {
+        //         slopeStdDevMetersPerMeterX = 0.008;
+        //         slopeStdDevMetersPerMeterY = 0.008;
+        //     }
+        //     else {
+        //         slopeStdDevMetersPerMeterX = 0.008;
+        //         slopeStdDevMetersPerMeterY = 0.008;
+        //     }
+        // }
 
         double slopeStdDevRadiansPerMeter = 1000;
 
@@ -120,6 +131,7 @@ public class VisionIOPhotonLib implements VisionIO {
         }
 
         Optional<EstimatedRobotPose> poseEstimatorResult = estimator.update();
+
         if (poseEstimatorResult.isEmpty()) {
             return Optional.empty();
         }
@@ -133,7 +145,7 @@ public class VisionIOPhotonLib implements VisionIO {
 
         output.nearestTagDistanceMeters = pipelineResult.getBestTarget().getBestCameraToTarget().getTranslation().getDistance(new Translation3d());
         
-        if (output.nearestTagDistanceMeters > 7) {
+        if (output.nearestTagDistanceMeters > 5) {
             return Optional.empty();
         }
 
