@@ -60,6 +60,8 @@ public class Robot extends LoggedRobot {
 
         // Must buildAutoChooser() only after NamedCommmands have been registered in the RobotContainer constructor!
         autoChooser = AutoBuilder.buildAutoChooser();
+        autoChooser.addOption("Amp Side Hyperchad Auto", m_robotContainer.ampSideAuto());
+        autoChooser.addOption("Source Side Hyperchad Auto", m_robotContainer.sourceSideAuto());
         SmartDashboard.putData("Auto Chooser", autoChooser);
 
         DriverStation.silenceJoystickConnectionWarning(true);

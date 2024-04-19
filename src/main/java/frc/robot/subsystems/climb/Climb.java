@@ -31,7 +31,7 @@ public class Climb extends SubsystemBase{
     }
 
     public Command lowerHooksCommand() {
-        return this.run(() -> {this.setVoltsClosedLoop(-10);});
+        return this.run(() -> {this.setVoltsClosedLoop(-11);});
     }
 
     /**
@@ -91,8 +91,8 @@ public class Climb extends SubsystemBase{
         leftMotor.setIdleMode(IdleMode.kBrake);
         rightMotor.setIdleMode(IdleMode.kBrake);
 
-        leftMotor.setSmartCurrentLimit(60);
-        rightMotor.setSmartCurrentLimit(60);
+        leftMotor.setSmartCurrentLimit(65);
+        rightMotor.setSmartCurrentLimit(65);
 
         leftMotor.setPosition(0);
         rightMotor.setPosition(0);

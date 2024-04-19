@@ -13,6 +13,7 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
+import edu.wpi.first.wpilibj2.command.ParallelDeadlineGroup;
 import edu.wpi.first.wpilibj2.command.ParallelRaceGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
@@ -31,7 +32,7 @@ public class UnderStageTrapRoutine extends SequentialCommandGroup {
 
     private Drivetrain drivetrain;
     private Supplier<ChassisSpeeds> translationController;
-    private double autoDriveSpeed = 0.5;
+    private double autoDriveSpeed = 0.6;
 
     public UnderStageTrapRoutine(Supplier<ChassisSpeeds> translationController, Climb climb, Arm arm, Shooter shooter, Drivetrain drivetrain, Supplier<Command> fireNoteCommand) {
         this.drivetrain = drivetrain;
@@ -39,16 +40,22 @@ public class UnderStageTrapRoutine extends SequentialCommandGroup {
         
         addCommands(
             // drive to the trap and wait until we're in position for Ronnie to take over
-            snapToTrap().until(() -> {return getTrapToRobot().getNorm() < Units.inchesToMeters(3);}),
+            snapToTrap().until(() -> {return getTrapToRobot().getNorm() < Units.inchesToMeters(2);}),
             // Raise the arm as we drive forward
             new ParallelRaceGroup(
-                arm.run(() -> {
-                    double chainDistanceFromTrap = Units.inchesToMeters(12 + 4 + (5./8.));
-                    double chainHeight = Units.inchesToMeters((2 * 12) + 4 + (1./4.));
-                    double deltaY = chainHeight - ArmConstants.pivotHeightMeters;
-                    double deltaX = chainDistanceFromTrap - getPivotDistanceAlongTrapAxis();
-                    arm.setDesiredDegrees(Math.toDegrees(Math.atan2(deltaY, deltaX)));
-                }).until(() -> {return arm.getDegrees() >= 95;}),
+                new ParallelCommandGroup(
+                    arm.run(() -> {
+                        double chainDistanceFromTrap = Units.inchesToMeters(12 + 4 + (5./8.));
+                        double chainHeight = Units.inchesToMeters((2 * 12) + 4 + (1./4.));
+                        double deltaY = chainHeight - ArmConstants.pivotHeightMeters;
+                        double deltaX = chainDistanceFromTrap - getPivotDistanceAlongTrapAxis();
+                        arm.setDesiredDegrees(Math.toDegrees(Math.atan2(deltaY, deltaX)));
+                    }).until(() -> {return arm.getDegrees() >= 95;}),
+                    new SequentialCommandGroup(
+                        new WaitCommand(0.5),
+                        climb.raiseHooksCommand().until(climb::climbArmsUp)
+                    )
+                ),
 
                 // Slowly spin the flywheels to help the chain pass over the arm.
                 shooter.setFlywheelSurfaceSpeedCommand(1),
@@ -69,14 +76,19 @@ public class UnderStageTrapRoutine extends SequentialCommandGroup {
             new ParallelRaceGroup(
                 drivetrain.run(() -> {drivetrain.fieldOrientedDrive(new ChassisSpeeds(), true);}),
                 climb.lowerHooksCommand().until(climb::climbArmsDown),
-                arm.setDesiredDegreesCommand(100),
+                arm.setDesiredDegreesCommand(105),
                 shooter.setFlywheelSurfaceSpeedCommand(10)
             ),
             // Wait for the swinging to stop
-            new WaitCommand(1), // TODO: are we sinking here because the climb command finishes when arms are down?
+            new ParallelDeadlineGroup(
+                new WaitCommand(0.5),
+                climb.lowerHooksCommand().until(climb::climbArmsDown).repeatedly()
+            ),
             // Score in the trap
             fireNoteCommand.get(),
             fireNoteCommand.get(),
+
+            new WaitCommand(0.5),
             // Lower down a tad so we're not hanging on the trap opening
             climb.raiseHooksCommand(4).withTimeout(0.5)
         );    

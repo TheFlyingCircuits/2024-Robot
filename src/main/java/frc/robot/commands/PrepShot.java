@@ -94,8 +94,8 @@ public class PrepShot extends Command {
             rightFlywheelMetersPerSecond = 10;
         }
         if (target == FieldElement.AMP) {
-            leftFlywheelMetersPerSecond = 10;
-            rightFlywheelMetersPerSecond = 10;
+            leftFlywheelMetersPerSecond = 12;
+            rightFlywheelMetersPerSecond = 12;
         }
         flywheels.setLeftFlywheelsMetersPerSecond(leftFlywheelMetersPerSecond);
         flywheels.setRightFlywheelsMetersPerSecond(rightFlywheelMetersPerSecond);

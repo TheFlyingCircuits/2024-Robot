@@ -3,49 +3,49 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 11.664484867431273,
-        "y": 6.670053340106681
+        "x": 8.293678213604645,
+        "y": 5.773442417070284
       },
       "prevControl": null,
       "nextControl": {
-        "x": 10.718909483870968,
-        "y": 6.9954564654831595
+        "x": 8.293678213604645,
+        "y": 5.607826178372496
       },
-      "isLocked": true,
-      "linkedName": "Wing Shot (Amp Side)"
+      "isLocked": false,
+      "linkedName": null
     },
     {
       "anchor": {
-        "x": 8.53,
-        "y": 7.37
+        "x": 8.293678213604645,
+        "y": 5.293298118693241
       },
       "prevControl": {
-        "x": 9.475575383560304,
-        "y": 7.0445968746235215
+        "x": 8.293678213604645,
+        "y": 5.457667542378415
       },
       "nextControl": null,
-      "isLocked": true,
-      "linkedName": "Ring 4 Pickup (From Wing Shot)"
+      "isLocked": false,
+      "linkedName": null
     }
   ],
   "rotationTargets": [],
   "constraintZones": [],
   "eventMarkers": [],
   "globalConstraints": {
-    "maxVelocity": 4.0,
-    "maxAcceleration": 2.0,
+    "maxVelocity": 4.5,
+    "maxAcceleration": 2.5,
     "maxAngularVelocity": 360.0,
     "maxAngularAcceleration": 360.0
   },
   "goalEndState": {
-    "velocity": 0,
-    "rotation": -18.980000000000018,
+    "velocity": 0.0,
+    "rotation": 90.0,
     "rotateFast": true
   },
   "reversed": false,
-  "folder": "4 Piece Amp Side",
+  "folder": "Gigachad Auto",
   "previewStartingState": {
-    "rotation": -10.759999999999991,
+    "rotation": 0,
     "velocity": 0
   },
   "useDefaultConstraints": true

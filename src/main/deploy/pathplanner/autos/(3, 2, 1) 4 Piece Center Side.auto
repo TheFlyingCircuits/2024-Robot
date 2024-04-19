@@ -24,7 +24,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "Starting Line to Ring 3 (Slow and Steady)"
+                  "pathName": "Starting Line to Ring 3"
                 }
               },
               {
@@ -55,7 +55,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "Ring 3 to Ring 2 (Slow and Steady)"
+                  "pathName": "Ring 3 to Ring 2"
                 }
               },
               {
@@ -86,7 +86,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "Ring 2 to Ring 1 (Slow and Steady)"
+                  "pathName": "Ring 2 to Ring 1"
                 }
               },
               {

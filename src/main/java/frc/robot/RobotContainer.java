@@ -197,7 +197,6 @@ public class RobotContainer {
         
         
         /** SCORING **/
-        
         //speaker shot
         Trigger inSpeakerShotRange = new Trigger(drivetrain::inSpeakerShotRange);
         controller.rightBumper().and(inSpeakerShotRange)
@@ -216,8 +215,6 @@ public class RobotContainer {
                      // only fire if the lob shot wasn't cancelled
             );
             
-
-
         controller.leftBumper()
             .onTrue(prepAmpShot())
             .onFalse(this.fireNoteThroughHood().andThen(new ScheduleCommand(this.resetShooter())));
@@ -237,22 +234,12 @@ public class RobotContainer {
         /** MISC **/
         controller.y().onTrue(new InstantCommand(() -> drivetrain.setPoseToVisionMeasurement()).repeatedly().until(drivetrain::seesTag));
         ben.y().onTrue(new InstantCommand(() -> drivetrain.setPoseToVisionMeasurement()).repeatedly().until(drivetrain::seesTag));
-        
-        
         // controller.y().onTrue(new InstantCommand(() -> drivetrain.setRobotFacingForward()));
-
         controller.x().onTrue(new InstantCommand(() -> arm.setDisableSetpointChecking(false)).andThen(resetShooter()));
 
-        controller.start().whileTrue(new MeasureWheelDiameter(drivetrain));
-
-        // controller.back().whileTrue(
-        //     pathfindingAuto(
-        //         Arrays.asList(
-        //             FieldElement.NOTE_1,
-        //             FieldElement.NOTE_2,
-        //             FieldElement.NOTE_3
-        //         ),
-        //         new Pose2d(12, 6.5, new Rotation2d())));
+        // controller.start().whileTrue(new MeasureWheelDiameter(drivetrain));
+        controller.start().whileTrue(sourceSideAuto());
+        controller.back().whileTrue(ampSideAuto());
 
         /** Driver Feedback **/
         Trigger ringJustEnteredIntake = new Trigger(intake::ringJustEnteredIntake);
@@ -312,12 +299,12 @@ public class RobotContainer {
     }
     
         
-    public Command fireNote() {
+    private Command fireNote() {
         return indexer.setOrangeWheelsSurfaceSpeedCommand(7).withTimeout(0.1)
                .alongWith(new ScheduleCommand(leds.playFireNoteAnimationCommand()));
     }
 
-    public Command fireNoteThroughHood() {
+    private Command fireNoteThroughHood() {
         // The flywheels need to run longer than normal to make sure the note
         // makes it all the way through the slam dunk hood.
         return indexer.setOrangeWheelsSurfaceSpeedCommand(7).withTimeout(0.5)
@@ -360,7 +347,7 @@ public class RobotContainer {
         return aim.raceWith(waitForAlignment.andThen(fire));
     }
 
-    public Command speakerShot() {
+    private Command speakerShot() {
         PrepShot aim = new PrepShot(drivetrain, arm, shooter, charlie::getRequestedFieldOrientedVelocity, leds, FieldElement.SPEAKER);
         Command waitForAlignment = new WaitUntilCommand(aim::readyToShoot);
         Command fire = fireNote();
@@ -391,38 +378,49 @@ public class RobotContainer {
     private Command autoIntakeTowardsNote() {
         return new SequentialCommandGroup(
             new InstantCommand( () -> {this.goodPickup = false;} ),
-            intakeTowardsNote().finallyDo((boolean interrupted) -> {
-                this.goodPickup = !interrupted;
-            })
-            .until(noteIsTooFarForPickupInAuto).withTimeout(2.5)
+            intakeTowardsNote().finallyDo((boolean interrupted) -> {this.goodPickup = !interrupted;})
+                .until(noteIsTooFarForPickupInAuto).withTimeout(2.5)
         );
     }
 
 
-    private Command attemptPickupAfterShot(int ringNumber) {
+    /**
+     * Navigates from a scoring location to the pickup spot for the next note.
+     * @param targetRing - the note you want to pickup.
+     * @param ampSide - true if navigating from the amp side scoring location, false if navigating from the source side
+     */
+    private Command navigatePickupAfterShot(int targetRing, boolean fromAmpSide) {
         String pathName = "";
-        if (ringNumber == 8) {
+        if (targetRing == 8) {
             pathName = "Starting Line to Ring 8";
         }
-        if (ringNumber == 7) {
+        if (targetRing == 7) {
             pathName = "Mid Shot to Ring 7 (Around Stage)";
         }
-        if (ringNumber == 4) {
+        if (targetRing == 4) {
             pathName = "Starting Line to Ring 4 Pickup";
         }
-        if (ringNumber == 5) {
+        if (targetRing == 5) {
             pathName = "Wing Shot to Ring 5";
         }
-        return new SequentialCommandGroup(
-            new ParallelDeadlineGroup(
+        if (targetRing == 6 && fromAmpSide) {
+            pathName = "Wing Shot to Ring 6 (Amp Side)";
+        }
+        if (targetRing == 6 && !fromAmpSide) {
+            pathName = "Wing Shot to Ring 6 (Source Side)";
+        }
+        return new ParallelDeadlineGroup(
                 FlyingCircuitUtils.followPath(pathName),
-                resetShooter()
-            ),
-            autoIntakeTowardsNote()
-        );
+                resetShooter());
     }
 
-    private Command scoreRingAfterPickup(int ringNumber) {
+    /**
+     * Navigates from a note to a scoring location after a pickup.
+     * @param ringNumber - the note you are navigating from.
+     * @param ampSide - true if navigating to the amp side scoring location, false if navigating to the source side
+     */
+
+    private Command scoreRingAfterPickup(int ringNumber, boolean fromAmpSide) {
         String pathName = "";
         if (ringNumber == 8) {
             pathName = "Ring 8 to Mid Shot";
@@ -436,6 +434,13 @@ public class RobotContainer {
         if (ringNumber == 5) {
             pathName = "Ring 5 to Wing Shot";
         }
+        if (ringNumber == 6 && fromAmpSide) {
+            pathName = "Ring 6 to Wing Shot (Amp Side)";
+        }
+        if (ringNumber == 6 && !fromAmpSide) {
+            pathName = "Ring 6 to Mid Shot (Source Side)";
+        }
+        
         return new SequentialCommandGroup(
             new ParallelDeadlineGroup(
                 FlyingCircuitUtils.followPath(pathName),
@@ -446,49 +451,70 @@ public class RobotContainer {
     }
 
 
-    private Command ampSideAuto() {
+    public Command ampSideAuto() {
         return new SequentialCommandGroup(
             speakerShot(),
-            attemptPickupAfterShot(4),
-            new ConditionalCommand(new SequentialCommandGroup(
-                                        scoreRingAfterPickup(4),
-                                        attemptPickupAfterShot(5),
-                                        scoreRingAfterPickup(5)
-                                    ), 
-                                   switchToRing7(),
-                                   () -> {return this.goodPickup;}
-            )
+            navigatePickupAfterShot(4, true),
+            autoIntakeTowardsNote(),
+            //if you pickup a note, score it and go to ring 5
+            //otherwise just go to ring 5
+            new ConditionalCommand(
+                new SequentialCommandGroup(
+                    scoreRingAfterPickup(4, true),
+                    navigatePickupAfterShot(5, true)), 
+                FlyingCircuitUtils.followPath("Ring 4 to Ring 5"),
+                () -> {return this.goodPickup;}
+            ),
+            autoIntakeTowardsNote(),
+            //if you pickup a note, score it and go to ring 6
+            //otherwise just go to ring 6
+            new ConditionalCommand(
+                new SequentialCommandGroup(
+                    scoreRingAfterPickup(5, true),
+                    navigatePickupAfterShot(6, true)), 
+                FlyingCircuitUtils.followPath("Ring 5 to Ring 6"),
+                () -> {return this.goodPickup;}),
+            autoIntakeTowardsNote(),
+            //if you pickup ring 6, score it, otherwise sit and do nothing
+            new ConditionalCommand(
+                scoreRingAfterPickup(6, true),
+                new InstantCommand(),
+                () -> {return this.goodPickup;})
+
         );
     }
 
-    private Command sourceSideAuto() {
+    public Command sourceSideAuto() {
         return new SequentialCommandGroup(
             speakerShot(),
-            attemptPickupAfterShot(8),
-            new ConditionalCommand(new SequentialCommandGroup(
-                                        scoreRingAfterPickup(8),
-                                        attemptPickupAfterShot(7),
-                                        scoreRingAfterPickup(7)
-                                    ), 
-                                   switchToRing7(),
-                                   () -> {return this.goodPickup;}
-            )
-        );
-    }
-
-    private Command switchToRing7() {
-        return new SequentialCommandGroup(
-            FlyingCircuitUtils.followPath("Ring 8 to Ring 7"),
+            navigatePickupAfterShot(8, false),
             autoIntakeTowardsNote(),
-            scoreRingAfterPickup(7)
-        );
-    }
-
-    private Command switchToRing5() {
-        return new SequentialCommandGroup(
-            FlyingCircuitUtils.followPath("Ring 4 to Ring 5"),
+            //if you pickup ring 8, score it and go to ring 7
+            //otherwise just go to ring 7
+            new ConditionalCommand(
+                new SequentialCommandGroup(
+                    scoreRingAfterPickup(8, false),
+                    navigatePickupAfterShot(7, false)), 
+                FlyingCircuitUtils.followPath("Ring 8 to Ring 7"),
+                () -> {return this.goodPickup;}),
             autoIntakeTowardsNote(),
-            scoreRingAfterPickup(5)
+            //if you pickup ring 7, score it and go to ring 6
+            //otherwise just go to ring 6
+            new ConditionalCommand(
+                new SequentialCommandGroup(
+                    scoreRingAfterPickup(7, false),
+                    navigatePickupAfterShot(6, 
+                    false)
+                ), 
+                FlyingCircuitUtils.followPath("Ring 7 to Ring 6"),
+                () -> {return this.goodPickup;}),
+            autoIntakeTowardsNote(),
+            //if you pickup ring 6, score it, otherwise sit and do nothing
+            new ConditionalCommand(
+                scoreRingAfterPickup(6, false),
+                new InstantCommand(),
+                () -> {return this.goodPickup;})
+
         );
     }
 

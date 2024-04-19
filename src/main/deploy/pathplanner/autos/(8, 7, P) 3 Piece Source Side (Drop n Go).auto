@@ -28,7 +28,7 @@
                     {
                       "type": "named",
                       "data": {
-                        "name": null
+                        "name": "shartPreload"
                       }
                     },
                     {
@@ -110,7 +110,7 @@
                     {
                       "type": "named",
                       "data": {
-                        "name": null
+                        "name": "findAndScorePreload"
                       }
                     },
                     {

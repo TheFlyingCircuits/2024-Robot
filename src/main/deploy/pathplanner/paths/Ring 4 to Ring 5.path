@@ -3,25 +3,25 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 14.61,
-        "y": 4.1
+        "x": 8.27025654051308,
+        "y": 7.436381206571257
       },
       "prevControl": null,
       "nextControl": {
-        "x": 14.11,
-        "y": 4.1
+        "x": 8.27025654051308,
+        "y": 7.336381206571257
       },
       "isLocked": false,
-      "linkedName": "Source Side Speaker"
+      "linkedName": null
     },
     {
       "anchor": {
-        "x": 13.68,
-        "y": 4.101006107957202
+        "x": 8.317099886696207,
+        "y": 6.9679477447399965
       },
       "prevControl": {
-        "x": 14.18,
-        "y": 4.101006107957202
+        "x": 8.317099886696207,
+        "y": 7.067947744739996
       },
       "nextControl": null,
       "isLocked": false,
@@ -38,12 +38,15 @@
     "maxAngularAcceleration": 360.0
   },
   "goalEndState": {
-    "velocity": 0,
-    "rotation": 0.0,
+    "velocity": 0.0,
+    "rotation": 90.0,
     "rotateFast": true
   },
   "reversed": false,
-  "folder": "Pittsburgh Paths",
-  "previewStartingState": null,
+  "folder": "Gigachad Auto",
+  "previewStartingState": {
+    "rotation": 0,
+    "velocity": 0
+  },
   "useDefaultConstraints": true
 }

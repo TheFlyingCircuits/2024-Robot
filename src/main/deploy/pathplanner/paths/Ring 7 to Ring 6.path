@@ -3,50 +3,50 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 13.825345342998377,
-        "y": 5.555088802485298
+        "x": 8.293678213604645,
+        "y": 2.435854001522554
       },
       "prevControl": null,
       "nextControl": {
-        "x": 15.19980070729372,
-        "y": 5.826585060862431
+        "x": 8.293678213604645,
+        "y": 2.535854001522554
       },
-      "isLocked": true,
-      "linkedName": "Ring 2 Pickup (Slow)"
+      "isLocked": false,
+      "linkedName": null
     },
     {
       "anchor": {
-        "x": 13.83521228580919,
-        "y": 6.926593853187707
+        "x": 8.281967377058862,
+        "y": 2.962841646082722
       },
       "prevControl": {
-        "x": 15.474109434448673,
-        "y": 6.060475609756241
+        "x": 8.281967377058862,
+        "y": 2.862841646082722
       },
       "nextControl": null,
-      "isLocked": true,
-      "linkedName": "Ring 1 Pickup (Slow)"
+      "isLocked": false,
+      "linkedName": null
     }
   ],
   "rotationTargets": [],
   "constraintZones": [],
   "eventMarkers": [],
   "globalConstraints": {
-    "maxVelocity": 2.0,
-    "maxAcceleration": 2.0,
+    "maxVelocity": 4.5,
+    "maxAcceleration": 2.5,
     "maxAngularVelocity": 360.0,
     "maxAngularAcceleration": 360.0
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -26.0,
+    "rotation": -90.0,
     "rotateFast": true
   },
   "reversed": false,
-  "folder": "Buckeye Paths",
+  "folder": "Gigachad Auto",
   "previewStartingState": {
     "rotation": 0,
     "velocity": 0
   },
-  "useDefaultConstraints": false
+  "useDefaultConstraints": true
 }

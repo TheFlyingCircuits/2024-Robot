@@ -3,28 +3,28 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 10.815927785701726,
-        "y": 1.5787108497293916
+        "x": 13.212229562832878,
+        "y": 2.7637574248044356
       },
       "prevControl": null,
       "nextControl": {
-        "x": 10.120140336391545,
-        "y": 2.296958596250348
+        "x": 10.43676130148266,
+        "y": 0.9368669236625209
       },
-      "isLocked": true,
-      "linkedName": "Wing Shot (Source Side)"
+      "isLocked": false,
+      "linkedName": "Mid Shot (Source Side)"
     },
     {
       "anchor": {
-        "x": 8.46,
-        "y": 3.9
+        "x": 9.218834300721383,
+        "y": 3.0682391749947553
       },
       "prevControl": {
-        "x": 9.155787449310182,
-        "y": 3.181752253479044
+        "x": 10.612423849669383,
+        "y": 1.253059510398622
       },
       "nextControl": null,
-      "isLocked": true,
+      "isLocked": false,
       "linkedName": "Ring 6 Pickup (From Source Side Wing Shot)"
     }
   ],
@@ -38,7 +38,7 @@
     "maxAngularAcceleration": 360.0
   },
   "goalEndState": {
-    "velocity": 0,
+    "velocity": 0.5,
     "rotation": -45.89999999999998,
     "rotateFast": true
   },

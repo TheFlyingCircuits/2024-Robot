@@ -3,13 +3,13 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 8.46,
-        "y": 3.9
+        "x": 9.218834300721383,
+        "y": 3.0682391749947553
       },
       "prevControl": null,
       "nextControl": {
-        "x": 9.155912796592315,
-        "y": 3.1818737022368113
+        "x": 9.914747097313697,
+        "y": 2.3501128772315667
       },
       "isLocked": true,
       "linkedName": "Ring 6 Pickup (From Source Side Wing Shot)"
