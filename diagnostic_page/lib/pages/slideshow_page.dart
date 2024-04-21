@@ -29,7 +29,7 @@ class _SlideshowPageState extends State<SlideshowPage> {
 
   void _startAutoSlideShow() {
     if (_timer == null || !_timer!.isActive) {
-      _timer = Timer.periodic(const Duration(seconds: 5), (Timer t) {
+      _timer = Timer.periodic(const Duration(seconds: 3), (Timer t) {
         setState(() {
           slide = Slideshow.values[(slide.index + 1) % Slideshow.values.length];
         });
