@@ -72,15 +72,15 @@ public interface VisionIO {
          * List of all vision measurements from the last frame. This is empty if no measurement is present.
          * This array is sorted by the standard deviation of the measurement.
          */
-        public ArrayList<VisionMeasurement> visionMeasurements = new ArrayList<VisionMeasurement>();
+        public List<VisionMeasurement> visionMeasurements = new ArrayList<VisionMeasurement>();
 
         /**
-         * The 3D coordinates of the note in the robot coordinate frame.
+         * The 3D coordinates of every note detected by the intake camera in the robot coordinate frame.
          * Positive X is forward
          * Positive Y is left
          * Positive Z is up
          */
-        public Optional<Translation3d> nearestNoteRobotFrame = Optional.empty();
+        public List<Translation3d> detectedNotesRobotFrame = new ArrayList<Translation3d>();
 
     }
 
@@ -106,11 +106,12 @@ public interface VisionIO {
                 table.put(rootString+"/CameraName", meas.cameraName);
             }
 
+            for (int i = 0; i < detectedNotesRobotFrame.size(); i++) {
 
-            if (nearestNoteRobotFrame.isPresent())
-                table.put("NearestNote", nearestNoteRobotFrame.get());
-            else 
-                table.put("NearestNote", new Translation3d());
+                Translation3d note = detectedNotesRobotFrame.get(i);
+
+                table.put("DetectedNoteRobotFrame" + Integer.toString(i), note);
+            }
         }
 
         public void fromLog(LogTable table) {
@@ -132,15 +133,21 @@ public interface VisionIO {
                 double stdDevRot = table.get(rootString+"/StdDevRot", meas.stdDevs.get(2, 0));
                 meas.stdDevs = VecBuilder.fill(stdDevX, stdDevY, stdDevRot);
                 meas.cameraName = table.get(rootString+"/CameraName", "");
+
+                visionMeasurements.add(meas);
             }
 
-            //if there's no note seen, the table will return a default translation3d
-            //if that's the case, set the optional to empty.
-            if (table.get("NearestNote", new Translation3d()).equals(new Translation3d())) {
-                nearestNoteRobotFrame = Optional.of(table.get("NearestNote", new Translation3d()));
-            }
-            else {
-                nearestNoteRobotFrame = Optional.empty();
+            for (int i = 0;; i++) {
+
+                String entryName = "DetectedNoteRobotFrame" + Integer.toString(i);
+
+                if (table.get(entryName, 0) == 0) {
+                    break;
+                }
+
+                Translation3d note = table.get("DetectedNoteRobotFrame" + Integer.toString(i), new Translation3d());
+                detectedNotesRobotFrame.add(note);
+
             }
             
         }

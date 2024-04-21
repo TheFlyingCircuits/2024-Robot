@@ -14,6 +14,7 @@ import org.photonvision.PhotonPoseEstimator;
 import org.photonvision.PhotonUtils;
 import org.photonvision.PhotonPoseEstimator.PoseStrategy;
 import org.photonvision.targeting.PhotonPipelineResult;
+import org.photonvision.targeting.PhotonTrackedTarget;
 
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.math.Matrix;
@@ -145,7 +146,7 @@ public class VisionIOPhotonLib implements VisionIO {
 
         output.nearestTagDistanceMeters = pipelineResult.getBestTarget().getBestCameraToTarget().getTranslation().getDistance(new Translation3d());
         
-        if (output.nearestTagDistanceMeters > 5) {
+        if (output.nearestTagDistanceMeters > 6) {
             return Optional.empty();
         }
 
@@ -158,42 +159,48 @@ public class VisionIOPhotonLib implements VisionIO {
         return Optional.of(output);
     }
 
-    private Optional<Translation3d> updateIntakeCamera() {
+    private List<Translation3d> updateIntakeCamera() {
+
+        List<Translation3d> detectedNotes = new ArrayList<Translation3d>();
+
         PhotonPipelineResult noteCameraResult = noteCamera.getLatestResult();
-        if (!noteCameraResult.hasTargets()) {
-            return Optional.empty();
+
+        for (PhotonTrackedTarget target : noteCameraResult.getTargets()) {
+            // Negate the pitch and yaw that's reported by photon vision because
+            // their convention isn't consistent with a right handed coordinate system.
+            double nearestNoteYawDegrees = -target.getYaw();
+            double notePitchDegrees = -target.getPitch();
+
+            // Use the reported pitch and yaw to calculate a unit vector in the camera
+            // frame that points towards the note.
+            Rotation3d directionOfNote = new Rotation3d(0, Math.toRadians(notePitchDegrees), Math.toRadians(nearestNoteYawDegrees));
+            Translation3d unitTowardsNote = new Translation3d(1, directionOfNote);
+
+            // Start the process of finding the full 3D distance from the camera to the note
+            // by finding the coordinates of the normal vector of the floor,
+            // as seen in the camera frame.
+            Translation3d robotOrigin_robotFrame = new Translation3d();
+            Translation3d aboveTheFloor_robotFrame = new Translation3d(0, 0, 1);
+            Translation3d robotOrigin_camFrame = FlyingCircuitUtils.noteCameraCoordsFromRobotCoords(robotOrigin_robotFrame);
+            Translation3d aboveTheFloor_camFrame = FlyingCircuitUtils.noteCameraCoordsFromRobotCoords(aboveTheFloor_robotFrame);
+            Translation3d floorNormal_camFrame = aboveTheFloor_camFrame.minus(robotOrigin_camFrame);
+
+            // Find where the vector that points from the camera to the note intersects
+            // the plane of the floor.
+            Translation3d floorAnchor = robotOrigin_camFrame;
+            double distanceToNote = floorAnchor.toVector().dot(floorNormal_camFrame.toVector())
+                                    / unitTowardsNote.toVector().dot(floorNormal_camFrame.toVector());
+
+            // extend the original unit vector to the intersection point in the plane
+            Translation3d note_camFrame = unitTowardsNote.times(distanceToNote);
+            Translation3d note_robotFrame = FlyingCircuitUtils.robotCoordsFromNoteCameraCoords(note_camFrame);
+
+            detectedNotes.add(note_robotFrame);
         }
 
-        // Negate the pitch and yaw that's reported by photon vision because
-        // their convention isn't consistent with a right handed coordinate system.
-        double nearestNoteYawDegrees = -noteCameraResult.getBestTarget().getYaw();
-        double notePitchDegrees = -noteCameraResult.getBestTarget().getPitch();
 
-        // Use the reported pitch and yaw to calculate a unit vector in the camera
-        // frame that points towards the note.
-        Rotation3d directionOfNote = new Rotation3d(0, Math.toRadians(notePitchDegrees), Math.toRadians(nearestNoteYawDegrees));
-        Translation3d unitTowardsNote = new Translation3d(1, directionOfNote);
-
-        // Start the process of finding the full 3D distance from the camera to the note
-        // by finding the coordinates of the normal vector of the floor,
-        // as seen in the camera frame.
-        Translation3d robotOrigin_robotFrame = new Translation3d();
-        Translation3d aboveTheFloor_robotFrame = new Translation3d(0, 0, 1);
-        Translation3d robotOrigin_camFrame = FlyingCircuitUtils.noteCameraCoordsFromRobotCoords(robotOrigin_robotFrame);
-        Translation3d aboveTheFloor_camFrame = FlyingCircuitUtils.noteCameraCoordsFromRobotCoords(aboveTheFloor_robotFrame);
-        Translation3d floorNormal_camFrame = aboveTheFloor_camFrame.minus(robotOrigin_camFrame);
-
-        // Find where the vector that points from the camera to the note intersects
-        // the plane of the floor.
-        Translation3d floorAnchor = robotOrigin_camFrame;
-        double distanceToNote = floorAnchor.toVector().dot(floorNormal_camFrame.toVector())
-                                / unitTowardsNote.toVector().dot(floorNormal_camFrame.toVector());
-
-        // extend the original unit vector to the intersection point in the plane
-        Translation3d note_camFrame = unitTowardsNote.times(distanceToNote);
-        Translation3d note_robotFrame = FlyingCircuitUtils.robotCoordsFromNoteCameraCoords(note_camFrame);
             
-        return Optional.of(note_robotFrame);
+        return detectedNotes;
     }
 
 
@@ -219,6 +226,6 @@ public class VisionIOPhotonLib implements VisionIO {
             }
         });
 
-        inputs.nearestNoteRobotFrame = updateIntakeCamera();
+        inputs.detectedNotesRobotFrame = updateIntakeCamera();
     }
 }

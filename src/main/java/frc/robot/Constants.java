@@ -384,8 +384,8 @@ public final class Constants {
     public static enum FieldElement {
         SPEAKER(4, 7), AMP(5, 6), 
         STAGE_LEFT(11, 15), STAGE_RIGHT(12, 16), CENTER_STAGE(13, 14), 
-        LOB_TARGET(new Pose3d(AMP.redPose.interpolate(SPEAKER.redPose, 0.4).toPose2d()),
-                   new Pose3d(AMP.bluePose.interpolate(SPEAKER.bluePose, 0.4).toPose2d())
+        LOB_TARGET(new Pose3d(AMP.redPose.interpolate(SPEAKER.redPose, 0.2).toPose2d()),
+                   new Pose3d(AMP.bluePose.interpolate(SPEAKER.bluePose, 0.2).toPose2d())
         ), 
         CARPET(),
         NOTE_3(new Translation3d(FieldConstants.maxFieldCoords.getX() - Units.inchesToMeters(114), FieldConstants.midField.getY(), 0),

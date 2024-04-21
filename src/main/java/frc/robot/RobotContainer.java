@@ -48,6 +48,7 @@ import com.pathplanner.lib.commands.FollowPathCommand;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotBase;
@@ -59,6 +60,7 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelDeadlineGroup;
 import edu.wpi.first.wpilibj2.command.ScheduleCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -148,7 +150,7 @@ public class RobotContainer {
 
 
         noteIsTooFarForPickupInAuto = new Trigger(() -> {
-            if (!drivetrain.intakeSeesNote()) {
+            if (drivetrain.getBestNoteLocationRobotFrame().isEmpty()) {
                 return false; // keep driving if you don't see anything
             }
 
@@ -157,7 +159,9 @@ public class RobotContainer {
                 return true; // stop driving if we don't know what alliance we're on
             }
 
-            double noteX = drivetrain.getNearestNoteLocation().getX();
+            Translation2d noteLocation_robotFrame = drivetrain.getBestNoteLocationRobotFrame().get();
+            Translation2d noteLocation_fieldFrame = drivetrain.fieldCoordsFromRobotCoords(noteLocation_robotFrame);
+            double noteX = noteLocation_fieldFrame.getX();
             double midlineX = FieldConstants.midField.getX();
             double overshootAllowance = 2.0; // TODO: tune!
 
@@ -187,9 +191,19 @@ public class RobotContainer {
         CommandXboxController controller = charlie.getXboxController();
         /** INTAKE **/
         controller.rightTrigger()
-            .onTrue(intakeTowardsNote().andThen(new ScheduleCommand(
-                indexNote().andThen(reverseIntake().withTimeout(2))
-            )));
+            .onTrue(
+                //intake after note if on other side of the field
+                //new ConditionalCommand(
+                    intakeTowardsNote().andThen(new ScheduleCommand(
+                    indexNote().andThen(reverseIntake().withTimeout(2))))
+                //)),
+                //regular intake if on this side of the field
+                //intakeNote().andThen(indexNote()),
+                //() -> {return !drivetrain.inSpeakerShotRange();})
+            );
+
+
+
             //.onTrue(intakeNote().andThen(indexNote()));
             //.onTrue(indexNote().raceWith(resetShooter())); // reset never ends, indexNote does.
     
@@ -227,7 +241,8 @@ public class RobotContainer {
         controller.povUp().onTrue(climb.raiseHooksCommand());
         controller.povRight().onTrue(climb.lowerHooksCommand().until((climb::climbArmsZero)));
         controller.povDown().onTrue(climb.lowerHooksCommand().until(climb::atQuickClimbSetpoint));
-        controller.a().whileTrue(new UnderStageTrapRoutine(charlie::getRequestedFieldOrientedVelocity, climb, arm, shooter, drivetrain, this::fireNoteThroughHood));
+        controller.a().whileTrue(new UnderStageTrapRoutine(charlie::getRequestedFieldOrientedVelocity, climb, arm, shooter, drivetrain, this::fireNoteThroughHood))
+                .onFalse(new InstantCommand(() -> {drivetrain.useShooterCamera = true;}));
 
         //controller.povLeft().onTrue(arm.setDesiredDegreesCommand(ArmConstants.armMaxAngleDegrees));
 
@@ -238,8 +253,8 @@ public class RobotContainer {
         controller.x().onTrue(new InstantCommand(() -> arm.setDisableSetpointChecking(false)).andThen(resetShooter()));
 
         // controller.start().whileTrue(new MeasureWheelDiameter(drivetrain));
-        controller.start().whileTrue(sourceSideAuto());
-        controller.back().whileTrue(ampSideAuto());
+        // controller.start().whileTrue(sourceSideAuto());
+        // controller.back().whileTrue(ampSideAuto());
 
         /** Driver Feedback **/
         Trigger ringJustEnteredIntake = new Trigger(intake::ringJustEnteredIntake);
@@ -281,8 +296,8 @@ public class RobotContainer {
      * @return
      */
     private Command intakeNote() {
-        return new ScheduleCommand(leds.playIntakeAnimationCommand(drivetrain::intakeSeesNote))
-        .alongWith(this.runIntake().until(intake::ringJustEnteredIntake));
+        return new ScheduleCommand(leds.playIntakeAnimationCommand(() -> {return drivetrain.getBestNoteLocationRobotFrame().isPresent();}))
+            .alongWith(this.runIntake().until(intake::ringJustEnteredIntake));
     }
 
     private Command intakeTowardsNote() {
@@ -349,7 +364,7 @@ public class RobotContainer {
 
     private Command speakerShot() {
         PrepShot aim = new PrepShot(drivetrain, arm, shooter, charlie::getRequestedFieldOrientedVelocity, leds, FieldElement.SPEAKER);
-        Command waitForAlignment = new WaitUntilCommand(aim::readyToShoot);
+        Command waitForAlignment = new WaitUntilCommand(aim::readyToShoot).andThen(new WaitCommand(0.1));
         Command fire = fireNote();
         return aim.raceWith(waitForAlignment.andThen(fire));
     }
@@ -379,7 +394,7 @@ public class RobotContainer {
         return new SequentialCommandGroup(
             new InstantCommand( () -> {this.goodPickup = false;} ),
             intakeTowardsNote().finallyDo((boolean interrupted) -> {this.goodPickup = !interrupted;})
-                .until(noteIsTooFarForPickupInAuto).withTimeout(2.5)
+                .until(noteIsTooFarForPickupInAuto).withTimeout(1.5)
         );
     }
 
@@ -446,13 +461,14 @@ public class RobotContainer {
                 FlyingCircuitUtils.followPath(pathName),
                 autoIndexAndThenPrep()
             ),
+            new WaitCommand(0.1), //wait for vision to stabilize
             speakerShot()
         );
     }
 
 
     public Command ampSideAuto() {
-        return new SequentialCommandGroup(
+        Command ampAuto = new SequentialCommandGroup(
             speakerShot(),
             navigatePickupAfterShot(4, true),
             autoIntakeTowardsNote(),
@@ -461,7 +477,8 @@ public class RobotContainer {
             new ConditionalCommand(
                 new SequentialCommandGroup(
                     scoreRingAfterPickup(4, true),
-                    navigatePickupAfterShot(5, true)), 
+                    navigatePickupAfterShot(5, true)
+                ), 
                 FlyingCircuitUtils.followPath("Ring 4 to Ring 5"),
                 () -> {return this.goodPickup;}
             ),
@@ -471,7 +488,8 @@ public class RobotContainer {
             new ConditionalCommand(
                 new SequentialCommandGroup(
                     scoreRingAfterPickup(5, true),
-                    navigatePickupAfterShot(6, true)), 
+                    navigatePickupAfterShot(6, true)
+                ), 
                 FlyingCircuitUtils.followPath("Ring 5 to Ring 6"),
                 () -> {return this.goodPickup;}),
             autoIntakeTowardsNote(),
@@ -482,6 +500,8 @@ public class RobotContainer {
                 () -> {return this.goodPickup;})
 
         );
+        ampAuto.setName("HyperChad Amp Side");
+        return ampAuto;
     }
 
     public Command sourceSideAuto() {

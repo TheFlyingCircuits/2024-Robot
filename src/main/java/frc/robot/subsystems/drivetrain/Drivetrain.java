@@ -62,6 +62,7 @@ public class Drivetrain extends SubsystemBase {
     public boolean isTrackingSpeakerInAuto = false;
     /** True after a bump but before odometry has been corrected, false once a vision target is used to reset odometry. */
     private boolean hasBeenBumped = false;
+    public boolean useShooterCamera = true;
 
     private static Orchestra orchestra;
     private String[] songs = {
@@ -430,6 +431,10 @@ public class Drivetrain extends SubsystemBase {
         wheelsOnlyPoseEstimator.update(gyroInputs.robotYawRotation2d, getModulePositions());
 
         for (VisionMeasurement visionMeasurement : visionInputs.visionMeasurements) {
+            if (visionMeasurement.cameraName.equals("shooterCamera") && !useShooterCamera) {
+                continue;
+            }
+
             Translation2d visionTranslation = visionMeasurement.robotFieldPose.getTranslation();
             Translation2d estimatedTranslation = fusedPoseEstimator.getEstimatedPosition().getTranslation();
 
@@ -508,32 +513,23 @@ public class Drivetrain extends SubsystemBase {
 
     //**************** TARGET TRACKING (Speaker, Note, etc.) ****************/
 
+    /**
+     * Returns the best (largest) note that is valid (within the field boundary and within a certain distance).
+     * Returns an empty optional if no such note is detected.
+     */
+    public Optional<Translation2d> getBestNoteLocationRobotFrame() {
+        for (Translation3d noteRobotFrame3d : visionInputs.detectedNotesRobotFrame) {
+            Translation2d noteRobotFrame = noteRobotFrame3d.toTranslation2d();
+            Translation2d noteFieldFrame = fieldCoordsFromRobotCoords(noteRobotFrame);
 
-    public boolean intakeSeesNote() {
-        return visionInputs.nearestNoteRobotFrame.isPresent();
-    }
-
-    public Translation2d getNearestNoteLocation() {
-        if (visionInputs.nearestNoteRobotFrame.isEmpty()) {
-            return null; // TODO: decide what to do!
+            boolean closeToRobot = noteRobotFrame.getNorm() < 2.5;
+            boolean inField = !FlyingCircuitUtils.isOutsideOfField(noteFieldFrame, 0.5);
+            if (closeToRobot && inField) {
+                return Optional.of(noteRobotFrame);
+            }
         }
 
-        return fieldCoordsFromRobotCoords(visionInputs.nearestNoteRobotFrame.get()).toTranslation2d();
-    }
-
-    /**
-     * Gets the angle that the front of the robot needs to aim at in order to intake the nearest ring
-     * seen on the intake camera. This is used for the rotation override during auto.
-     * This rotation2d is empty if you can't see a note.
-     */
-    public Rotation2d getFieldRelativeRotationToNote() {
-        if (visionInputs.nearestNoteRobotFrame.isEmpty())
-            return new Rotation2d();
-
-        Rotation2d robotAngle = getPoseMeters().getRotation();
-        Rotation2d noteAngleToRobot = visionInputs.nearestNoteRobotFrame.get().toTranslation2d().getAngle().rotateBy(new Rotation2d(Math.PI));
-
-        return robotAngle.plus(noteAngleToRobot);
+        return Optional.empty();
     }
 
 
@@ -553,30 +549,15 @@ public class Drivetrain extends SubsystemBase {
 
     public void driveTowardsNote(Supplier<ChassisSpeeds> howToDriveWhenNoNoteDetected) {
 
-        boolean dontDriveTowardsNote = false;
-        Optional<Translation3d> noteOptional = visionInputs.nearestNoteRobotFrame;
-
-        if (noteOptional.isEmpty()) {
-            dontDriveTowardsNote = true;
-        }
-        //distance from the robot to note is greater than 2.5 m
-        else if (noteOptional.get().getNorm() > 2.5) {
-            dontDriveTowardsNote = true;
-        }
-        //detected note is outside of field by 0.5 m
-        else if (FlyingCircuitUtils.isOutsideOfField(fieldCoordsFromRobotCoords(noteOptional.get().toTranslation2d()), 0.5)) {
-            dontDriveTowardsNote = true;
-        }
-
-
-        if (dontDriveTowardsNote) {
+        if (getBestNoteLocationRobotFrame().isEmpty()) {
             this.fieldOrientedDrive(howToDriveWhenNoNoteDetected.get(), true);
             return;
         }
 
         double maxAccel = 2.35; // 2.35 [meters per second per second] (emperically determined)
 
-        double distanceToNote = visionInputs.nearestNoteRobotFrame.get().toTranslation2d().getDistance(new Translation2d());
+        Translation2d noteLocation_robotFrame = getBestNoteLocationRobotFrame().get();
+        double distanceToNote = noteLocation_robotFrame.getNorm();
 
 
         // Physics 101: under constant accel -> v_final^2 = v_initial^2 + 2 * accel * displacement
@@ -589,10 +570,13 @@ public class Drivetrain extends SubsystemBase {
 
         
 
+        Rotation2d robotAngle = getPoseMeters().getRotation();
+        Rotation2d noteAngleToRobot = noteLocation_robotFrame.getAngle();
+
         // direction to drive is opposite of the direction to point because the
         // intake is in the back of the robot.
-        Rotation2d directionToPoint = this.getFieldRelativeRotationToNote();
-        Rotation2d directionToDrive = directionToPoint.rotateBy(Rotation2d.fromDegrees(180));
+        Rotation2d directionToDrive = robotAngle.plus(noteAngleToRobot);
+        Rotation2d directionToPoint = directionToDrive.rotateBy(new Rotation2d(Math.PI));
 
         ChassisSpeeds desiredVelocity = new ChassisSpeeds();
         desiredVelocity.vxMetersPerSecond = desiredSpeed * directionToDrive.getCos();
@@ -693,15 +677,13 @@ public class Drivetrain extends SubsystemBase {
 
         Logger.recordOutput("drivetrain/anglePIDSetpoint", Rotation2d.fromDegrees(angleController.getSetpoint()));
         Logger.recordOutput("drivetrain/isAligned", isAligned());
-        Logger.recordOutput("drivetrain/fieldRelativeRotationToNote", getFieldRelativeRotationToNote());
 
 
         // Note tracking visualization
-        if (visionInputs.nearestNoteRobotFrame.isPresent()) {
-            Translation2d noteRelativeToRobot = visionInputs.nearestNoteRobotFrame.get().toTranslation2d();
-            Translation2d noteRelativeToField = fieldCoordsFromRobotCoords(noteRelativeToRobot);
-            Logger.recordOutput("drivetrain/trackedNotePose", new Pose2d(noteRelativeToField, new Rotation2d()));
-            Logger.recordOutput("drivetrain/trackedNoteDistance", noteRelativeToRobot.getNorm());
+        if (getBestNoteLocationRobotFrame().isPresent()) {
+            Translation2d noteFieldFrame = fieldCoordsFromRobotCoords(getBestNoteLocationRobotFrame().get());
+            Logger.recordOutput("drivetrain/trackedNotePose", new Pose2d(noteFieldFrame, new Rotation2d()));
+            Logger.recordOutput("drivetrain/trackedNoteDistance", noteFieldFrame.getNorm());
         }
         else {
             Logger.recordOutput("drivetrain/trackedNotePose", getPoseMeters());
