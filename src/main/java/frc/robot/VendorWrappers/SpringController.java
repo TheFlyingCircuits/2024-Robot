@@ -149,8 +149,10 @@ public class SpringController {
          */
         double freshExternalTorques = momentOfInertia * (mechanism.acceleration - expectedAccel);
         runningTotalOfMeasuredTorques += freshExternalTorques;
+        runningTotalOfMeasuredTorques = 0;
 
         double idealTorqueToApply = desiredTorque - (sumOfKnownExternalTorques + runningTotalOfMeasuredTorques);
+        idealTorqueToApply = 1.0;
 
         // Log some data before returning
         Logger.recordOutput("spring/desiredTorque", desiredTorque);
@@ -226,7 +228,7 @@ public class SpringController {
         double motorRadiansPerSecond = mechanism.velocity / mechanismRotationsPerMotorRotation;
         double inducedVolts = -motorRadiansPerSecond * Kraken.kEMF;
 
-        double voltsToApply = torquePerMotor * (Kraken.windingResistance / Kraken.torquePerAmp) - inducedVolts;
+        double voltsToApply = -inducedVolts; //torquePerMotor * (Kraken.windingResistance / Kraken.torquePerAmp) - inducedVolts;
 
         // Log some info before returning
         Logger.recordOutput("spring/voltsToApply", voltsToApply);
@@ -242,6 +244,11 @@ public class SpringController {
         private double prevPosition;
         private double prevVelocity;
         private Timer timer = new Timer();
+
+        private int avgSize = 8;
+        private LinearFilter positionFilter = LinearFilter.movingAverage(avgSize);
+        private LinearFilter velocityFilter = LinearFilter.movingAverage(avgSize);
+        private LinearFilter accelFilter = LinearFilter.movingAverage(avgSize);
 
         public KinematicsTracker(double initialPosition) {
             this.position = initialPosition;
@@ -262,9 +269,15 @@ public class SpringController {
             double deltaT = timer.get();
             timer.restart();
 
-            position = newPosition;
-            velocity = (position - prevPosition) / deltaT;
-            acceleration = (velocity - prevVelocity) / deltaT;
+            double rawPosition = newPosition;
+            position = rawPosition;//positionFilter.calculate(rawPosition);
+
+            double rawVelocity = (position - prevPosition) / deltaT;
+            velocity = velocityFilter.calculate(rawVelocity);
+
+            double rawAccelteration = (velocity - prevVelocity) / deltaT;
+            acceleration = accelFilter.calculate(rawAccelteration);
+
         }
     }
 }

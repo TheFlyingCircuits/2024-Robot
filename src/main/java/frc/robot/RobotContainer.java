@@ -249,7 +249,10 @@ public class RobotContainer {
             double desiredDegrees = SmartDashboard.getNumber("desiredDegrees", 0);
             SmartDashboard.putNumber("desiredDegrees", desiredDegrees);
             shooter.setLeftFlywheelDegrees(desiredDegrees);
-        }));
+        }))
+        .onFalse(
+            shooter.run(() -> {shooter.setBothFlywheelsMetersPerSecond(0);})
+        );
 
         //controller.povLeft().onTrue(arm.setDesiredDegreesCommand(ArmConstants.armMaxAngleDegrees));
 
