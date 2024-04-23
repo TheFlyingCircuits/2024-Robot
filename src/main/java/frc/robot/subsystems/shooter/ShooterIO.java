@@ -19,6 +19,8 @@ public interface ShooterIO {
         
         public double leftMotorOutputCurrent = 0.0;
         public double rightMotorOutputCurrent = 0.0;
+
+        public double leftFlywheelRadians = 0.0;
     }
 
     public default void updateInputs(ShooterIOInputs inputs) {};

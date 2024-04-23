@@ -34,6 +34,8 @@ public class ShooterIOKraken implements ShooterIO {
 
         inputs.leftMotorOutputCurrent = leftMotor.getTorqueCurrent().getValueAsDouble();
         inputs.rightMotorOutputCurrent = rightMotor.getTorqueCurrent().getValueAsDouble();
+
+        inputs.leftFlywheelRadians = leftMotor.getPosition().getValueAsDouble()*2*Math.PI;
     }
 
     private void configMotors() {

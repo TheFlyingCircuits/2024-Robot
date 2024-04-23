@@ -4,9 +4,11 @@ import org.littletonrobotics.junction.Logger;
 
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.ShooterConstants;
+import frc.robot.VendorWrappers.SpringController;
 
 public class Shooter extends SubsystemBase {
     private ShooterIO io;
@@ -32,6 +34,14 @@ public class Shooter extends SubsystemBase {
      */
     private SimpleMotorFeedforward flywheelsFeedforward;
 
+    private SpringController leftFlywheelSpringController;
+    private double stealthWheelMass = Units.lbsToKilograms(0.23);
+    private double stealthWheelRadius = Units.inchesToMeters(2.0);
+    private double stealthWheelsPerFlywheel = 4.0;
+    private double flywheelsPerMotor = 2.0;
+    private double stealthWheelMomentOfInertia = 0.5 * stealthWheelMass * stealthWheelRadius * stealthWheelRadius;
+    private double flywheelMomentOfInertia = stealthWheelMomentOfInertia * stealthWheelsPerFlywheel * flywheelsPerMotor;
+
 
     public Shooter(ShooterIO io) {
         this.io = io;
@@ -55,6 +65,8 @@ public class Shooter extends SubsystemBase {
 
         leftFlywheelsPID.setTolerance(1.0);
         rightFlywheelsPID.setTolerance(1.0);
+
+        leftFlywheelSpringController = new SpringController(flywheelMomentOfInertia, 1.0, 0.0);
     }
 
     /**
@@ -66,6 +78,12 @@ public class Shooter extends SubsystemBase {
         double feedforwardOutput = flywheelsFeedforward.calculate(metersPerSecond);
         double pidOutput = leftFlywheelsPID.calculate(inputs.leftFlywheelsMetersPerSecond, metersPerSecond);
         io.setLeftMotorVolts(feedforwardOutput + pidOutput);
+    }
+
+    public void setLeftFlywheelDegrees(double desiredDegrees) {
+        double desiredRadians = Math.toRadians(desiredDegrees);
+        double volts = leftFlywheelSpringController.getVoltsPerMotor(inputs.leftFlywheelRadians, desiredRadians, 1);
+        io.setLeftMotorVolts(volts);
     }
 
     /**
