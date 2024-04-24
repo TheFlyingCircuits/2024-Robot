@@ -92,6 +92,7 @@ public class SpringController {
         // we can compute how much torque must be applied to our mechanism
         // in order to achieve the desiredAccel
         double desiredTorque = desiredAccel * momentOfInertia;
+        desiredTorque = 1.0; // testing torque control
 
         /* Note that our mechanism will only have the desired motion
          * if the desiredTorque happens to be the NET torque on the mechanism.
@@ -152,7 +153,6 @@ public class SpringController {
         runningTotalOfMeasuredTorques = 0;
 
         double idealTorqueToApply = desiredTorque - (sumOfKnownExternalTorques + runningTotalOfMeasuredTorques);
-        idealTorqueToApply = 1.0;
 
         // Log some data before returning
         Logger.recordOutput("spring/desiredTorque", desiredTorque);
@@ -228,7 +228,7 @@ public class SpringController {
         double motorRadiansPerSecond = mechanism.velocity / mechanismRotationsPerMotorRotation;
         double inducedVolts = -motorRadiansPerSecond * Kraken.kEMF;
 
-        double voltsToApply = -inducedVolts; //torquePerMotor * (Kraken.windingResistance / Kraken.torquePerAmp) - inducedVolts;
+        double voltsToApply = torquePerMotor * (Kraken.windingResistance / Kraken.torquePerAmp) - inducedVolts;
 
         // Log some info before returning
         Logger.recordOutput("spring/voltsToApply", voltsToApply);
