@@ -8,6 +8,7 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.ShooterConstants;
+import frc.robot.VendorWrappers.Kraken;
 import frc.robot.VendorWrappers.SpringController;
 
 public class Shooter extends SubsystemBase {
@@ -66,6 +67,7 @@ public class Shooter extends SubsystemBase {
         leftFlywheelsPID.setTolerance(1.0);
         rightFlywheelsPID.setTolerance(1.0);
 
+        flywheelMomentOfInertia = (1./392.722);
         leftFlywheelSpringController = new SpringController(flywheelMomentOfInertia, 1.0, 0.0);
     }
 
@@ -82,8 +84,22 @@ public class Shooter extends SubsystemBase {
 
     public void setLeftFlywheelDegrees(double desiredDegrees) {
         double desiredRadians = Math.toRadians(desiredDegrees);
-        double volts = leftFlywheelSpringController.getVoltsPerMotor(inputs.leftFlywheelRadians, desiredRadians, 1);
-        io.setLeftMotorVolts(volts);
+        // double volts = leftFlywheelSpringController.getVoltsPerMotor(inputs.leftFlywheelRadians, desiredRadians, 1);
+        // io.setLeftMotorVolts(volts);
+        // double volts = leftFlywheelSpringController.getVoltsPerMotor(inputs.leftFlywheelRadians, desiredRadians, 1);
+        // io.setRightMotorVolts(volts);
+        // double torque = 1.0;
+        // double amps = (torque / Kraken.torquePerAmp);
+        // Logger.recordOutput("spring/desiredAmps", amps);
+        // io.setLeftMotorAmps(amps);
+        double amps = leftFlywheelSpringController.getAmpsPerMotor(inputs.leftFlywheelRadians, desiredRadians, 1);
+        io.setLeftMotorAmps(amps);
+    }
+
+    public void updateKinematics(double desiredDegrees) {
+        double desiredRadians = Math.toRadians(desiredDegrees);
+        double amps = leftFlywheelSpringController.getAmpsPerMotor(inputs.leftFlywheelRadians, desiredRadians, 1);
+        io.setLeftMotorVolts(0);
     }
 
     /**

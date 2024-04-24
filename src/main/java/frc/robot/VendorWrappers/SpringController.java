@@ -15,23 +15,31 @@ public class SpringController {
     KinematicsTracker setpoint;
 
     private double momentOfInertia = 0;
+    private double rawMoment = 0;
     private double mechanismRotationsPerMotorRotation = 0;
 
     private double sumOfKnownExternalTorques = 0;
     private double runningTotalOfMeasuredTorques = 0;
     private double expectedAccel = 0;
+    private LinearFilter expectedAccelFilter = LinearFilter.movingAverage(KinematicsTracker.avgSize);
 
     public SpringController(double momentOfInertia, double mechanismRotationsPerMotorRotation, double initialPosition) {
         this.momentOfInertia = momentOfInertia;
         this.mechanismRotationsPerMotorRotation = mechanismRotationsPerMotorRotation;
         mechanism = new KinematicsTracker(initialPosition);
         setpoint = new KinematicsTracker(initialPosition);
+
+        this.rawMoment = this.momentOfInertia;
     }
 
     public double getDesiredAccel(double measuredPosition, double desiredPosition) {
         // Calculate some kinematic variables for the mechanism and the setpoint
         mechanism.update(measuredPosition);
         setpoint.update(desiredPosition);
+        double momentScalar = SmartDashboard.getNumber("momentScalar", 1.0);
+        SmartDashboard.putNumber("momentScalar", momentScalar);
+        this.momentOfInertia = this.rawMoment * momentScalar;
+        Logger.recordOutput("spring/momentOfInertia", momentOfInertia);
 
         // Get a view of the mechanism's motion relative to the setpoint
         double relativePosition = mechanism.position - setpoint.position;
@@ -53,7 +61,7 @@ public class SpringController {
          * our system will be critically damped and have no overshoot!
          */
         double springConstant = SmartDashboard.getNumber("springConstant", 0); // TODO: tune me!
-        SmartDashboard.putNumber("springConstant", springConstant);
+        SmartDashboard.putNumber("springConstant", springConstant); // 0.5
         double dampingConstant = Math.sqrt(4 * momentOfInertia * springConstant);
 
         double desiredRelativeAccel = ((-springConstant/momentOfInertia)*relativePosition) + ((-dampingConstant/momentOfInertia)*relativeVelocity);
@@ -92,7 +100,6 @@ public class SpringController {
         // we can compute how much torque must be applied to our mechanism
         // in order to achieve the desiredAccel
         double desiredTorque = desiredAccel * momentOfInertia;
-        desiredTorque = 1.0; // testing torque control
 
         /* Note that our mechanism will only have the desired motion
          * if the desiredTorque happens to be the NET torque on the mechanism.
@@ -176,7 +183,7 @@ public class SpringController {
 
         /* Make sure we don't ask for more torque from the motor than it can provide.
          * TODO: documentation/derivation?
-         * TODO: Measure rotor velocity directly instead of inferring form ger ratio?
+         * TODO: Measure rotor velocity directly instead of inferring from gear ratio?
          * TODO: Measure available voltage directly from the motor controller to account
          *       for resistive losses through the PDH?
          * TODO: fill in with the correct motor type (Neo vs Kraken).
@@ -189,7 +196,7 @@ public class SpringController {
         double minTorqueFromSingleMotor = Kraken.torquePerAmp * ((-availableVolts + inducedVolts) / Kraken.windingResistance);
         double realisticTorquePerMotor = MathUtil.clamp(idealTorquePerMotor, minTorqueFromSingleMotor, maxTorqueFromSingleMotor);
 
-        double maxSafeTorque = SmartDashboard.getNumber("maxSafeTorque", 0);
+        double maxSafeTorque = SmartDashboard.getNumber("maxSafeTorque", 0); // 10
         SmartDashboard.putNumber("maxSafeTorque", maxSafeTorque);
         realisticTorquePerMotor = MathUtil.clamp(realisticTorquePerMotor, -maxSafeTorque, maxSafeTorque);
 
@@ -203,7 +210,8 @@ public class SpringController {
          * then expectedAccel probably won't be close to the desiredAccel.
          */
         double expectedNetTorque = realisticTorqueToApply + sumOfKnownExternalTorques + runningTotalOfMeasuredTorques;
-        expectedAccel = expectedNetTorque / momentOfInertia; // TODO: SMOOTH EXPECTED ACCEL TO PREVENT PHANTOM FORCES!!!
+        double rawExpectedAccel = expectedNetTorque / momentOfInertia; // TODO: SMOOTH EXPECTED ACCEL TO PREVENT PHANTOM FORCES!!!
+        expectedAccel = expectedAccelFilter.calculate(rawExpectedAccel);
 
         // Log some values before returning
         Logger.recordOutput("spring/idealTorquePerMotor", idealTorquePerMotor);
@@ -230,9 +238,20 @@ public class SpringController {
 
         double voltsToApply = torquePerMotor * (Kraken.windingResistance / Kraken.torquePerAmp) - inducedVolts;
 
+        double desiredAmps = torquePerMotor / Kraken.torquePerAmp;
+        voltsToApply = (desiredAmps * Kraken.windingResistance) - inducedVolts;
+
         // Log some info before returning
         Logger.recordOutput("spring/voltsToApply", voltsToApply);
         return voltsToApply;
+    }
+
+    public double getAmpsPerMotor(double measuredPosition, double desiredPosition, int numMotors) {
+        double torqueToApply = getRealisticTorqueToApply(measuredPosition, desiredPosition, numMotors);
+        double torquePerMotor = torqueToApply / numMotors;
+        double ampsPerMotor = torquePerMotor / Kraken.torquePerAmp;
+        Logger.recordOutput("spring/ampsToApply", ampsPerMotor);
+        return ampsPerMotor;
     }
 
 
@@ -245,7 +264,7 @@ public class SpringController {
         private double prevVelocity;
         private Timer timer = new Timer();
 
-        private int avgSize = 8;
+        public static int avgSize = 2;
         private LinearFilter positionFilter = LinearFilter.movingAverage(avgSize);
         private LinearFilter velocityFilter = LinearFilter.movingAverage(avgSize);
         private LinearFilter accelFilter = LinearFilter.movingAverage(avgSize);
@@ -275,9 +294,8 @@ public class SpringController {
             double rawVelocity = (position - prevPosition) / deltaT;
             velocity = velocityFilter.calculate(rawVelocity);
 
-            double rawAccelteration = (velocity - prevVelocity) / deltaT;
-            acceleration = accelFilter.calculate(rawAccelteration);
-
+            double rawAcceleration = (velocity - prevVelocity) / deltaT;
+            acceleration = accelFilter.calculate(rawAcceleration);
         }
     }
 }

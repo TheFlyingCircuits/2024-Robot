@@ -1,6 +1,7 @@
 package frc.robot.subsystems.shooter;
 
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.controls.TorqueCurrentFOC;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
@@ -36,6 +37,7 @@ public class ShooterIOKraken implements ShooterIO {
         inputs.rightMotorOutputCurrent = rightMotor.getTorqueCurrent().getValueAsDouble();
 
         inputs.leftFlywheelRadians = leftMotor.getPosition().getValueAsDouble()*2*Math.PI;
+        inputs.rightFlywheelRadians = rightMotor.getPosition().getValueAsDouble()*2*Math.PI;
     }
 
     private void configMotors() {
@@ -53,6 +55,9 @@ public class ShooterIOKraken implements ShooterIO {
         rightConfig.CurrentLimits.StatorCurrentLimit = 90;
         rightConfig.CurrentLimits.StatorCurrentLimitEnable = true;
         rightMotor.applyConfig(rightConfig);
+
+        leftMotor.setPosition(0);
+        rightMotor.setPosition(0);
     }
 
     @Override
@@ -72,5 +77,15 @@ public class ShooterIOKraken implements ShooterIO {
 
 
         rightMotor.setVoltage(volts);
+    }
+
+    public void setLeftMotorAmps(double amps) {
+        TorqueCurrentFOC ampRequest = new TorqueCurrentFOC(amps);
+        leftMotor.setControl(ampRequest);
+    }
+
+    public void setRightMotorAmps(double amps) {
+        TorqueCurrentFOC ampRequest = new TorqueCurrentFOC(amps);
+        rightMotor.setControl(ampRequest);
     }
 }
