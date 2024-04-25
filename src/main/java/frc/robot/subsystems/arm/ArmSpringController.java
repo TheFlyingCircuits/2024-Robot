@@ -108,7 +108,7 @@ public class ArmSpringController {
         // we can compute how much torque must be applied to our mechanism
         // in order to achieve the desiredAccel
         double desiredTorque = desiredAccel * momentOfInertia;
-        desiredTorque = 0.2;
+        desiredTorque = 0.0;
 
         /* Note that our mechanism will only have the desired motion
          * if the desiredTorque happens to be the NET torque on the mechanism.
@@ -156,6 +156,11 @@ public class ArmSpringController {
          * unmodeledForces = mass * (measuredAccel - expectedAccel)
          */
         sumOfKnownExternalTorques = 0; // TODO: fill in with known forces
+        double torqueFromGravity = -20.5858 * Math.cos(mechanism.position);
+        torqueFromGravity = -0.1;
+        torqueFromGravity = SmartDashboard.getNumber("torqueGrav", 0);
+        SmartDashboard.putNumber("torqueGrav", torqueFromGravity);
+        sumOfKnownExternalTorques += -torqueFromGravity;
 
         /* By adding the unmodeled forces to a running total
          * (instead of just calculating them on this iteration and forgetting

@@ -39,7 +39,7 @@ public class Kraken extends TalonFX {
 
     /** How many volts are induced in the motor windings by the permanent magnets on the rotor
      *  for each radian-per-second that the rotor is spinning at. */
-    public static final double kEMF = (nominalVoltage - freeCurrent * windingResistance) / freeSpeed;
+    public static final double kEMF = (nominalVoltage - (freeCurrent * windingResistance)) / freeSpeed;
 
     /** How we should refer to this motor in error messages. */
     private String name;

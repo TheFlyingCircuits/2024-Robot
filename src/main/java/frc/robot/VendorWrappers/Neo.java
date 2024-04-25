@@ -47,7 +47,7 @@ public class Neo extends CANSparkMax {
 
     /** How many volts are induced in the motor windings by the permanent magnets on the rotor
      *  for each radian-per-second that the rotor is spinning at. */
-    public static final double kEMF = (nominalVoltage - freeCurrent * windingResistance) / freeSpeed;
+    public static final double kEMF = (nominalVoltage - (freeCurrent * windingResistance)) / freeSpeed;
 
     public Neo(int canID) {
         this("Neo #"+canID, canID);
