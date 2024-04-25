@@ -42,6 +42,7 @@ public class Shooter extends SubsystemBase {
     private double flywheelsPerMotor = 2.0;
     private double stealthWheelMomentOfInertia = 0.5 * stealthWheelMass * stealthWheelRadius * stealthWheelRadius;
     private double flywheelMomentOfInertia = stealthWheelMomentOfInertia * stealthWheelsPerFlywheel * flywheelsPerMotor;
+    private boolean springNeedsReset = true;
 
 
     public Shooter(ShooterIO io) {
@@ -83,6 +84,10 @@ public class Shooter extends SubsystemBase {
     }
 
     public void setLeftFlywheelDegrees(double desiredDegrees) {
+        if (springNeedsReset) {
+            leftFlywheelSpringController.reset();
+            springNeedsReset = false;
+        }
         double desiredRadians = Math.toRadians(desiredDegrees);
         // double volts = leftFlywheelSpringController.getVoltsPerMotor(inputs.leftFlywheelRadians, desiredRadians, 1);
         // io.setLeftMotorVolts(volts);
@@ -92,14 +97,15 @@ public class Shooter extends SubsystemBase {
         // double amps = (torque / Kraken.torquePerAmp);
         // Logger.recordOutput("spring/desiredAmps", amps);
         // io.setLeftMotorAmps(amps);
-        double amps = leftFlywheelSpringController.getAmpsPerMotor(inputs.leftFlywheelRadians, desiredRadians, 1);
-        io.setLeftMotorAmps(amps);
+        double amps = leftFlywheelSpringController.getAmpsPerMotor(inputs.rightFlywheelRadians, desiredRadians, 1);
+        io.setRightMotorAmps(amps);
     }
 
     public void updateKinematics(double desiredDegrees) {
+        springNeedsReset = true;
         double desiredRadians = Math.toRadians(desiredDegrees);
-        double amps = leftFlywheelSpringController.getAmpsPerMotor(inputs.leftFlywheelRadians, desiredRadians, 1);
-        io.setLeftMotorVolts(0);
+        double amps = leftFlywheelSpringController.getAmpsPerMotor(inputs.rightFlywheelRadians, desiredRadians, 1);
+        io.setRightMotorVolts(0);
     }
 
     /**

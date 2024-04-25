@@ -32,6 +32,13 @@ public class SpringController {
         this.rawMoment = this.momentOfInertia;
     }
 
+    public void reset() {
+        runningTotalOfMeasuredTorques = 0;
+        expectedAccelFilter.reset();
+        mechanism.reset();
+        setpoint.reset();
+    }
+
     public double getDesiredAccel(double measuredPosition, double desiredPosition) {
         // Calculate some kinematic variables for the mechanism and the setpoint
         mechanism.update(measuredPosition);
@@ -264,7 +271,7 @@ public class SpringController {
         private double prevVelocity;
         private Timer timer = new Timer();
 
-        public static int avgSize = 2;
+        public static int avgSize = 3; // 8 introduces too much delay and oscillation!
         private LinearFilter positionFilter = LinearFilter.movingAverage(avgSize);
         private LinearFilter velocityFilter = LinearFilter.movingAverage(avgSize);
         private LinearFilter accelFilter = LinearFilter.movingAverage(avgSize);
@@ -289,13 +296,20 @@ public class SpringController {
             timer.restart();
 
             double rawPosition = newPosition;
-            position = rawPosition;//positionFilter.calculate(rawPosition);
+            position = rawPosition; //positionFilter.calculate(rawPosition);
 
             double rawVelocity = (position - prevPosition) / deltaT;
             velocity = velocityFilter.calculate(rawVelocity);
 
             double rawAcceleration = (velocity - prevVelocity) / deltaT;
             acceleration = accelFilter.calculate(rawAcceleration);
+
+            // position += 0.5 * acceleration * deltaT * deltaT + velocity * deltaT;
+        }
+
+        public void reset() {
+            velocityFilter.reset();
+            accelFilter.reset();
         }
     }
 }

@@ -56,7 +56,7 @@ public class Arm extends SubsystemBase {
     private SysIdRoutine sysIdRoutine;
     private boolean disableSetpointChecking = false;
 
-    private ArmSpringController spring = new ArmSpringController();
+    private ArmSpringController spring = new ArmSpringController(1, 1./ArmConstants.armGearReduction, ArmConstants.armMinAngleDegrees);
     
 
     public Arm(ArmIO armIO) {
@@ -258,6 +258,9 @@ public class Arm extends SubsystemBase {
         else {
             io.setArmMotorVolts(0);
         }
+
+        // double springVolts = spring.getVoltsPerMotor(Math.toRadians(inputs.armAngleDegrees), Math.toRadians(targetAngleDegrees), 2);
+        // io.setArmMotorVolts(springVolts);
 
         mechLigament.setAngle(inputs.armAngleDegrees);
 

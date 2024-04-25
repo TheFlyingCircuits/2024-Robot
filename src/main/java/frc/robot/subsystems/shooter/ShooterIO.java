@@ -22,6 +22,12 @@ public interface ShooterIO {
 
         public double leftFlywheelRadians = 0.0;
         public double rightFlywheelRadians = 0.0;
+
+        public double leftFlywheelRadiansPerSecond = 0.0;
+        public double rightFlywheelRadiansPerSecond = 0.0;
+
+        public double leftFlywheelRadiansPerSecondSquared = 0.0;
+        public double rightFlywheelRadiansPerSecondSquared = 0.0;
     }
 
     public default void updateInputs(ShooterIOInputs inputs) {};

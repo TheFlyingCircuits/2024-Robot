@@ -245,14 +245,14 @@ public class RobotContainer {
         // controller.a().whileTrue(new UnderStageTrapRoutine(charlie::getRequestedFieldOrientedVelocity, climb, arm, shooter, drivetrain, this::fireNoteThroughHood))
         //         .onFalse(new InstantCommand(() -> {drivetrain.useShooterCamera = true;}));
 
-        controller.a().whileTrue(shooter.run(() -> {
-            double desiredDegrees = SmartDashboard.getNumber("desiredDegrees", 0);
-            SmartDashboard.putNumber("desiredDegrees", desiredDegrees);
-            shooter.setLeftFlywheelDegrees(desiredDegrees);
-        }))
-        .whileFalse(
-            shooter.run(() -> {shooter.updateKinematics(0);})
-        );
+        // controller.a().whileTrue(shooter.run(() -> {
+        //     double desiredDegrees = SmartDashboard.getNumber("desiredDegrees", 0);
+        //     SmartDashboard.putNumber("desiredDegrees", desiredDegrees);
+        //     shooter.setLeftFlywheelDegrees(desiredDegrees);
+        // }))
+        // .whileFalse(
+        //     shooter.run(() -> {shooter.updateKinematics(0);})
+        // );
 
         //controller.povLeft().onTrue(arm.setDesiredDegreesCommand(ArmConstants.armMaxAngleDegrees));
 
