@@ -141,4 +141,11 @@ public class ArmIONeo implements ArmIO {
         rightAbsoluteEncoder.getConfigurator().apply(rightCANCoderConfig);
     }
 
+    @Override
+    public void setArmMotorTorque(double newtonMeters) {
+        double torquePerMotor = newtonMeters / 2.;
+        leftMotor.exertTorque(torquePerMotor);
+        rightMotor.exertTorque(torquePerMotor);
+    }
+
 }

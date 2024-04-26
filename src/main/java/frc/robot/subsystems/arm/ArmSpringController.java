@@ -156,8 +156,8 @@ public class ArmSpringController {
          * unmodeledForces = mass * (measuredAccel - expectedAccel)
          */
         sumOfKnownExternalTorques = 0; // TODO: fill in with known forces
-        double torqueFromGravity = -20.5858 * Math.cos(mechanism.position);
-        torqueFromGravity = -0.1;
+        double torqueFromGravity = -20.2247 * Math.cos(mechanism.position);
+        torqueFromGravity = -4.4005;
         torqueFromGravity = SmartDashboard.getNumber("torqueGrav", 0);
         SmartDashboard.putNumber("torqueGrav", torqueFromGravity);
         sumOfKnownExternalTorques += -torqueFromGravity;

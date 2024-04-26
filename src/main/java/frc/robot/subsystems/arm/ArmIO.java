@@ -58,4 +58,6 @@ public interface ArmIO {
 
     public default boolean isCoast() {return false;};
 
+    public default void setArmMotorTorque(double newtonMeters) {};
+
 }

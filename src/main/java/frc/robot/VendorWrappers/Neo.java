@@ -197,6 +197,21 @@ public class Neo extends CANSparkMax {
         return this.waitForConfig(() -> {return encoder.setPosition(position);}, errorMessage);
     }
 
+    public void exertTorque(double newtonMeters) {
+        double rpm = this.getVelocity();
+        double radiansPerSecond = Units.rotationsPerMinuteToRadiansPerSecond(rpm);
+        double inducedVolts = -radiansPerSecond * kEMF;
+        // T = kT * I = kT * (V/R) = kT * (Vapp + Vinduced) / R
+        // vApp = T/kT * R - vInduced
+        double volts = ((newtonMeters / torquePerAmp) * windingResistance) - inducedVolts;
+        // double amps = newtonMeters / torquePerAmp;
+        // super.getPIDController();
+        // super.getOutputCurrent();
+        // super.enableVoltageCompensation(nominalVoltage);
+        // super.getPIDController().setReference(amps, ControlType.kCurrent);
+        super.setVoltage(volts);
+    }
+
 
     
 }

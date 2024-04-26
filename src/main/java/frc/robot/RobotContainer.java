@@ -254,6 +254,16 @@ public class RobotContainer {
         //     shooter.run(() -> {shooter.updateKinematics(0);})
         // );
 
+        // controller.a().whileTrue(arm.run(() -> {
+        //     double armTorque = SmartDashboard.getNumber("armTorque", 0);
+        //     SmartDashboard.putNumber("armTorque", armTorque);
+        //     // arm.exertTorque(armTorque);
+        //     arm.resistGravity();
+        // }))
+        // .whileFalse(arm.run(() -> {
+        //     arm.setVolts(0);
+        // }));
+
         //controller.povLeft().onTrue(arm.setDesiredDegreesCommand(ArmConstants.armMaxAngleDegrees));
 
         /** MISC **/

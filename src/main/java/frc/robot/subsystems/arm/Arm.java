@@ -235,6 +235,26 @@ public class Arm extends SubsystemBase {
     public Command setCoastCommand(boolean shouldCoast) {
         return new InstantCommand(() -> {disableSetpointChecking = shouldCoast;});
     }
+
+    public void exertTorque(double newtonMeters) {
+        double torqueFromMotors = newtonMeters / ArmConstants.armGearReduction;
+        io.setArmMotorTorque(torqueFromMotors);
+    }
+
+    public void resistGravity() {
+        double torqueFromGravityWhenLevel = 20.22475; // emperical value from spring test
+        // torqueFromGravityWhenLevel = 16.61111; // 0.25 volt (emperical value from voltage test)
+        // torqueFromGravityWhenLevel = 6.64444; // 0.1 volt (lowest before drop)
+        // highest before lift was 0.4 volts. middle was (0.4 + 0.1) / 2 = 0.25 volts
+        // torqueFromGravityWhenLevel = 11;
+        double armAngleRadians = Math.toRadians(getDegrees());
+        double torqueFromGravity = torqueFromGravityWhenLevel * Math.cos(armAngleRadians);
+        exertTorque(torqueFromGravity);
+    }
+
+    public void setVolts(double volts) {
+        io.setArmMotorVolts(volts);
+    }
     
     @Override
     public void periodic() {

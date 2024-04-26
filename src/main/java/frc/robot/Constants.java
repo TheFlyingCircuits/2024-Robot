@@ -269,7 +269,7 @@ public final class Constants {
         /** Horizontal distance from the robot center to the pivot center */
         public final static double pivotOffsetMeters = Units.inchesToMeters(9); // 22 centimeters
 
-        public final static double armLengthMeters = Units.inchesToMeters(19);
+        public final static double armLengthMeters = Units.inchesToMeters(18.25);
     }
 
     public final static class ClimbConstants {

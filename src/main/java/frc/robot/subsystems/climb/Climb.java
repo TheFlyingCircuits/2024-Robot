@@ -83,6 +83,11 @@ public class Climb extends SubsystemBase{
         setRightMotorVolts(volts);
     }
 
+    public void setTorque(double newtonMeters) {
+        leftMotor.exertTorque(newtonMeters);
+        rightMotor.exertTorque(newtonMeters);
+    }
+
     private void configMotors() {
 
         leftMotor.setInverted(true);
