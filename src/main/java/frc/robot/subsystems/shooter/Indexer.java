@@ -24,7 +24,7 @@ public class Indexer extends SubsystemBase {
     private SimpleMotorFeedforward indexerFeedforward;
 
     public Indexer() {
-        indexerMotor = new Kraken(ShooterConstants.indexerMotorID, "CTRENetwork");
+        indexerMotor = new Kraken("indexer", ShooterConstants.indexerMotorID, "CTRENetwork");
         indexerProximitySwitchLeft = new DigitalInput(ShooterConstants.indexerProximitySwitchIDLeft);
         indexerProximitySwitchRight = new DigitalInput(ShooterConstants.indexerProximitySwitchIDRight);
 

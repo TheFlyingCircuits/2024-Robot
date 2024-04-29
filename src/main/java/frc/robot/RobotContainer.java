@@ -189,6 +189,11 @@ public class RobotContainer {
     }
 
     private void realBindings() {
+        // Spring control testing
+        ben.b().whileTrue(shooter.runSpringControl(true));
+        ben.b().whileFalse(shooter.runSpringControl(false));
+
+
         CommandXboxController controller = charlie.getXboxController();
         /** INTAKE **/
         controller.rightTrigger()
@@ -246,14 +251,6 @@ public class RobotContainer {
         // controller.a().whileTrue(new UnderStageTrapRoutine(charlie::getRequestedFieldOrientedVelocity, climb, arm, shooter, drivetrain, this::fireNoteThroughHood))
         //         .onFalse(new InstantCommand(() -> {drivetrain.useShooterCamera = true;}));
 
-        // controller.a().whileTrue(shooter.run(() -> {
-        //     double desiredDegrees = SmartDashboard.getNumber("desiredDegrees", 0);
-        //     SmartDashboard.putNumber("desiredDegrees", desiredDegrees);
-        //     shooter.setLeftFlywheelDegrees(desiredDegrees);
-        // }))
-        // .whileFalse(
-        //     shooter.run(() -> {shooter.updateKinematics(0);})
-        // );
 
         // controller.a().whileTrue(arm.run(() -> {
         //     double armTorque = SmartDashboard.getNumber("armTorque", 0);

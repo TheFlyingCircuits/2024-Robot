@@ -198,18 +198,32 @@ public class Neo extends CANSparkMax {
     }
 
     public void exertTorque(double newtonMeters) {
+        /* The Neos have a Current (amps) control mode, but its only through
+         * a PID interface which doesn't feel appropriate for compensating for backEMF.
+         * I would need a feedforward that's a function of rotor velocity as well as amp setpoint,
+         * but the controller only provides support for the latter.
+         * Therefore, I just implement this in terms of voltage and compensate for the backEMF myself.
+         * TODO: I should probably also compare the desired current to the measured current to see how well
+         *       this stragety is working / maybe even add a small proportional controller.
+         *
+         * T = kT * I
+         * T = kT * (V / R)
+         * T = kT * ([vApplied + vInduced] / R)
+         * T = kT * ([vApplied - radiansPerSecond * kEMF] / R)
+         * vApplied = (T / kT) * R + (radiansPerSecond * kEMF)
+         */
         double rpm = this.getVelocity();
         double radiansPerSecond = Units.rotationsPerMinuteToRadiansPerSecond(rpm);
-        double inducedVolts = -radiansPerSecond * kEMF;
-        // T = kT * I = kT * (V/R) = kT * (Vapp + Vinduced) / R
-        // vApp = T/kT * R - vInduced
-        double volts = ((newtonMeters / torquePerAmp) * windingResistance) - inducedVolts;
+
+        double volts = ((newtonMeters / torquePerAmp) * windingResistance) + (radiansPerSecond * kEMF);
+        super.setVoltage(volts);
+
+
         // double amps = newtonMeters / torquePerAmp;
         // super.getPIDController();
         // super.getOutputCurrent();
         // super.enableVoltageCompensation(nominalVoltage);
         // super.getPIDController().setReference(amps, ControlType.kCurrent);
-        super.setVoltage(volts);
     }
 
 
