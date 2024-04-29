@@ -239,9 +239,10 @@ public class RobotContainer {
 
         /** CLIMB **/
         
-        controller.povUp().onTrue(climb.raiseHooksCommand());
-        controller.povRight().onTrue(climb.lowerHooksCommand().until((climb::climbArmsZero)));
-        controller.povDown().onTrue(climb.lowerHooksCommand().until(climb::atQuickClimbSetpoint));
+        // controller.povUp().onTrue(climb.raiseHooksCommand());
+        // controller.povRight().onTrue(climb.lowerHooksCommand().until((climb::climbArmsZero)));
+        // controller.povDown().onTrue(climb.lowerHooksCommand().until(climb::atQuickClimbSetpoint));
+
         // controller.a().whileTrue(new UnderStageTrapRoutine(charlie::getRequestedFieldOrientedVelocity, climb, arm, shooter, drivetrain, this::fireNoteThroughHood))
         //         .onFalse(new InstantCommand(() -> {drivetrain.useShooterCamera = true;}));
 
@@ -264,7 +265,11 @@ public class RobotContainer {
         //     arm.setVolts(0);
         // }));
 
-        //controller.povLeft().onTrue(arm.setDesiredDegreesCommand(ArmConstants.armMaxAngleDegrees));
+        controller.povRight().onTrue(arm.setDesiredDegreesCommand(0));
+        controller.povDown().onTrue(arm.setDesiredDegreesCommand(ArmConstants.armMinAngleDegrees));
+        controller.povUp().onTrue(arm.setDesiredDegreesCommand(90));
+        controller.povUpRight().onTrue(arm.setDesiredDegreesCommand(45));
+        controller.povLeft().onTrue(arm.setDesiredDegreesCommand(ArmConstants.armMaxAngleDegrees));
 
         /** MISC **/
         controller.y().onTrue(new InstantCommand(() -> drivetrain.setPoseToVisionMeasurement()).repeatedly().until(drivetrain::seesTag));
