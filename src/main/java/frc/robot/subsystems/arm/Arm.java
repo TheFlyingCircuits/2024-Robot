@@ -23,6 +23,7 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismRoot2d;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.sysid.SysIdRoutineLog;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
@@ -60,8 +61,9 @@ public class Arm extends SubsystemBase {
     private boolean disableSetpointChecking = false;
 
     private SpringController spring = new SpringController("arm");
-    private KinematicsTracker armSetpointKinematics = new KinematicsTracker(Math.toRadians(ArmConstants.armMinAngleDegrees));
-    private KinematicsTracker armKinematics = new KinematicsTracker(Math.toRadians(ArmConstants.armMinAngleDegrees));
+    private int springMovingWindowSize = 9;
+    private KinematicsTracker armSetpointKinematics = new KinematicsTracker(Math.toRadians(ArmConstants.armMinAngleDegrees), springMovingWindowSize);
+    private KinematicsTracker armKinematics = new KinematicsTracker(Math.toRadians(ArmConstants.armMinAngleDegrees), springMovingWindowSize);
     
 
     public Arm(ArmIO armIO) {
@@ -247,11 +249,8 @@ public class Arm extends SubsystemBase {
     
     @Override
     public void periodic() {
-        
-
-        Logger.processInputs("armInputs", inputs);
-
         io.updateInputs(inputs);
+        Logger.processInputs("armInputs", inputs);
 
         if(disableSetpointChecking) {
             io.setCoast(true);
@@ -284,9 +283,10 @@ public class Arm extends SubsystemBase {
 
 
     public void testSpringControl(boolean moveMotors) {
-        double momentOfInertia = 1.0; // TODO: find me!
+        double momentOfInertia = (5. / 0.0919976); // Ben thinks this doesn't pass the smell test?
 
-        double desiredDegrees = ArmConstants.armMinAngleDegrees;
+        double desiredDegrees = SmartDashboard.getNumber("armDesiredDegrees", ArmConstants.armMinAngleDegrees);
+        SmartDashboard.putNumber("armDesiredDegrees", desiredDegrees);
         armSetpointKinematics.update(Math.toRadians(desiredDegrees));
         armKinematics.update(Math.toRadians(getDegrees()));
 
@@ -294,7 +294,7 @@ public class Arm extends SubsystemBase {
         double torque = accel * momentOfInertia;
 
         // Offset the torque from gravity
-        double torqueFromGravityWhenLevel = 20.22475; // emperical value from spring test
+        double torqueFromGravityWhenLevel = 20.22475; // emperical value from spring test (seems a little high)
         // torqueFromGravityWhenLevel = 16.61111; // 0.25 volt (emperical value from voltage test)
         // torqueFromGravityWhenLevel = 6.64444; // 0.1 volt (lowest before drop)
         // highest before lift was 0.4 volts. middle was (0.4 + 0.1) / 2 = 0.25 volts
@@ -302,12 +302,31 @@ public class Arm extends SubsystemBase {
         double torqueFromGravity = torqueFromGravityWhenLevel * Math.cos(armKinematics.position);
         torque += torqueFromGravity; // TODO: signs are technically wrong.
 
+        // TESTING / TUNING
+        // torque = torqueFromGravity;
+        // torque += 5.;
+
+        int windowSize = (int) SmartDashboard.getNumber("windowSize", 16);
+        if (windowSize != this.springMovingWindowSize) {
+            armKinematics = new KinematicsTracker(Math.toRadians(getDegrees()), windowSize);
+            armSetpointKinematics = new KinematicsTracker(Math.toRadians(desiredDegrees), windowSize);
+            this.springMovingWindowSize = windowSize;
+            // 25 = is too big and has too much delay.
+            // I know this because the system becomes under-damped
+            //
+            // spring constant 400 with 16 window size seems ok?
+            // overshoot when changing the setpoint though...
+            // maybe spring of 100 with window of 16 is safer?
+        }
+        SmartDashboard.putNumber("windowSize", this.springMovingWindowSize);
+
 
         // TODO: add compensation torque to overcome stiction?
 
 
         if (!moveMotors) {
-            torque = 0;
+            this.setVolts(0);
+            return;
         }
         this.exertTorque(torque);
     }

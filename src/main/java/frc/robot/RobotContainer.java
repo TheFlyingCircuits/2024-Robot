@@ -190,8 +190,10 @@ public class RobotContainer {
 
     private void realBindings() {
         // Spring control testing
-        ben.b().whileTrue(shooter.runSpringControl(true));
-        ben.b().whileFalse(shooter.runSpringControl(false));
+        // ben.b().whileTrue(shooter.runSpringControl(true));
+        // ben.b().whileFalse(shooter.runSpringControl(false));
+        // ben.a().whileTrue(arm.runSpringControl(true));
+        // ben.a().whileFalse(arm.runSpringControl(false));
 
 
         CommandXboxController controller = charlie.getXboxController();

@@ -39,6 +39,10 @@ public class SpringController {
         SmartDashboard.putNumber(name+"/springConstant", springConstant);
         double dampingConstant = Math.sqrt(4 * momentOfInertia * springConstant);
 
+        double dampingRatio = SmartDashboard.getNumber(name+"/dampingRatio", 1);
+        SmartDashboard.putNumber(name+"/dampingRatio", dampingRatio);
+        dampingConstant *= dampingRatio;
+
         double desiredRelativeAccel = ((-springConstant/momentOfInertia)*relativePosition) + ((-dampingConstant/momentOfInertia)*relativeVelocity);
 
         /* The acceleration of the mechanism relative to the setpoint
