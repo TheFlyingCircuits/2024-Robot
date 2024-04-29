@@ -1,7 +1,6 @@
 package frc.robot.subsystems.shooter;
 
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
-import com.ctre.phoenix6.controls.TorqueCurrentFOC;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
@@ -16,10 +15,10 @@ public class ShooterIOKraken implements ShooterIO {
     public ShooterIOKraken() {
 
         /**Left motor config */
-        leftMotor = new Kraken(ShooterConstants.leftMotorID, "CTRENetwork");
+        leftMotor = new Kraken("leftFlywheel", ShooterConstants.leftMotorID, "CTRENetwork");
 
         /**Right motor config */
-        rightMotor = new Kraken(ShooterConstants.rightMotorID, "CTRENetwork");
+        rightMotor = new Kraken("rightFlywheel", ShooterConstants.rightMotorID, "CTRENetwork");
 
         configMotors();
 
@@ -36,6 +35,8 @@ public class ShooterIOKraken implements ShooterIO {
         inputs.leftMotorOutputCurrent = leftMotor.getTorqueCurrent().getValueAsDouble();
         inputs.rightMotorOutputCurrent = rightMotor.getTorqueCurrent().getValueAsDouble();
 
+
+        // Spring control stuff
         inputs.leftFlywheelRadians = leftMotor.getPosition().getValueAsDouble()*2*Math.PI;
         inputs.rightFlywheelRadians = rightMotor.getPosition().getValueAsDouble()*2*Math.PI;
 
@@ -62,6 +63,7 @@ public class ShooterIOKraken implements ShooterIO {
         rightConfig.CurrentLimits.StatorCurrentLimitEnable = true;
         rightMotor.applyConfig(rightConfig);
 
+        // for spring control testing
         leftMotor.setPosition(0);
         rightMotor.setPosition(0);
     }
@@ -81,17 +83,13 @@ public class ShooterIOKraken implements ShooterIO {
             volts = 0;
         }
 
-
         rightMotor.setVoltage(volts);
     }
 
-    public void setLeftMotorAmps(double amps) {
-        TorqueCurrentFOC ampRequest = new TorqueCurrentFOC(amps);
-        leftMotor.setControl(ampRequest);
+
+    public void exertTorque(double leftNewtonMeters, double rightNewtonMeters) {
+        leftMotor.exertTorque(leftNewtonMeters);
+        rightMotor.exertTorque(rightNewtonMeters);
     }
 
-    public void setRightMotorAmps(double amps) {
-        TorqueCurrentFOC ampRequest = new TorqueCurrentFOC(amps);
-        rightMotor.setControl(ampRequest);
-    }
 }

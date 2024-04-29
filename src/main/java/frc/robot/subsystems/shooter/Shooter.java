@@ -8,8 +8,8 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.ShooterConstants;
-import frc.robot.VendorWrappers.Kraken;
-import frc.robot.VendorWrappers.SpringController;
+import frc.robot.spring_controller_stuff.KinematicsTracker;
+import frc.robot.spring_controller_stuff.SpringController;
 
 public class Shooter extends SubsystemBase {
     private ShooterIO io;
@@ -35,14 +35,12 @@ public class Shooter extends SubsystemBase {
      */
     private SimpleMotorFeedforward flywheelsFeedforward;
 
-    private SpringController leftFlywheelSpringController;
-    private double stealthWheelMass = Units.lbsToKilograms(0.23);
-    private double stealthWheelRadius = Units.inchesToMeters(2.0);
-    private double stealthWheelsPerFlywheel = 4.0;
-    private double flywheelsPerMotor = 2.0;
-    private double stealthWheelMomentOfInertia = 0.5 * stealthWheelMass * stealthWheelRadius * stealthWheelRadius;
-    private double flywheelMomentOfInertia = stealthWheelMomentOfInertia * stealthWheelsPerFlywheel * flywheelsPerMotor;
-    private boolean springNeedsReset = true;
+    // Testing spring control stuff
+    private SpringController leftSpringController = new SpringController("leftFlywheel");
+    private SpringController rightSpringController = new SpringController("rightFlywheel");
+    private KinematicsTracker leftKinematics = new KinematicsTracker(0);
+    private KinematicsTracker rightKinematics = new KinematicsTracker(0);
+    private KinematicsTracker springSetpointKinematics = new KinematicsTracker(0);
 
 
     public Shooter(ShooterIO io) {
@@ -67,9 +65,6 @@ public class Shooter extends SubsystemBase {
 
         leftFlywheelsPID.setTolerance(1.0);
         rightFlywheelsPID.setTolerance(1.0);
-
-        flywheelMomentOfInertia = (1./392.722);
-        leftFlywheelSpringController = new SpringController(flywheelMomentOfInertia, 1.0, 0.0);
     }
 
     /**
@@ -83,30 +78,6 @@ public class Shooter extends SubsystemBase {
         io.setLeftMotorVolts(feedforwardOutput + pidOutput);
     }
 
-    public void setLeftFlywheelDegrees(double desiredDegrees) {
-        if (springNeedsReset) {
-            leftFlywheelSpringController.reset();
-            springNeedsReset = false;
-        }
-        double desiredRadians = Math.toRadians(desiredDegrees);
-        // double volts = leftFlywheelSpringController.getVoltsPerMotor(inputs.leftFlywheelRadians, desiredRadians, 1);
-        // io.setLeftMotorVolts(volts);
-        // double volts = leftFlywheelSpringController.getVoltsPerMotor(inputs.leftFlywheelRadians, desiredRadians, 1);
-        // io.setRightMotorVolts(volts);
-        // double torque = 1.0;
-        // double amps = (torque / Kraken.torquePerAmp);
-        // Logger.recordOutput("spring/desiredAmps", amps);
-        // io.setLeftMotorAmps(amps);
-        double amps = leftFlywheelSpringController.getAmpsPerMotor(inputs.rightFlywheelRadians, desiredRadians, 1);
-        io.setRightMotorAmps(amps);
-    }
-
-    public void updateKinematics(double desiredDegrees) {
-        springNeedsReset = true;
-        double desiredRadians = Math.toRadians(desiredDegrees);
-        double amps = leftFlywheelSpringController.getAmpsPerMotor(inputs.rightFlywheelRadians, desiredRadians, 1);
-        io.setRightMotorVolts(0);
-    }
 
     /**
      * @return - The shooter's left flywheel surface speed in meters per second
@@ -164,12 +135,67 @@ public class Shooter extends SubsystemBase {
     @Override
     public void periodic() {
         io.updateInputs(inputs);
-        
         Logger.processInputs("shooterInputs", inputs);
 
         Logger.recordOutput("shooter/leftFlywheelsSetpoint", leftFlywheelsPID.getSetpoint());
         Logger.recordOutput("shooter/rightFlywheelsSetpoint", rightFlywheelsPID.getSetpoint());
         Logger.recordOutput("shooter/flywheelsAtSetpoints", flywheelsAtSetpoints());
 
-    };
+    }
+
+    public void exertTorque(double leftNewtonMeters, double rightNewtonMeters) {
+        io.exertTorque(leftNewtonMeters, rightNewtonMeters);
+    }
+
+    public void testSpringControl(boolean moveMotors) {
+        double stealthWheelMass = Units.lbsToKilograms(0.23);
+        double stealthWheelRadius = Units.inchesToMeters(2.0);
+        double stealthWheelsPerFlywheel = 4.0;
+        double flywheelsPerMotor = 2.0;
+        double stealthWheelMomentOfInertia = 0.5 * stealthWheelMass * stealthWheelRadius * stealthWheelRadius;
+        double flywheelMomentOfInertia = stealthWheelMomentOfInertia * stealthWheelsPerFlywheel * flywheelsPerMotor;
+        // Theoretical moment for
+        // 1 stealth wheel  ~= 0.00013461
+        // 4 stealth wheels ~= 0.00053846
+        // 8 stealth wheels ~= 0.00107691
+        // emperical for 8  ~= 0.00254633
+        // measured is ~2.3645x theoretcial
+        // delta of ~0.00146942 kg*m*m
+
+        // Emperical value based on exerting 1 newton-meter from the motor.
+        // I fit the curve y = 0.5 * a * x^2 to the position data on desmos,
+        // then solved for moment using [Torque = moment * accel]
+        // (this was on the left flywheel)
+        flywheelMomentOfInertia = (1./392.722);
+
+        double desiredDegrees = 0;
+        springSetpointKinematics.update(Math.toRadians(desiredDegrees));
+        leftKinematics.update(inputs.leftFlywheelRadians);
+        rightKinematics.update(inputs.rightFlywheelRadians);
+
+        double leftAccel = leftSpringController.getDesiredAccel(leftKinematics, springSetpointKinematics, flywheelMomentOfInertia);
+        double rightAccel = rightSpringController.getDesiredAccel(rightKinematics, springSetpointKinematics, flywheelMomentOfInertia);
+
+
+        double leftTorque = leftAccel * flywheelMomentOfInertia;
+        double rightTorque = rightAccel * flywheelMomentOfInertia;
+
+        // TODO: add compensation torque to overcome stiction?
+        // Current value for stiction torque is reverse engineered from
+        // flywheel characterization data (volts -> amps -> torque).
+        // This will likely have to be tuned
+        // double torqueStiction = 0.2136;
+        // leftTorque += torqueStiction * Math.signum(leftKinematics.velocity);
+        // rightTorque += torqueStiction * Math.signum(rightKinematics.velocity);
+
+        if (!moveMotors) {
+            leftTorque = 0;
+            rightTorque = 0;
+        }
+        this.exertTorque(leftTorque, rightTorque);
+    }
+
+    public Command runSpringControl(boolean moveMotors) {
+        return this.run(() -> {this.testSpringControl(moveMotors);});
+    }
 }

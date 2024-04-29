@@ -7,6 +7,8 @@ import edu.wpi.first.wpilibj.Timer;
 
 import com.ctre.phoenix6.StatusCode;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.configs.TorqueCurrentConfigs;
+import com.ctre.phoenix6.controls.TorqueCurrentFOC;
 
 /**
  * A wrapper class around TalonFX that provides some convience features,
@@ -109,5 +111,21 @@ public class Kraken extends TalonFX {
             String errorDescription = "Error description: " + configStatus.getDescription();
             System.out.println(errorMessage+"\n"+errorName+"\n"+errorDescription+"\n"+"Retrying config...");
         }
+    }
+
+
+    public void exertTorque(double newtonMeters) {
+        /* T = kT * I
+         * T = kT * (V / R)
+         * T = kT * ([vApplied + vInduced] / R)
+         * T = kT * ([vApplied - radiansPerSecond * kEMF] / R)
+         * vApplied = (T / kT) * R + (radiansPerSecond * kEMF)
+         * 
+         * I could log the voltage I would apply based on this equation,
+         * and compare it to the voltage that is actually applied by the
+         * Kraken's built in current control just for fun!
+         */
+        double amps = newtonMeters / torquePerAmp;
+        super.setControl(new TorqueCurrentFOC(amps).withOverrideCoastDurNeutral(true));
     }
 }

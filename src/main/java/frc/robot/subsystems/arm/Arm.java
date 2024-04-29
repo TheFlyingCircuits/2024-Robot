@@ -16,6 +16,7 @@ import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.filter.LinearFilter;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.Measure;
 import edu.wpi.first.units.Voltage;
 import edu.wpi.first.wpilibj.Timer;
@@ -29,6 +30,8 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Config;
 import frc.robot.Constants.ArmConstants;
+import frc.robot.spring_controller_stuff.KinematicsTracker;
+import frc.robot.spring_controller_stuff.SpringController;
 
 public class Arm extends SubsystemBase {
 
@@ -56,7 +59,9 @@ public class Arm extends SubsystemBase {
     private SysIdRoutine sysIdRoutine;
     private boolean disableSetpointChecking = false;
 
-    private ArmSpringController spring = new ArmSpringController(1, 1./ArmConstants.armGearReduction, ArmConstants.armMinAngleDegrees);
+    private SpringController spring = new SpringController("arm");
+    private KinematicsTracker armSetpointKinematics = new KinematicsTracker(Math.toRadians(ArmConstants.armMinAngleDegrees));
+    private KinematicsTracker armKinematics = new KinematicsTracker(Math.toRadians(ArmConstants.armMinAngleDegrees));
     
 
     public Arm(ArmIO armIO) {
@@ -236,22 +241,6 @@ public class Arm extends SubsystemBase {
         return new InstantCommand(() -> {disableSetpointChecking = shouldCoast;});
     }
 
-    public void exertTorque(double newtonMeters) {
-        double torqueFromMotors = newtonMeters / ArmConstants.armGearReduction;
-        io.setArmMotorTorque(torqueFromMotors);
-    }
-
-    public void resistGravity() {
-        double torqueFromGravityWhenLevel = 20.22475; // emperical value from spring test
-        // torqueFromGravityWhenLevel = 16.61111; // 0.25 volt (emperical value from voltage test)
-        // torqueFromGravityWhenLevel = 6.64444; // 0.1 volt (lowest before drop)
-        // highest before lift was 0.4 volts. middle was (0.4 + 0.1) / 2 = 0.25 volts
-        // torqueFromGravityWhenLevel = 11;
-        double armAngleRadians = Math.toRadians(getDegrees());
-        double torqueFromGravity = torqueFromGravityWhenLevel * Math.cos(armAngleRadians);
-        exertTorque(torqueFromGravity);
-    }
-
     public void setVolts(double volts) {
         io.setArmMotorVolts(volts);
     }
@@ -273,14 +262,11 @@ public class Arm extends SubsystemBase {
 
         if(!io.isCoast()) {
             followTrapezoidProfile();
-            //io.setArmMotorVolts(spring.getVoltsPerMotor(Math.toRadians(inputs.armAngleDegrees), Math.toRadians(targetAngleDegrees)));
         }
         else {
             io.setArmMotorVolts(0);
         }
 
-        // double springVolts = spring.getVoltsPerMotor(Math.toRadians(inputs.armAngleDegrees), Math.toRadians(targetAngleDegrees), 2);
-        // io.setArmMotorVolts(springVolts);
 
         mechLigament.setAngle(inputs.armAngleDegrees);
 
@@ -289,5 +275,44 @@ public class Arm extends SubsystemBase {
         Logger.recordOutput("arm/isMovingToTarget", isMovingToTarget);
         Logger.recordOutput("arm/targetAngleDegrees", targetAngleDegrees);
         Logger.recordOutput("arm/isCloseToTarget", isCloseToTarget());
+    }
+
+    public void exertTorque(double newtonMeters) {
+        double torqueFromMotors = newtonMeters / ArmConstants.armGearReduction;
+        io.setArmMotorTorque(torqueFromMotors);
+    }
+
+
+    public void testSpringControl(boolean moveMotors) {
+        double momentOfInertia = 1.0; // TODO: find me!
+
+        double desiredDegrees = ArmConstants.armMinAngleDegrees;
+        armSetpointKinematics.update(Math.toRadians(desiredDegrees));
+        armKinematics.update(Math.toRadians(getDegrees()));
+
+        double accel = spring.getDesiredAccel(armKinematics, armSetpointKinematics, momentOfInertia);
+        double torque = accel * momentOfInertia;
+
+        // Offset the torque from gravity
+        double torqueFromGravityWhenLevel = 20.22475; // emperical value from spring test
+        // torqueFromGravityWhenLevel = 16.61111; // 0.25 volt (emperical value from voltage test)
+        // torqueFromGravityWhenLevel = 6.64444; // 0.1 volt (lowest before drop)
+        // highest before lift was 0.4 volts. middle was (0.4 + 0.1) / 2 = 0.25 volts
+        // torqueFromGravityWhenLevel = 11;
+        double torqueFromGravity = torqueFromGravityWhenLevel * Math.cos(armKinematics.position);
+        torque += torqueFromGravity; // TODO: signs are technically wrong.
+
+
+        // TODO: add compensation torque to overcome stiction?
+
+
+        if (!moveMotors) {
+            torque = 0;
+        }
+        this.exertTorque(torque);
+    }
+
+    public Command runSpringControl(boolean moveMotors) {
+        return this.run(() -> {this.testSpringControl(moveMotors);});
     }
 }
