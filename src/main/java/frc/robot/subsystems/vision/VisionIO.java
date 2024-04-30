@@ -2,6 +2,7 @@ package frc.robot.subsystems.vision;
 
 import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -16,10 +17,13 @@ import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.util.struct.Struct;
+import frc.robot.Constants.VisionConstants;
 
 public interface VisionIO {
 
     public final class VisionMeasurement {
+
+        public String cameraName;
 
         /**
          * Pose of the robot in meters and degrees, relative to the field. The origin is always centered on the right edge of the blue side, 
@@ -46,8 +50,6 @@ public interface VisionIO {
          */
         public Matrix<N3, N1> stdDevs;
 
-        public String cameraName;
-
         /**
          * Creates a new VisionMeasurement object. See the definition of this class for further documentation.
          */
@@ -69,8 +71,10 @@ public interface VisionIO {
     public class VisionIOInputs {
 
         /**
-         * List of all vision measurements from the last frame. This is empty if no measurement is present.
-         * This array is sorted by the standard deviation of the measurement.
+         * List of all vision measurements from the last frame. 
+         * This array is sorted by the standard deviation of the measurement, from biggest to smallest.
+         * (I think? this is the order that you should apply measurements to the pose estimator)
+         * If no measurements are present, the array will be empty.
          */
         public List<VisionMeasurement> visionMeasurements = new ArrayList<VisionMeasurement>();
 
@@ -91,11 +95,9 @@ public interface VisionIO {
         
         public void toLog(LogTable table) {
 
-            for (int i = 0; i < visionMeasurements.size(); i++) {
-
-                VisionMeasurement meas = visionMeasurements.get(i);
+            for (VisionMeasurement meas : visionMeasurements) {
                 
-                String rootString = "VisionMeasurement"+Integer.toString(i);
+                String rootString = meas.cameraName+"VisionMeasurement";
 
                 table.put(rootString+"/RobotFieldPose", meas.robotFieldPose);
                 table.put(rootString+"/TimestampSeconds", meas.timestampSeconds);
@@ -116,8 +118,11 @@ public interface VisionIO {
 
         public void fromLog(LogTable table) {
 
+
+
+
             for (int i = 0;;i++) {
-                String rootString = "VisionMeasurement" + Integer.toString(i);
+                String rootString = VisionConstants.cameraNames[i]+"VisionMeasurement";
 
                 //hacky way to check if this vision measurement doesn't exist
                 if (table.get(rootString+"/RobotFieldPose", 0) == 0)

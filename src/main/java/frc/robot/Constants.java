@@ -270,6 +270,8 @@ public final class Constants {
         public final static double pivotOffsetMeters = Units.inchesToMeters(9); // 22 centimeters
 
         public final static double armLengthMeters = Units.inchesToMeters(18.25);
+
+        public final static double momentOfInertiaKgMSquared = 0.8;
     }
 
     public final static class ClimbConstants {
@@ -366,6 +368,13 @@ public final class Constants {
             new Translation3d(Units.inchesToMeters(-5.438), Units.inchesToMeters(-12), Units.inchesToMeters(16.025)),
             new Rotation3d(0, Math.toRadians(-27), Math.toRadians(-90))
         );
+
+        public final static String[] cameraNames = {
+            "shooterCamera",
+            "trapCamera",
+            "leftCamera",
+            "rightCamera"
+        };
 
         public final static Transform3d tagCameraTransforms[] = {
             robotToShooterCamera,

@@ -40,10 +40,10 @@ public class VisionIOPhotonLib implements VisionIO {
         noteCamera = new PhotonCamera("noteCamera");
 
         tagCameras = Arrays.asList(
-            new PhotonCamera("shooterCamera"),
-            new PhotonCamera("trapCamera")
-            // new PhotonCamera("leftCamera"),
-            // new PhotonCamera("rightCamera")
+            new PhotonCamera(VisionConstants.cameraNames[0]),
+            new PhotonCamera(VisionConstants.cameraNames[1]),
+            new PhotonCamera(VisionConstants.cameraNames[2]),
+            new PhotonCamera(VisionConstants.cameraNames[3])
         );
 
         poseEstimators = new ArrayList<PhotonPoseEstimator>();

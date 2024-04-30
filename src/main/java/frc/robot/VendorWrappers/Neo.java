@@ -27,17 +27,17 @@ public class Neo extends CANSparkMax {
     public static final double nominalVoltage = 12;
 
     /** How quickly the motor turns (radians per second) when 12 volts are applied and there is no load on the motor. */
-    public static final double freeSpeed = Units.rotationsPerMinuteToRadiansPerSecond(5676);
+    public static final double freeSpeed = Units.rotationsPerMinuteToRadiansPerSecond(5820);
 
     /** How much current (amps) flowed through the motor while spinning at the free speed */
-    public static final double freeCurrent = 1.8;
+    public static final double freeCurrent = 1.7;
 
     /** How much torque (newton-meters) the stator exerts on the rotor when the rotor is held still,
      *  and then 12 volts are applied to the motor. */
-    public static final double stallTorque = 2.6;
+    public static final double stallTorque = 3.28;
 
     /** How much current (amps) flows through the motor coils when the rotor is held still, and then 12 volts are applied to the motor. */
-    public static final double stallCurrent = 105;
+    public static final double stallCurrent = 181;
 
     /** How much torque (newton-meters) the stator will exert on the rotor per amp of current that flows through the motor coils.  */
     public static final double torquePerAmp = stallTorque / stallCurrent;
@@ -197,7 +197,10 @@ public class Neo extends CANSparkMax {
         return this.waitForConfig(() -> {return encoder.setPosition(position);}, errorMessage);
     }
 
-    public void exertTorque(double newtonMeters) {
+    /**
+     * Finds the amount of volts needed to feed to the motor in order for the motor to exert a certain torque.
+     */
+    public double getVoltsForTorque(double newtonMeters) {
         /* The Neos have a Current (amps) control mode, but its only through
          * a PID interface which doesn't feel appropriate for compensating for backEMF.
          * I would need a feedforward that's a function of rotor velocity as well as amp setpoint,
@@ -215,8 +218,8 @@ public class Neo extends CANSparkMax {
         double rpm = this.getVelocity();
         double radiansPerSecond = Units.rotationsPerMinuteToRadiansPerSecond(rpm);
 
-        double volts = ((newtonMeters / torquePerAmp) * windingResistance) + (radiansPerSecond * kEMF);
-        super.setVoltage(volts);
+        return ((newtonMeters / torquePerAmp) * windingResistance) + (radiansPerSecond * kEMF);
+        
 
 
         // double amps = newtonMeters / torquePerAmp;
@@ -226,6 +229,9 @@ public class Neo extends CANSparkMax {
         // super.getPIDController().setReference(amps, ControlType.kCurrent);
     }
 
+    public void exertTorque(double newtonMeters) {
+        super.setVoltage(getVoltsForTorque(newtonMeters));
+    }
 
     
 }

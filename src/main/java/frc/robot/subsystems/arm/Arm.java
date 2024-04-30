@@ -171,6 +171,23 @@ public class Arm extends SubsystemBase {
                 0
             );
 
+
+            double maxDesiredNetTorque = ArmConstants.momentOfInertiaKgMSquared * ArmConstants.armMaxAccelDegreesPerSecondSquared;
+            //magnitude of max desired voltage when moving the arm downwards
+            double maxDesiredTorqueDown = maxDesiredNetTorque - getTorqueFromGravity();
+            
+            
+            
+            //magnitude of max desired voltage when moving the arm upwards
+            double maxDesiredTorqueUp = maxDesiredNetTorque + getTorqueFromGravity();
+
+            // double outputVolts = MathUtil.clamp(
+            //     feedforwardOutputVolts + pidOutputVolts,
+            //     -maxDesiredVoltageDown,
+            //     maxDesiredVoltageUp);
+
+            double outputVolts = feedforwardOutputVolts + pidOutputVolts;
+
             io.setArmMotorVolts(feedforwardOutputVolts + pidOutputVolts);
 
             Logger.recordOutput("arm/totalOutputVolts", feedforwardOutputVolts + pidOutputVolts);
@@ -206,6 +223,8 @@ public class Arm extends SubsystemBase {
 
         Logger.recordOutput("arm/trapezoidProfilePosition", desiredState.position);
         Logger.recordOutput("arm/totalOutputVolts", totalOutputVolts);
+
+        
 
         io.setArmMotorVolts(totalOutputVolts);
 
@@ -246,6 +265,17 @@ public class Arm extends SubsystemBase {
     public void setVolts(double volts) {
         io.setArmMotorVolts(volts);
     }
+
+    private double getTorqueFromGravity() {
+        // Offset the torque from gravity
+        double torqueFromGravityWhenLevel = 20.22475; // emperical value from spring test (seems a little high)
+        // torqueFromGravityWhenLevel = 16.61111; // 0.25 volt (emperical value from voltage test)
+        // torqueFromGravityWhenLevel = 6.64444; // 0.1 volt (lowest before drop)
+        // highest before lift was 0.4 volts. middle was (0.4 + 0.1) / 2 = 0.25 volts
+        // torqueFromGravityWhenLevel = 11;
+        return torqueFromGravityWhenLevel * Math.cos(armKinematics.position);
+        
+    }
     
     @Override
     public void periodic() {
@@ -259,12 +289,12 @@ public class Arm extends SubsystemBase {
             io.setCoast(false);
         }
 
-        if(!io.isCoast()) {
-            followTrapezoidProfile();
-        }
-        else {
-            io.setArmMotorVolts(0);
-        }
+        // if(!io.isCoast()) {
+        //     followTrapezoidProfile();
+        // }
+        // else {
+        //     io.setArmMotorVolts(0);
+        // }
 
 
         mechLigament.setAngle(inputs.armAngleDegrees);
@@ -284,6 +314,13 @@ public class Arm extends SubsystemBase {
 
     public void testSpringControl(boolean moveMotors) {
         double momentOfInertia = (5. / 0.0919976); // Ben thinks this doesn't pass the smell test?
+                                                   // update, I agree. CAD and rod approximation
+                                                   // claim the MOI should be ~0.8, while this
+                                                   // yeilds an MOI of ~54, which seems like
+                                                   // way too big of a discrepency to account for
+                                                   // the extra mass from gears/pulleys.
+
+        momentOfInertia = ArmConstants.momentOfInertiaKgMSquared;
 
         double desiredDegrees = SmartDashboard.getNumber("armDesiredDegrees", ArmConstants.armMinAngleDegrees);
         SmartDashboard.putNumber("armDesiredDegrees", desiredDegrees);
@@ -293,17 +330,10 @@ public class Arm extends SubsystemBase {
         double accel = spring.getDesiredAccel(armKinematics, armSetpointKinematics, momentOfInertia);
         double torque = accel * momentOfInertia;
 
-        // Offset the torque from gravity
-        double torqueFromGravityWhenLevel = 20.22475; // emperical value from spring test (seems a little high)
-        // torqueFromGravityWhenLevel = 16.61111; // 0.25 volt (emperical value from voltage test)
-        // torqueFromGravityWhenLevel = 6.64444; // 0.1 volt (lowest before drop)
-        // highest before lift was 0.4 volts. middle was (0.4 + 0.1) / 2 = 0.25 volts
-        // torqueFromGravityWhenLevel = 11;
-        double torqueFromGravity = torqueFromGravityWhenLevel * Math.cos(armKinematics.position);
-        torque += torqueFromGravity; // TODO: signs are technically wrong.
+        torque += getTorqueFromGravity(); // TODO: signs are technically wrong.
 
         // TESTING / TUNING
-        // torque = torqueFromGravity;
+        // torque = getTorqueFromGravity();
         // torque += 5.;
 
         int windowSize = (int) SmartDashboard.getNumber("windowSize", 16);

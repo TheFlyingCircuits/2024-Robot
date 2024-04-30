@@ -1,5 +1,7 @@
 package frc.robot.subsystems.arm;
 
+import org.littletonrobotics.junction.Logger;
+
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.signals.AbsoluteSensorRangeValue;
@@ -144,6 +146,8 @@ public class ArmIONeo implements ArmIO {
     @Override
     public void setArmMotorTorque(double newtonMeters) {
         double torquePerMotor = newtonMeters / 2.;
+        double requiredAmps = torquePerMotor / Neo.torquePerAmp;
+        Logger.recordOutput("arm/requiredAmps", requiredAmps);
         leftMotor.exertTorque(torquePerMotor);
         rightMotor.exertTorque(torquePerMotor);
     }
