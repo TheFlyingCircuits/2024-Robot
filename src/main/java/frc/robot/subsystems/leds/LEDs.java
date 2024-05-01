@@ -22,6 +22,8 @@ public class LEDs extends SubsystemBase {
     private AddressableLED leds;
     private AddressableLEDBuffer buffer;
 
+    private Timer heartbeatTimer = new Timer();
+
     /**
      * TODO: document whole class
      */
@@ -33,6 +35,8 @@ public class LEDs extends SubsystemBase {
         
         leds.setData(buffer);
         leds.start();
+
+        heartbeatTimer.restart();
     }
 
     private void solidColor(Color color) {
@@ -204,14 +208,16 @@ public class LEDs extends SubsystemBase {
         return LEDConstants.Hues.betweenBlueAndRed;
     }
 
-    public Command heartbeatCommand() {
-        return super.run(() -> {
-            double timeBetweenDoubleTaps = 1.5; // time for one full heatbeat cycle
+    public Command heartbeatCommand(double timeBetweenDoubleTaps) {
+        return super.runOnce(() -> {heartbeatTimer.restart();}).andThen(
+               super.run(() -> {
+            //double timeBetweenDoubleTaps = 1.5; // time for one full heatbeat cycle
             double timeBetweenSingleTaps = 0.25; // time between each individual pump within a single heartbeat cycle
 
-            double currentTime = Timer.getFPGATimestamp() % timeBetweenDoubleTaps;
+            double currentTime = heartbeatTimer.get();
             double k1 = 8; // arbitrary decay time constants that were chosen
             double k2 = 2; // based on what was aesthetically pleasing.
+            k2 = 2 * (1.5 / timeBetweenDoubleTaps);
 
             double normalizedBrightness = 0;
             if (currentTime < timeBetweenSingleTaps) {
@@ -226,8 +232,34 @@ public class LEDs extends SubsystemBase {
             int value = (int)(255 * normalizedBrightness);
             Color color = Color.fromHSV(hue, saturation, value);
             this.solidColor(color);
-        });
+        }).until(() -> {return heartbeatTimer.get() >= timeBetweenDoubleTaps;}));
     }
+
+
+    public Command heartbeatCommand() {
+        return this.heartbeatCommand(1.5);
+    }
+
+    public Command fastHeartbeatCommand() {
+        return this.heartbeatCommand(0.53);
+    }
+
+    public Command fasterHeartbeatSequence() {
+        SequentialCommandGroup output = new SequentialCommandGroup();
+        double timeBetweenDoubleTaps = 1.5;
+        int n = 1;
+        while (timeBetweenDoubleTaps > 0.6) {
+            if (timeBetweenDoubleTaps <= 0.8) {
+                n += 6;
+            }
+            for (int i = 0; i < n; i += 1) {
+                output.addCommands(this.heartbeatCommand(timeBetweenDoubleTaps));
+            }
+            timeBetweenDoubleTaps -= 0.2;
+        }
+        return output;
+    }
+
 
     public Command playIntakeAnimationCommand(Supplier<Boolean> intakeCamSeesNote) {
         Color orange = Color.fromHSV(LEDConstants.Hues.orangeSignalLight, 255, 255);

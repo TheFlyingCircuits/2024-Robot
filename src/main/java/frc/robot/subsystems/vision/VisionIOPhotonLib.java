@@ -125,36 +125,44 @@ public class VisionIOPhotonLib implements VisionIO {
     private Optional<VisionMeasurement> updateTagCamera(PhotonCamera camera, PhotonPoseEstimator estimator) {
         VisionMeasurement output = new VisionMeasurement();
 
-
-        PhotonPipelineResult pipelineResult = camera.getLatestResult();
-        if (!pipelineResult.hasTargets()) {
-            return Optional.empty();
-        }
-
         Optional<EstimatedRobotPose> poseEstimatorResult = estimator.update();
-
         if (poseEstimatorResult.isEmpty()) {
             return Optional.empty();
         }
+        EstimatedRobotPose poseEstimate = poseEstimatorResult.get();
+        List<PhotonTrackedTarget> seenTags = poseEstimate.targetsUsed;
+        
 
         //either use multitag or
         //if there's only one tag on the screen, only trust it if its pose ambiguity is below threshold
         //photonPoseEstimator automatically switches techniques when detecting different number of tags
-        if (pipelineResult.targets.size() == 1 && pipelineResult.getBestTarget().getPoseAmbiguity() > 0.2) {
+        if (seenTags.size() == 1 && seenTags.get(0).getPoseAmbiguity() > 0.2) {
             return Optional.empty();
         }
 
-        output.nearestTagDistanceMeters = pipelineResult.getBestTarget().getBestCameraToTarget().getTranslation().getDistance(new Translation3d());
+        double distanceToNearestTag = seenTags.get(0).getBestCameraToTarget().getTranslation().getDistance(new Translation3d());
+        for (PhotonTrackedTarget tag : seenTags) {
+            double distance = tag.getBestCameraToTarget().getTranslation().getDistance(new Translation3d());
+            if (distance < distanceToNearestTag) {
+                distanceToNearestTag = distance;
+            }
+        }
+
+        output.nearestTagDistanceMeters = distanceToNearestTag;
         
         if (output.nearestTagDistanceMeters > 6) {
             return Optional.empty();
         }
 
 
-        output.robotFieldPose = poseEstimatorResult.get().estimatedPose.toPose2d();
-        output.timestampSeconds = poseEstimatorResult.get().timestampSeconds;
-        output.stdDevs = getVisionStdDevs(output.nearestTagDistanceMeters, (pipelineResult.targets.size() > 1));  //different standard devs for different methods of detecting apriltags
+        output.robotFieldPose = poseEstimate.estimatedPose.toPose2d();
+        output.timestampSeconds = poseEstimate.timestampSeconds;
+        output.stdDevs = getVisionStdDevs(output.nearestTagDistanceMeters, (seenTags.size() > 1));  //different standard devs for different methods of detecting apriltags
         output.cameraName = camera.getName();
+        output.tagsUsed = new int[seenTags.size()];
+        for (int i = 0; i < seenTags.size(); i += 1) {
+            output.tagsUsed[i] = seenTags.get(i).getFiducialId();
+        }
 
         return Optional.of(output);
     }

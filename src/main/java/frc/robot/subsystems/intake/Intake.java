@@ -107,6 +107,13 @@ public class Intake extends SubsystemBase {
         return this.run(() -> {this.setVolts(volts);});
     }
 
+    public Command setPrimaryVoltsCommand(double volts) {
+        return this.run(() -> {
+            frontIntakeMotor.setVoltage(volts);
+            backIntakeMotor.setVoltage(-0.5);
+        });
+    }
+
     public double getFrontRPM() {
         return frontIntakeMotor.getVelocity();
     }

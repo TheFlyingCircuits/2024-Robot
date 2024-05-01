@@ -289,12 +289,12 @@ public class Arm extends SubsystemBase {
             io.setCoast(false);
         }
 
-        // if(!io.isCoast()) {
-        //     followTrapezoidProfile();
-        // }
-        // else {
-        //     io.setArmMotorVolts(0);
-        // }
+        if(!io.isCoast()) {
+            followTrapezoidProfile();
+        }
+        else {
+            io.setArmMotorVolts(0);
+        }
 
 
         mechLigament.setAngle(inputs.armAngleDegrees);

@@ -143,6 +143,8 @@ public class RobotContainer {
         
         drivetrain.setDefaultCommand(drivetrain.run(() -> {drivetrain.fieldOrientedDrive(charlie.getRequestedFieldOrientedVelocity(), true);}));
         leds.setDefaultCommand(leds.heartbeatCommand().ignoringDisable(true));
+        // leds.setDefaultCommand(leds.heartbeatCommand(1.5).andThen(leds.heartbeatCommand(1.0)).ignoringDisable(true));
+        // leds.setDefaultCommand(leds.fasterHeartbeatSequence().ignoringDisable(true));
         intake.setDefaultCommand(Commands.run(() -> {intake.setVolts(0);}, intake));
         indexer.setDefaultCommand(indexer.setBlackRollerSurfaceSpeedCommand(0));
         shooter.setDefaultCommand(shooter.setFlywheelSurfaceSpeedCommand(0));
@@ -179,7 +181,7 @@ public class RobotContainer {
         NamedCommands.registerCommand("waitIndexNote", indexNote().withTimeout(4));
         NamedCommands.registerCommand("indexNote", indexNote().withTimeout(2));
         NamedCommands.registerCommand("intakeNote", intakeNote().withTimeout(1.5));
-        NamedCommands.registerCommand("rapidFire", prepAutoSpeakerShot().alongWith(runIntake()));
+        NamedCommands.registerCommand("rapidFire", prepAutoSpeakerShot().alongWith(runIntake(true)));
         NamedCommands.registerCommand("resetShooter", resetShooter());
         NamedCommands.registerCommand("intakeTowardsNote", intakeTowardsNote().until(noteIsTooFarForPickupInAuto).withTimeout(2.5));
         NamedCommands.registerCommand("fireNote", fireNote());
@@ -203,7 +205,9 @@ public class RobotContainer {
                 //intake after note if on other side of the field
                 //new ConditionalCommand(
                     intakeTowardsNote().andThen(new ScheduleCommand(
-                    indexNote().andThen(reverseIntake().withTimeout(2))))
+                    indexNote().andThen(reverseIntake().withTimeout(1.0))))
+                    // indexNote()
+                // Schedule index, so the drive command goes back to default as soon as intake is done
                 //)),
                 //regular intake if on this side of the field
                 //intakeNote().andThen(indexNote()),
@@ -298,9 +302,13 @@ public class RobotContainer {
     /**
      * @param rapidFire - whether or not we are rapid firing (in auto); if we are, we want to run the indexer faster.
      */
-    private Command runIntake() {
+    private Command runIntake(boolean useBothMotors) {
+        if (useBothMotors) {
+            return indexer.setOrangeWheelsSurfaceSpeedCommand(2.5)
+                          .alongWith(intake.setVoltsCommand(12));
+        }
         return indexer.setOrangeWheelsSurfaceSpeedCommand(2.5)
-                      .alongWith(intake.setVoltsCommand(12));
+                      .alongWith(intake.setPrimaryVoltsCommand(12));
     }
 
     private Command reverseIntake() {
@@ -321,7 +329,7 @@ public class RobotContainer {
      */
     private Command intakeNote() {
         return new ScheduleCommand(leds.playIntakeAnimationCommand(() -> {return drivetrain.getBestNoteLocationRobotFrame().isPresent();}))
-            .alongWith(this.runIntake().until(intake::ringJustEnteredIntake));
+            .alongWith(this.runIntake(true).until(intake::ringJustEnteredIntake));
     }
 
     private Command intakeTowardsNote() {
@@ -331,7 +339,7 @@ public class RobotContainer {
     }
 
     private Command indexNote() {
-        return this.runIntake().until(indexer::isNoteIndexed)
+        return this.runIntake(false).until(indexer::isNoteIndexed)
                .andThen(new InstantCommand(() -> {indexer.setVolts(0); intake.setVolts(0);})
                         .alongWith(new ScheduleCommand(leds.solidOrangeCommand()))
                );

@@ -50,6 +50,8 @@ public interface VisionIO {
          */
         public Matrix<N3, N1> stdDevs;
 
+        public int[] tagsUsed;
+
         /**
          * Creates a new VisionMeasurement object. See the definition of this class for further documentation.
          */
@@ -58,6 +60,7 @@ public interface VisionIO {
             this.timestampSeconds=timestampSeconds;
             this.nearestTagDistanceMeters=nearestTagDistanceMeters;
             this.stdDevs=stdDevs;
+            this.tagsUsed = null;
         }
 
         /**
@@ -106,6 +109,8 @@ public interface VisionIO {
                 table.put(rootString+"/StdDevY", meas.stdDevs.get(1, 0));
                 table.put(rootString+"/StdDevRot", meas.stdDevs.get(2, 0));
                 table.put(rootString+"/CameraName", meas.cameraName);
+                table.put(rootString+"/tagsUsed", meas.tagsUsed);
+
             }
 
             for (int i = 0; i < detectedNotesRobotFrame.size(); i++) {
@@ -138,6 +143,7 @@ public interface VisionIO {
                 double stdDevRot = table.get(rootString+"/StdDevRot", meas.stdDevs.get(2, 0));
                 meas.stdDevs = VecBuilder.fill(stdDevX, stdDevY, stdDevRot);
                 meas.cameraName = table.get(rootString+"/CameraName", "");
+                meas.tagsUsed = table.get(rootString+"/tagsUsed", new int[0]);
 
                 visionMeasurements.add(meas);
             }

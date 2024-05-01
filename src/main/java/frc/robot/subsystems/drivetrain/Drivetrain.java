@@ -43,6 +43,7 @@ import frc.robot.Constants;
 import frc.robot.FlyingCircuitUtils;
 import frc.robot.Constants.DrivetrainConstants;
 import frc.robot.Constants.FieldElement;
+import frc.robot.Constants.VisionConstants;
 import frc.robot.subsystems.vision.VisionIO;
 import frc.robot.subsystems.vision.VisionIO.VisionIOInputsLogged;
 import frc.robot.subsystems.vision.VisionIO.VisionMeasurement;
@@ -432,7 +433,7 @@ public class Drivetrain extends SubsystemBase {
         wheelsOnlyPoseEstimator.update(gyroInputs.robotYawRotation2d, getModulePositions());
 
 
-
+        List<Pose2d> trackedTags = new ArrayList<Pose2d>();
         for (VisionMeasurement visionMeasurement : visionInputs.visionMeasurements) {
             if (visionMeasurement.cameraName.equals("shooterCamera") && !useShooterCamera) {
                 continue;
@@ -450,8 +451,15 @@ public class Drivetrain extends SubsystemBase {
                     visionMeasurement.timestampSeconds, 
                     visionMeasurement.stdDevs
                 );
+
+                for (int id : visionMeasurement.tagsUsed) {
+                    Pose2d tagPose = VisionConstants.aprilTagFieldLayout.getTagPose(id).get().toPose2d();
+                    trackedTags.add(tagPose);
+                }
             }
         }
+
+        Logger.recordOutput("drivetrain/trackedTags", trackedTags.toArray(new Pose2d[0]));
     }
 
     public boolean inSpeakerShotRange() {
