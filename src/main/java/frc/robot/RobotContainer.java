@@ -333,7 +333,6 @@ public class RobotContainer {
     }
 
     private Command intakeTowardsNote() {
-        // keep charlie control for auto? he will stop, which is what we want if nothing is seen?
         return drivetrain.run(() -> {drivetrain.driveTowardsNote(charlie::getRequestedFieldOrientedVelocity);})
                .raceWith(intakeNote());
     }
@@ -424,10 +423,15 @@ public class RobotContainer {
 
     private Command autoIntakeTowardsNote() {
         return new SequentialCommandGroup(
-            new InstantCommand( () -> {this.goodPickup = false;} ),
-            intakeTowardsNote().finallyDo((boolean interrupted) -> {this.goodPickup = !interrupted;})
-                .until(noteIsTooFarForPickupInAuto).withTimeout(1.5)
-        );
+            new InstantCommand(() -> {this.goodPickup = false;}),
+            intakeTowardsNote() //if the robot loses sight of a note briefly, the command is not interrupted. the robot will simply stop moving
+                .until(noteIsTooFarForPickupInAuto) //interrupts if invalid note is detected
+                .withTimeout(1.5) //interrupts if runs out of time
+                .onlyIf(() -> {return drivetrain.getBestNoteLocationRobotFrame().isPresent();}) //doesn't start if no note is seen on initialize
+                .finallyDo(
+                    (boolean interrupted) -> {this.goodPickup = !interrupted;}
+                )
+         );
     }
 
 

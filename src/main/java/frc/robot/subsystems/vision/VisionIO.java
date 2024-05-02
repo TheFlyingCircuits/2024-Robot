@@ -40,9 +40,9 @@ public interface VisionIO {
         public double timestampSeconds;
 
         /**
-         * Distance from the camera to the nearest tag, in meters.
+         * The average distance from the camera to each tag that it sees, in meters.
          */
-        public double nearestTagDistanceMeters;
+        public double averageTagDistanceMeters;
 
         /**
          * Standard deviations of this vision measurement, in meters and radians.
@@ -58,7 +58,7 @@ public interface VisionIO {
         public VisionMeasurement(Pose2d robotFieldPose, double timestampSeconds, double nearestTagDistanceMeters, Matrix<N3, N1> stdDevs) {
             this.robotFieldPose=robotFieldPose;
             this.timestampSeconds=timestampSeconds;
-            this.nearestTagDistanceMeters=nearestTagDistanceMeters;
+            this.averageTagDistanceMeters=nearestTagDistanceMeters;
             this.stdDevs=stdDevs;
             this.tagsUsed = null;
         }
@@ -83,8 +83,11 @@ public interface VisionIO {
 
         /**
          * The 3D coordinates of every note detected by the intake camera in the robot coordinate frame.
+         * <p>
          * Positive X is forward
+         * <p>
          * Positive Y is left
+         * <p>
          * Positive Z is up
          */
         public List<Translation3d> detectedNotesRobotFrame = new ArrayList<Translation3d>();
@@ -104,7 +107,7 @@ public interface VisionIO {
 
                 table.put(rootString+"/RobotFieldPose", meas.robotFieldPose);
                 table.put(rootString+"/TimestampSeconds", meas.timestampSeconds);
-                table.put(rootString+"/NearestTagDistanceMeters", meas.nearestTagDistanceMeters);
+                table.put(rootString+"/NearestTagDistanceMeters", meas.averageTagDistanceMeters);
                 table.put(rootString+"/StdDevX", meas.stdDevs.get(0, 0));
                 table.put(rootString+"/StdDevY", meas.stdDevs.get(1, 0));
                 table.put(rootString+"/StdDevRot", meas.stdDevs.get(2, 0));
@@ -137,7 +140,7 @@ public interface VisionIO {
 
                 meas.robotFieldPose = table.get(rootString+"/RobotFieldPose", meas.robotFieldPose);
                 meas.timestampSeconds = table.get(rootString+"/TimestampSeconds", meas.timestampSeconds);
-                meas.nearestTagDistanceMeters = table.get(rootString+"/NearestTagDistanceMeters", meas.nearestTagDistanceMeters);
+                meas.averageTagDistanceMeters = table.get(rootString+"/NearestTagDistanceMeters", meas.averageTagDistanceMeters);
                 double stdDevX = table.get(rootString+"/StdDevX", meas.stdDevs.get(0, 0));
                 double stdDevY = table.get(rootString+"/StdDevY", meas.stdDevs.get(1, 0));
                 double stdDevRot = table.get(rootString+"/StdDevRot", meas.stdDevs.get(2, 0));

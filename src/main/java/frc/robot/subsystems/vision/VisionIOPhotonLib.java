@@ -65,6 +65,7 @@ public class VisionIOPhotonLib implements VisionIO {
      * Calculates a matrix of standard deviations of the vision pose estimate, in meters and degrees. 
      * This is a function of the distance from the camera to the april tag.
      * @param distToTargetMeters - Distance from the camera to the apriltag.
+     * @return A vector of the standard deviations given distance in X (m), Y (m), and Rotation (Rad)
      */
     private Matrix<N3, N1> getVisionStdDevs(double distToTargetMeters, boolean useMultitag) {
 
@@ -72,6 +73,9 @@ public class VisionIOPhotonLib implements VisionIO {
         double slopeStdDevMetersPerMeterY;
 
 
+
+        // previous working vision
+        
         if (useMultitag) {
             slopeStdDevMetersPerMeterX = 0.004;
             slopeStdDevMetersPerMeterY = 0.009;
@@ -80,6 +84,8 @@ public class VisionIOPhotonLib implements VisionIO {
             slopeStdDevMetersPerMeterX = 0.008;
             slopeStdDevMetersPerMeterY = 0.008;
         }
+
+
 
         //bad vision from practice match at worlds
 
@@ -105,14 +111,25 @@ public class VisionIOPhotonLib implements VisionIO {
         //     }
         // }
 
-        double slopeStdDevRadiansPerMeter = 1000;
+        //previous linear model
+        // return VecBuilder.fill(
+        //     slopeStdDevMetersPerMeterX*distToTargetMeters,
+        //     slopeStdDevMetersPerMeterY*distToTargetMeters,
+        //     99999
+        // );
 
-        //corresponds to x, y, and rotation standard deviations (meters and radians)
-        return VecBuilder.fill(
-            slopeStdDevMetersPerMeterX*distToTargetMeters,
-            slopeStdDevMetersPerMeterY*distToTargetMeters,
-            slopeStdDevRadiansPerMeter*distToTargetMeters
-        );
+
+        
+        double squareFactor = 0.5;
+
+        return VecBuilder.fill(0.04, 0.04, 99999);
+
+        // // square model
+        // return VecBuilder.fill(
+        //     squareFactor*slopeStdDevMetersPerMeterX*Math.pow(distToTargetMeters, 3),
+        //     squareFactor*slopeStdDevMetersPerMeterY*Math.pow(distToTargetMeters, 3),
+        //     99999
+        // );
     }
 
 
@@ -139,25 +156,21 @@ public class VisionIOPhotonLib implements VisionIO {
         if (seenTags.size() == 1 && seenTags.get(0).getPoseAmbiguity() > 0.2) {
             return Optional.empty();
         }
-
-        double distanceToNearestTag = seenTags.get(0).getBestCameraToTarget().getTranslation().getDistance(new Translation3d());
+        
+        
         for (PhotonTrackedTarget tag : seenTags) {
             double distance = tag.getBestCameraToTarget().getTranslation().getDistance(new Translation3d());
-            if (distance < distanceToNearestTag) {
-                distanceToNearestTag = distance;
-            }
+            output.averageTagDistanceMeters += distance/seenTags.size();
         }
-
-        output.nearestTagDistanceMeters = distanceToNearestTag;
         
-        if (output.nearestTagDistanceMeters > 6) {
+        if (output.averageTagDistanceMeters > 6) {
             return Optional.empty();
         }
 
 
         output.robotFieldPose = poseEstimate.estimatedPose.toPose2d();
         output.timestampSeconds = poseEstimate.timestampSeconds;
-        output.stdDevs = getVisionStdDevs(output.nearestTagDistanceMeters, (seenTags.size() > 1));  //different standard devs for different methods of detecting apriltags
+        output.stdDevs = getVisionStdDevs(output.averageTagDistanceMeters, (seenTags.size() > 1));  //different standard devs for different methods of detecting apriltags
         output.cameraName = camera.getName();
         output.tagsUsed = new int[seenTags.size()];
         for (int i = 0; i < seenTags.size(); i += 1) {
@@ -227,10 +240,16 @@ public class VisionIOPhotonLib implements VisionIO {
         }
 
         //sorts visionMeasurements by standard deviations in the x direction, biggest to smallest
-        Collections.sort(inputs.visionMeasurements, new Comparator<VisionMeasurement>() {
-            @Override
-            public int compare(VisionMeasurement o1, VisionMeasurement o2) {
-                return -Double.compare(o1.stdDevs.get(0,0), o2.stdDevs.get(0,0));
+        // Collections.sort(inputs.visionMeasurements, new Comparator<VisionMeasurement>() {
+        //     @Override
+        //     public int compare(VisionMeasurement o1, VisionMeasurement o2) {
+        //         return -Double.compare(o1.stdDevs.get(0,0), o2.stdDevs.get(0,0));
+        //     }
+        // });
+
+        inputs.visionMeasurements.sort(new Comparator<VisionMeasurement>() {
+            public int compare(VisionMeasurement a, VisionMeasurement b) {
+                return Double.compare(a.timestampSeconds, b.timestampSeconds);
             }
         });
 
