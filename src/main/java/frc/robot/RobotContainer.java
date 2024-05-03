@@ -38,6 +38,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
 
 import org.littletonrobotics.junction.Logger;
@@ -50,6 +51,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
@@ -85,7 +87,6 @@ public class RobotContainer {
     public final Climb climb;
     public final LEDs leds;
 
-    private Trigger noteIsTooFarForPickupInAuto;
     private Trigger dontAmpAutoAlign;
 
     private boolean goodPickup = false;
@@ -151,28 +152,6 @@ public class RobotContainer {
         climb.setDefaultCommand(Commands.run(() -> {climb.setVolts(0);}, climb));
         arm.setDefaultCommand(arm.holdCurrentPositionCommand().ignoringDisable(true));
 
-
-        noteIsTooFarForPickupInAuto = new Trigger(() -> {
-            if (drivetrain.getBestNoteLocationRobotFrame().isEmpty()) {
-                return false; // keep driving if you don't see anything
-            }
-
-            Optional<Alliance> alliance  = DriverStation.getAlliance();
-            if (!alliance.isPresent()) {
-                return true; // stop driving if we don't know what alliance we're on
-            }
-
-            Translation2d noteLocation_robotFrame = drivetrain.getBestNoteLocationRobotFrame().get();
-            Translation2d noteLocation_fieldFrame = drivetrain.fieldCoordsFromRobotCoords(noteLocation_robotFrame);
-            double noteX = noteLocation_fieldFrame.getX();
-            double midlineX = FieldConstants.midField.getX();
-            double overshootAllowance = 2.0; // TODO: tune!
-
-            boolean over = (alliance.get() == Alliance.Blue) && (noteX >= (midlineX + overshootAllowance));
-            over = over || (alliance.get() == Alliance.Red) && (noteX <= (midlineX - overshootAllowance));
-            return over;
-        });
-
         dontAmpAutoAlign = ben.leftBumper();
 
         
@@ -183,7 +162,7 @@ public class RobotContainer {
         NamedCommands.registerCommand("intakeNote", intakeNote().withTimeout(1.5));
         NamedCommands.registerCommand("rapidFire", prepAutoSpeakerShot().alongWith(runIntake(true)));
         NamedCommands.registerCommand("resetShooter", resetShooter());
-        NamedCommands.registerCommand("intakeTowardsNote", intakeTowardsNote().until(noteIsTooFarForPickupInAuto).withTimeout(2.5));
+        // NamedCommands.registerCommand("intakeTowardsNote", intakeTowardsNote().until(noteIsTooFarForPickupInAuto).withTimeout(2.5));
         NamedCommands.registerCommand("fireNote", fireNote());
 
 
@@ -337,6 +316,21 @@ public class RobotContainer {
                .raceWith(intakeNote());
     }
 
+    private Command intakeTowardsNote(FieldElement note) {
+        return drivetrain.run(() -> {
+            if (drivetrain.getBestNoteLocationRobotFrame().isPresent()) {
+                drivetrain.driveTowardsNote(charlie::getRequestedFieldOrientedVelocity);
+            }
+            else {
+                Translation2d noteLocation = note.getLocation().toTranslation2d();
+                Translation2d robotLocation = drivetrain.getPoseMeters().getTranslation();
+                Translation2d noteToRobot = robotLocation.minus(noteLocation);
+                drivetrain.beeLineToPose(new Pose2d(noteLocation, noteToRobot.getAngle()));
+            }
+        })
+        .raceWith(intakeNote());
+    }
+
     private Command indexNote() {
         return this.runIntake(false).until(indexer::isNoteIndexed)
                .andThen(new InstantCommand(() -> {indexer.setVolts(0); intake.setVolts(0);})
@@ -395,7 +389,7 @@ public class RobotContainer {
 
     private Command speakerShot() {
         PrepShot aim = new PrepShot(drivetrain, arm, shooter, charlie::getRequestedFieldOrientedVelocity, leds, FieldElement.SPEAKER);
-        Command waitForAlignment = new WaitUntilCommand(aim::readyToShoot).andThen(new WaitCommand(0.1));
+        Command waitForAlignment = new WaitUntilCommand(aim::readyToShoot).andThen(new WaitCommand(0.1));  // wait for vision to stabilize
         Command fire = fireNote();
         return aim.raceWith(waitForAlignment.andThen(fire));
     }
@@ -421,17 +415,59 @@ public class RobotContainer {
     }
 
 
-    private Command autoIntakeTowardsNote() {
+    private Command autoIntakeTowardsNote(FieldElement note) {
         return new SequentialCommandGroup(
             new InstantCommand(() -> {this.goodPickup = false;}),
-            intakeTowardsNote() //if the robot loses sight of a note briefly, the command is not interrupted. the robot will simply stop moving
-                .until(noteIsTooFarForPickupInAuto) //interrupts if invalid note is detected
-                .withTimeout(1.5) //interrupts if runs out of time
-                .onlyIf(() -> {return drivetrain.getBestNoteLocationRobotFrame().isPresent();}) //doesn't start if no note is seen on initialize
-                .finallyDo(
-                    (boolean interrupted) -> {this.goodPickup = !interrupted;}
-                )
+            intakeTowardsNote(note) //if the robot loses sight of a note briefly, the command is not interrupted. the robot will just drive to where the note is staged at the start of a match
+            .finallyDo(
+                (boolean interrupted) -> {this.goodPickup = !interrupted;}
+            )
+            .until(() -> {return noteIsLostCauseInAuto(note);}) //interrupts if invalid note is detected
+            //.withTimeout(1.5) //interrupts if runs out of time
          );
+    }
+
+    private boolean noteIsLostCauseInAuto(FieldElement note) {
+        boolean dontSeeNote = shouldSeeNote(note) && !drivetrain.getBestNoteLocationRobotFrame().isPresent();
+        boolean pickupTooRisky = noteIsTooFarForPickupInAuto();
+        if (dontSeeNote) {
+            System.out.println("don't see the note");
+        }
+        if (pickupTooRisky) {
+            System.out.println("too risky");
+        }
+        return dontSeeNote || pickupTooRisky;
+    }
+
+
+    private boolean shouldSeeNote(FieldElement note) {
+        double pickupRadius = 1.25; // want this to be large for early exit.
+        double fovConeDegrees = 3; // need this so we don't abort too quickly.
+        Translation2d noteToRobot = drivetrain.getPoseMeters().getTranslation().minus(note.getLocation().toTranslation2d());
+        boolean closeEnough = noteToRobot.getNorm() <= pickupRadius;
+        boolean noteInFov = Math.abs(drivetrain.getPoseMeters().getRotation().minus(noteToRobot.getAngle()).getDegrees()) <= (fovConeDegrees / 2.);
+        return closeEnough && noteInFov;
+    }
+
+    private boolean noteIsTooFarForPickupInAuto() {
+        if (drivetrain.getBestNoteLocationRobotFrame().isEmpty()) {
+            return false; // keep driving if you don't see anything
+        }
+
+        Optional<Alliance> alliance  = DriverStation.getAlliance();
+        if (!alliance.isPresent()) {
+            return true; // stop driving if we don't know what alliance we're on
+        }
+
+        Translation2d noteLocation_robotFrame = drivetrain.getBestNoteLocationRobotFrame().get();
+        Translation2d noteLocation_fieldFrame = drivetrain.fieldCoordsFromRobotCoords(noteLocation_robotFrame);
+        double noteX = noteLocation_fieldFrame.getX();
+        double midlineX = FieldConstants.midField.getX();
+        double overshootAllowance = 2.0; // TODO: tune!
+
+        boolean over = (alliance.get() == Alliance.Blue) && (noteX >= (midlineX + overshootAllowance));
+        over = over || (alliance.get() == Alliance.Red) && (noteX <= (midlineX - overshootAllowance));
+        return over;
     }
 
 
@@ -497,7 +533,6 @@ public class RobotContainer {
                 FlyingCircuitUtils.followPath(pathName),
                 autoIndexAndThenPrep()
             ),
-            new WaitCommand(0.1), //wait for vision to stabilize
             speakerShot()
         );
     }
@@ -507,7 +542,7 @@ public class RobotContainer {
         Command ampAuto = new SequentialCommandGroup(
             speakerShot(),
             navigatePickupAfterShot(4, true),
-            autoIntakeTowardsNote(),
+            autoIntakeTowardsNote(FieldElement.NOTE_4),
             //if you pickup a note, score it and go to ring 5
             //otherwise just go to ring 5
             new ConditionalCommand(
@@ -518,7 +553,7 @@ public class RobotContainer {
                 FlyingCircuitUtils.followPath("Ring 4 to Ring 5"),
                 () -> {return this.goodPickup;}
             ),
-            autoIntakeTowardsNote(),
+            autoIntakeTowardsNote(FieldElement.NOTE_5),
             //if you pickup a note, score it and go to ring 6
             //otherwise just go to ring 6
             new ConditionalCommand(
@@ -528,7 +563,7 @@ public class RobotContainer {
                 ), 
                 FlyingCircuitUtils.followPath("Ring 5 to Ring 6"),
                 () -> {return this.goodPickup;}),
-            autoIntakeTowardsNote(),
+            autoIntakeTowardsNote(FieldElement.NOTE_6),
             //if you pickup ring 6, score it, otherwise sit and do nothing
             new ConditionalCommand(
                 scoreRingAfterPickup(6, true),
@@ -544,27 +579,26 @@ public class RobotContainer {
         return new SequentialCommandGroup(
             speakerShot(),
             navigatePickupAfterShot(8, false),
-            autoIntakeTowardsNote(),
+            autoIntakeTowardsNote(FieldElement.NOTE_8),
             //if you pickup ring 8, score it and go to ring 7
             //otherwise just go to ring 7
             new ConditionalCommand(
                 new SequentialCommandGroup(
                     scoreRingAfterPickup(8, false),
                     navigatePickupAfterShot(7, false)), 
-                FlyingCircuitUtils.followPath("Ring 8 to Ring 7"),
+                new InstantCommand(() -> {System.out.println("skipping 8, trying 7");}),
                 () -> {return this.goodPickup;}),
-            autoIntakeTowardsNote(),
+            autoIntakeTowardsNote(FieldElement.NOTE_7),
             //if you pickup ring 7, score it and go to ring 6
             //otherwise just go to ring 6
             new ConditionalCommand(
                 new SequentialCommandGroup(
                     scoreRingAfterPickup(7, false),
-                    navigatePickupAfterShot(6, 
-                    false)
+                    navigatePickupAfterShot(6, false)
                 ), 
-                FlyingCircuitUtils.followPath("Ring 7 to Ring 6"),
+                new InstantCommand(() -> {System.out.println("skipping 7, trying 6");}),
                 () -> {return this.goodPickup;}),
-            autoIntakeTowardsNote(),
+            autoIntakeTowardsNote(FieldElement.NOTE_6),
             //if you pickup ring 6, score it, otherwise sit and do nothing
             new ConditionalCommand(
                 scoreRingAfterPickup(6, false),

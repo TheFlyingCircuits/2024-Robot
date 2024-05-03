@@ -225,6 +225,7 @@ public class PrepShot extends Command {
             armAngleRadians = Math.atan2(verticalVelocity, horizontalVelocity);
 
             // update for next iteration.
+            // TODO: should I take the note length into account for considering the distance it travels when in free fall?
             verticalDistance = getVerticalMetersToFlywheels(targetLocation, armAngleRadians);
             horizontalDistance = getHorizontalMetersToFlywheels(targetLocation, armAngleRadians);
         }

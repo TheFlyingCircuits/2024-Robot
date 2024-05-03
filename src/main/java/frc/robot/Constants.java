@@ -49,8 +49,8 @@ public final class Constants {
         public final static double kIFlywheelsVoltsPerMeter = 0.;
         public final static double kDFlywheelsVoltsSecondsSquaredPerMeter = 0.;
 
-        public final static double kSFlywheelsVolts = 0.0;
-        public final static double kVFlywheelsVoltsSecondsPerMeter = 0.4185;
+        public final static double kSFlywheelsVolts = 0.2735;
+        public final static double kVFlywheelsVoltsSecondsPerMeter = 0.4047;
         public final static double kAFlywheelsVoltsSecondsSquaredPerMeter = 0.;
 
         public final static int leftMotorID = 6;
@@ -199,8 +199,8 @@ public final class Constants {
         public static final double anglekIVoltsPerDegreeSeconds = 0.; // this might be the wrong unit idk 
         public static final double anglekDVoltsPerDegreePerSecond = 0.;
 
-        public static final double drivekSVolts = 0.;
-        public static final double drivekVVoltsSecondsPerMeter = 2.42; // TODO: add desmos link
+        public static final double drivekSVolts = 0.2383;
+        public static final double drivekVVoltsSecondsPerMeter = 2.2859; // TODO: add desmos link
         public static final double drivekAVoltsSecondsSquaredPerMeter = 0.;
 
     }
@@ -269,7 +269,7 @@ public final class Constants {
         /** Horizontal distance from the robot center to the pivot center */
         public final static double pivotOffsetMeters = Units.inchesToMeters(9); // 22 centimeters
 
-        public final static double armLengthMeters = Units.inchesToMeters(18.25);
+        public final static double armLengthMeters = Units.inchesToMeters(18.25); // 18.29 something from cad?
 
         public final static double momentOfInertiaKgMSquared = 0.8;
     }

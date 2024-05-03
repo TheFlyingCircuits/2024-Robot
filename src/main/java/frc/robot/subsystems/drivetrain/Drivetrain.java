@@ -288,6 +288,39 @@ public class Drivetrain extends SubsystemBase {
         this.fieldOrientedDriveWhileAiming(desiredVelocity, lineToDriveOn.getRotation());
     }
 
+
+    public void beeLineToPose(Pose2d targetPose) {
+
+        double maxAccel = 2.35; // 2.35 [meters per second per second] (emperically determined)
+
+        Translation2d targetLocation = targetPose.getTranslation();
+        Translation2d robotLocation = getPoseMeters().getTranslation();
+        Translation2d robotToTarget = targetLocation.minus(robotLocation);
+        double distanceToTarget = robotToTarget.getNorm();
+
+
+        // Physics 101: under constant accel -> v_final^2 = v_initial^2 + 2 * accel * displacement
+        // displacement = finalDistanceToNote - currentDistanceToNote = 0 - currentDistanceToNote
+        // accel = maxAccel
+        // v_final = 0 (because we want to come to a controlled stop to pickup the note)
+        // after some algebra -> v_initial = sqrt(-2 * accel * displacement)
+
+        double desiredSpeed = Math.sqrt(-2 * maxAccel * (0 - distanceToTarget));
+
+
+        // direction to drive is towards the target
+        Rotation2d directionToDrive = robotToTarget.getAngle();
+        Rotation2d directionToPoint = targetPose.getRotation();
+
+        ChassisSpeeds desiredVelocity = new ChassisSpeeds();
+        desiredVelocity.vxMetersPerSecond = desiredSpeed * directionToDrive.getCos();
+        desiredVelocity.vyMetersPerSecond = desiredSpeed * directionToDrive.getSin();
+
+        // Don't use fieldOrientedDriveOnALine becaus the target orientation may not be the same
+        // as the direction to drive in!
+        this.fieldOrientedDriveWhileAiming(desiredVelocity, directionToPoint);
+    }
+
     //could be used for a drivetrain command in the future; leave this as its own function
     private void setModuleStates(SwerveModuleState[] desiredStates, boolean closedLoop) {
         SwerveDriveKinematics.desaturateWheelSpeeds(desiredStates, DrivetrainConstants.maxAchievableVelocityMetersPerSecond);
@@ -565,36 +598,11 @@ public class Drivetrain extends SubsystemBase {
             return;
         }
 
-        double maxAccel = 2.35; // 2.35 [meters per second per second] (emperically determined)
-
         Translation2d noteLocation_robotFrame = getBestNoteLocationRobotFrame().get();
-        double distanceToNote = noteLocation_robotFrame.getNorm();
+        Translation2d noteLocation_fieldFrame = fieldCoordsFromRobotCoords(noteLocation_robotFrame);
+        Translation2d noteToRobot_fieldFrame = getPoseMeters().getTranslation().minus(noteLocation_fieldFrame);
 
-
-        // Physics 101: under constant accel -> v_final^2 = v_initial^2 + 2 * accel * displacement
-        // displacement = finalDistanceToNote - currentDistanceToNote = 0 - currentDistanceToNote
-        // accel = maxAccel
-        // v_final = 0 (because we want to come to a controlled stop to pickup the note)
-        // after some algebra -> v_initial = sqrt(-2 * accel * displacement)
-
-        double desiredSpeed = Math.sqrt(-2 * maxAccel * (0 - distanceToNote));
-
-        
-
-        Rotation2d robotAngle = getPoseMeters().getRotation();
-        Rotation2d noteAngleToRobot = noteLocation_robotFrame.getAngle();
-
-        // direction to drive is opposite of the direction to point because the
-        // intake is in the back of the robot.
-        Rotation2d directionToDrive = robotAngle.plus(noteAngleToRobot);
-        Rotation2d directionToPoint = directionToDrive.rotateBy(new Rotation2d(Math.PI));
-
-        ChassisSpeeds desiredVelocity = new ChassisSpeeds();
-        desiredVelocity.vxMetersPerSecond = desiredSpeed * directionToDrive.getCos();
-        desiredVelocity.vyMetersPerSecond = desiredSpeed * directionToDrive.getSin();
-
-        // TODO: use fieldOrientedDriveOnALine()?
-        this.fieldOrientedDriveWhileAiming(desiredVelocity, directionToPoint);
+        this.beeLineToPose(new Pose2d(noteLocation_fieldFrame, noteToRobot_fieldFrame.getAngle()));
     }
 
 
