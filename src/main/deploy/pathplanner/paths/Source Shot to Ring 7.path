@@ -3,25 +3,25 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 12.0,
-        "y": 1.91
+        "x": 12.680779976944573,
+        "y": 2.2299290752427665
       },
       "prevControl": null,
       "nextControl": {
-        "x": 11.617933057612657,
-        "y": 1.5874711617005597
+        "x": 12.29871303455723,
+        "y": 1.9074002369433263
       },
       "isLocked": true,
       "linkedName": "Source Shot"
     },
     {
       "anchor": {
-        "x": 10.67844682007654,
-        "y": 1.5209622818295532
+        "x": 10.727125300404449,
+        "y": 1.5096422500537308
       },
       "prevControl": {
-        "x": 11.396284931573184,
-        "y": 1.3036872356716223
+        "x": 11.444963411901094,
+        "y": 1.2923672038957996
       },
       "nextControl": null,
       "isLocked": true,
@@ -33,7 +33,7 @@
   "eventMarkers": [],
   "globalConstraints": {
     "maxVelocity": 4.5,
-    "maxAcceleration": 2.5,
+    "maxAcceleration": 3.5,
     "maxAngularVelocity": 360.0,
     "maxAngularAcceleration": 360.0
   },

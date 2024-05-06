@@ -373,7 +373,7 @@ public class RobotContainer {
 
     private Command speakerShot() {
         PrepShot aim = new PrepShot(drivetrain, arm, shooter, charlie::getRequestedFieldOrientedVelocity, leds, FieldElement.SPEAKER);
-        Command waitForAlignment = new WaitUntilCommand(aim::readyToShoot).andThen(new WaitCommand(0.1));  // wait for vision to stabilize
+        Command waitForAlignment = new WaitCommand(0.25).andThen(new WaitUntilCommand(aim::readyToShoot));  // wait for vision to stabilize
         Command fire = fireNote();
         return aim.raceWith(waitForAlignment.andThen(fire));
     }
@@ -434,12 +434,13 @@ public class RobotContainer {
         if (pickupTooRisky) {
             System.out.println("too risky");
         }
+
         return dontSeeNote || pickupTooRisky;
     }
 
 
     private boolean shouldSeeNote(FieldElement note) {
-        double pickupRadius = 1.25; // want this to be large for early exit.
+        double pickupRadius = 0.75; // want this to be large for early exit.
         double fovConeDegrees = 3; // need this so we don't abort too quickly.
         Translation2d noteToRobot = drivetrain.getPoseMeters().getTranslation().minus(note.getLocation().toTranslation2d());
         boolean closeEnough = noteToRobot.getNorm() <= pickupRadius;
@@ -475,31 +476,35 @@ public class RobotContainer {
      */
     private Command navigatePickupAfterShot(FieldElement note) {
         Command pathFollowingCommand = null;
-        if (note == FieldElement.NOTE_8) {
-            pathFollowingCommand = FlyingCircuitUtils.followPath("Starting Line to Ring 8");
-        }
-        if (note == FieldElement.NOTE_7) {
-            pathFollowingCommand = FlyingCircuitUtils.followPath("Mid Shot to Ring 7 (Around Stage)");
-        }
+
         if (note == FieldElement.NOTE_4) {
-            pathFollowingCommand = FlyingCircuitUtils.followPath("Starting Line to Ring 4 Pickup");
+            pathFollowingCommand = FlyingCircuitUtils.followPath("Starting Line to Ring 4");
         }
         if (note == FieldElement.NOTE_5) {
-            pathFollowingCommand = FlyingCircuitUtils.followPath("Wing Shot to Ring 5");
+            pathFollowingCommand = FlyingCircuitUtils.followPath("Amp Shot to Ring 5");
         }
         if (note == FieldElement.NOTE_6) {
             pathFollowingCommand = new ConditionalCommand(
-                FlyingCircuitUtils.followPath("Wing Shot to Ring 6 (Amp Side)"), 
-                FlyingCircuitUtils.followPath("Wing Shot to Ring 6 (Source Side)"), 
+                FlyingCircuitUtils.followPath("Amp Shot to Ring 6"), 
+                FlyingCircuitUtils.followPath("Source Shot to Ring 6"), 
                 () -> {
                     Translation2d robotLocation = drivetrain.getPoseMeters().getTranslation();
                     boolean onAmpSide = robotLocation.getY() >= FieldConstants.midField.getY();
                     return onAmpSide;
                 });
         }
+        if (note == FieldElement.NOTE_7) {
+            pathFollowingCommand = FlyingCircuitUtils.followPath("Source Shot to Ring 7");
+        }
+        if (note == FieldElement.NOTE_8) {
+            pathFollowingCommand = FlyingCircuitUtils.followPath("Starting Line to Ring 8");
+        }
+
         return new ParallelDeadlineGroup(
                 pathFollowingCommand,
-                resetShooter());
+                resetShooter(),
+                new PrintCommand(pathFollowingCommand.getName())
+                );
     }
 
     /**
@@ -508,33 +513,35 @@ public class RobotContainer {
      */
     private Command scoreRingAfterPickup(FieldElement note) {
         Command pathFollowingCommand = null;
-        if (note == FieldElement.NOTE_8) {
-            pathFollowingCommand = FlyingCircuitUtils.followPath("Ring 8 to Mid Shot");
-        }
-        if (note == FieldElement.NOTE_7) {
-            pathFollowingCommand = FlyingCircuitUtils.followPath("Ring 7 to Mid Shot (Around Stage)");
-        }
+
         if (note == FieldElement.NOTE_4) {
-            pathFollowingCommand = FlyingCircuitUtils.followPath("Ring 4 to Wing Shot");
+            pathFollowingCommand = FlyingCircuitUtils.followPath("Ring 4 to Amp Shot");
         }
         if (note == FieldElement.NOTE_5) {
-            pathFollowingCommand = FlyingCircuitUtils.followPath("Ring 5 to Wing Shot");
+            pathFollowingCommand = FlyingCircuitUtils.followPath("Ring 5 to Amp Shot");
         }
         if (note == FieldElement.NOTE_6) {
             pathFollowingCommand = new ConditionalCommand(
-                FlyingCircuitUtils.followPath("Ring 6 to Wing Shot (Amp Side)"),
-                FlyingCircuitUtils.followPath("Ring 6 to Mid Shot (Source Side)"),
+                FlyingCircuitUtils.followPath("Ring 6 to Amp Shot"),
+                FlyingCircuitUtils.followPath("Ring 6 to Source Shot"),
                 () -> {
                     boolean kindaFacingAmp = drivetrain.getPoseMeters().getRotation().getSin() > 0;
                     return kindaFacingAmp;
                 }
             );
         }
+        if (note == FieldElement.NOTE_7) {
+            pathFollowingCommand = FlyingCircuitUtils.followPath("Ring 7 to Source Shot");
+        }
+        if (note == FieldElement.NOTE_8) {
+            pathFollowingCommand = FlyingCircuitUtils.followPath("Ring 8 to Source Shot");
+        }
         
         return new SequentialCommandGroup(
             new ParallelDeadlineGroup(
                 pathFollowingCommand,
-                autoIndexAndThenPrep()
+                autoIndexAndThenPrep(),
+                new PrintCommand(pathFollowingCommand.getName())
             ),
             speakerShot()
         );

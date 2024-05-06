@@ -8,24 +8,24 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 9.507488448615884,
-        "y": 7.159011059952165
+        "x": 9.34575330689123,
+        "y": 7.104198823782264
       },
-      "isLocked": true,
+      "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 12.08798925443785,
-        "y": 6.534646792546081
+        "x": 10.756726128836874,
+        "y": 6.679920282917489
       },
       "prevControl": {
-        "x": 11.112548252370145,
-        "y": 6.754907663980724
+        "x": 9.710830190891153,
+        "y": 6.9660616244309415
       },
       "nextControl": null,
-      "isLocked": true,
-      "linkedName": null
+      "isLocked": false,
+      "linkedName": "Amp Shot"
     }
   ],
   "rotationTargets": [],
@@ -33,7 +33,7 @@
   "eventMarkers": [],
   "globalConstraints": {
     "maxVelocity": 4.5,
-    "maxAcceleration": 2.5,
+    "maxAcceleration": 3.5,
     "maxAngularVelocity": 360.0,
     "maxAngularAcceleration": 360.0
   },

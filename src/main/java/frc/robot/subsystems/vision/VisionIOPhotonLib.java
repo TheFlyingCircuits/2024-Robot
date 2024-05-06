@@ -163,7 +163,7 @@ public class VisionIOPhotonLib implements VisionIO {
             output.averageTagDistanceMeters += distance/seenTags.size();
         }
         
-        if (output.averageTagDistanceMeters > 6) {
+        if (output.averageTagDistanceMeters > 7) {
             return Optional.empty();
         }
 

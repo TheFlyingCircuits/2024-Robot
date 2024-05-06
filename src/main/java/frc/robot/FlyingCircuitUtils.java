@@ -45,7 +45,7 @@ public class FlyingCircuitUtils {
      * Make sure to call this after the AutoBuilder is configured.
      */
     public static Command followPath(String pathName) {
-        return AutoBuilder.followPath(PathPlannerPath.fromPathFile(pathName));
+        return AutoBuilder.followPath(PathPlannerPath.fromPathFile(pathName)).withName(pathName);
     }
 
     /**
