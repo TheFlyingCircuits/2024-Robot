@@ -107,10 +107,10 @@ public class Intake extends SubsystemBase {
         return this.run(() -> {this.setVolts(volts);});
     }
 
-    public Command setPrimaryVoltsCommand(double volts) {
+    public Command setVoltsCommand(double frontMotorVolts, double backMotorVolts) {
         return this.run(() -> {
-            frontIntakeMotor.setVoltage(volts);
-            backIntakeMotor.setVoltage(-0.5);
+            frontIntakeMotor.setVoltage(frontMotorVolts);
+            backIntakeMotor.setVoltage(backMotorVolts);
         });
     }
 

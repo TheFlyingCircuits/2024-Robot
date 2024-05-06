@@ -12,7 +12,7 @@
         "y": 6.28
       },
       "isLocked": true,
-      "linkedName": "Starting Line (Between Ring 1 and 2)"
+      "linkedName": null
     },
     {
       "anchor": {
@@ -25,7 +25,7 @@
       },
       "nextControl": null,
       "isLocked": true,
-      "linkedName": "Ring 5 Pickup (From Wing Shot)"
+      "linkedName": null
     }
   ],
   "rotationTargets": [],
@@ -43,7 +43,7 @@
     "rotateFast": false
   },
   "reversed": false,
-  "folder": "Unused (But Maybe Later)",
+  "folder": "HyperChad Amp Side",
   "previewStartingState": {
     "rotation": 0,
     "velocity": 0

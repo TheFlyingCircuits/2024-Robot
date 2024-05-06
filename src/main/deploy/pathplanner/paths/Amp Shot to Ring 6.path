@@ -3,29 +3,29 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 9.780954454918895,
-        "y": 1.3116136931275284
+        "x": 12.08798925443785,
+        "y": 6.534646792546081
       },
       "prevControl": null,
       "nextControl": {
-        "x": 10.716213278533168,
-        "y": 1.6655782857800219
+        "x": 10.659267195852507,
+        "y": 6.487803446362955
       },
       "isLocked": false,
-      "linkedName": "Ring 8 Pickup (From Starting Line)"
+      "linkedName": null
     },
     {
       "anchor": {
-        "x": 13.212229562832878,
-        "y": 2.7637574248044356
+        "x": 9.523358277485787,
+        "y": 5.38735077470155
       },
       "prevControl": {
-        "x": 12.276970739218605,
-        "y": 2.409792832151942
+        "x": 10.371915359215334,
+        "y": 6.324710341728376
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "Mid Shot (Source Side)"
+      "linkedName": null
     }
   ],
   "rotationTargets": [],
@@ -38,14 +38,14 @@
     "maxAngularAcceleration": 360.0
   },
   "goalEndState": {
-    "velocity": 0,
-    "rotation": 40.34,
-    "rotateFast": false
+    "velocity": 4.5,
+    "rotation": 59.42077312751116,
+    "rotateFast": true
   },
   "reversed": false,
-  "folder": "3 Piece Source Side",
+  "folder": "HyperChad Amp Side",
   "previewStartingState": {
-    "rotation": 22.409999999999997,
+    "rotation": -10.759999999999991,
     "velocity": 0
   },
   "useDefaultConstraints": true

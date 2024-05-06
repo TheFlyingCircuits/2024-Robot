@@ -18,6 +18,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 
 /**
  * The VM is configured to automatically run this class, and to call the functions corresponding to
@@ -59,9 +60,11 @@ public class Robot extends LoggedRobot {
         m_robotContainer = new RobotContainer();
 
         // Must buildAutoChooser() only after NamedCommmands have been registered in the RobotContainer constructor!
-        autoChooser = AutoBuilder.buildAutoChooser();
-        autoChooser.addOption("Amp Side Hyperchad Auto", m_robotContainer.ampSideAuto());
-        autoChooser.addOption("Source Side Hyperchad Auto", m_robotContainer.sourceSideAuto());
+        autoChooser = new SendableChooser<Command>(); //AutoBuilder.buildAutoChooser();
+        autoChooser.setDefaultOption("Do Nothing", new InstantCommand().withName("Do Nothing"));
+        autoChooser.addOption(m_robotContainer.sourceSideAuto().getName(), m_robotContainer.sourceSideAuto());
+        autoChooser.addOption(m_robotContainer.centerSideAuto().getName(), m_robotContainer.centerSideAuto());
+        autoChooser.addOption(m_robotContainer.ampSideAuto().getName(), m_robotContainer.ampSideAuto());
         SmartDashboard.putData("Auto Chooser", autoChooser);
 
         DriverStation.silenceJoystickConnectionWarning(true);

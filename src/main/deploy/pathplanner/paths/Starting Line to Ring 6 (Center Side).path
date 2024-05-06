@@ -3,16 +3,16 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 10.677790586354384,
-        "y": 4.361188722380683
+        "x": 14.65,
+        "y": 4.825
       },
       "prevControl": null,
       "nextControl": {
-        "x": 11.17999241009076,
-        "y": 4.488265319919328
+        "x": 13.65,
+        "y": 4.825
       },
       "isLocked": true,
-      "linkedName": "Ring 6 Pickup (From Center Stage)"
+      "linkedName": "Starting Line (Between Ring 2 and 3)"
     },
     {
       "anchor": {
@@ -20,28 +20,28 @@
         "y": 4.918551349228233
       },
       "prevControl": {
-        "x": 11.93574837934269,
-        "y": 4.89512967613667
+        "x": 13.376181274473819,
+        "y": 4.965394695411359
       },
       "nextControl": {
-        "x": 13.10567807859606,
-        "y": 4.960125770539634
+        "x": 11.639790111442315,
+        "y": 4.885560618950141
       },
-      "isLocked": false,
-      "linkedName": "Stage Right Passthrough"
+      "isLocked": true,
+      "linkedName": null
     },
     {
       "anchor": {
-        "x": 14.65,
-        "y": 4.825
+        "x": 10.677790586354384,
+        "y": 4.361188722380683
       },
       "prevControl": {
-        "x": 13.516711313023198,
-        "y": 4.988816368502922
+        "x": 11.496746839651507,
+        "y": 4.568394521407666
       },
       "nextControl": null,
-      "isLocked": false,
-      "linkedName": "Starting Line (Between Ring 2 and 3)"
+      "isLocked": true,
+      "linkedName": null
     }
   ],
   "rotationTargets": [],
@@ -54,14 +54,14 @@
     "maxAngularAcceleration": 360.0
   },
   "goalEndState": {
-    "velocity": 0,
-    "rotation": 0.0,
+    "velocity": 4.0,
+    "rotation": 7.26265605659319,
     "rotateFast": false
   },
   "reversed": false,
   "folder": "5 Piece Center Side",
   "previewStartingState": {
-    "rotation": 7.26,
+    "rotation": 0,
     "velocity": 0
   },
   "useDefaultConstraints": true

@@ -12,7 +12,6 @@ import frc.robot.Constants.LEDConstants;
 import frc.robot.commands.MeasureWheelDiameter;
 import frc.robot.commands.UnderStageTrapRoutine;
 import frc.robot.commands.PrepShot;
-import frc.robot.commands.TrapRoutine;
 import frc.robot.subsystems.HumanDriver;
 import frc.robot.subsystems.arm.Arm;
 import frc.robot.subsystems.arm.ArmIONeo;
@@ -43,10 +42,6 @@ import java.util.function.Supplier;
 
 import org.littletonrobotics.junction.Logger;
 
-import com.pathplanner.lib.auto.AutoBuilder;
-import com.pathplanner.lib.auto.NamedCommands;
-import com.pathplanner.lib.commands.FollowPathCommand;
-
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -61,6 +56,8 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelDeadlineGroup;
+import edu.wpi.first.wpilibj2.command.ParallelRaceGroup;
+import edu.wpi.first.wpilibj2.command.PrintCommand;
 import edu.wpi.first.wpilibj2.command.ScheduleCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
@@ -154,17 +151,6 @@ public class RobotContainer {
 
         dontAmpAutoAlign = ben.leftBumper();
 
-        
-        NamedCommands.registerCommand("prepShot", prepAutoSpeakerShot());
-        NamedCommands.registerCommand("shootFromAnywhere", speakerShot());
-        NamedCommands.registerCommand("waitIndexNote", indexNote().withTimeout(4));
-        NamedCommands.registerCommand("indexNote", indexNote().withTimeout(2));
-        NamedCommands.registerCommand("intakeNote", intakeNote().withTimeout(1.5));
-        NamedCommands.registerCommand("rapidFire", prepAutoSpeakerShot().alongWith(runIntake(true)));
-        NamedCommands.registerCommand("resetShooter", resetShooter());
-        // NamedCommands.registerCommand("intakeTowardsNote", intakeTowardsNote().until(noteIsTooFarForPickupInAuto).withTimeout(2.5));
-        NamedCommands.registerCommand("fireNote", fireNote());
-
 
         realBindings();
     }
@@ -183,7 +169,7 @@ public class RobotContainer {
             .onTrue(
                 //intake after note if on other side of the field
                 //new ConditionalCommand(
-                    intakeTowardsNote().andThen(new ScheduleCommand(
+                    intakeTowardsNote(charlie::getRequestedFieldOrientedVelocity).andThen(new ScheduleCommand(
                     indexNote().andThen(reverseIntake().withTimeout(1.0))))
                     // indexNote()
                 // Schedule index, so the drive command goes back to default as soon as intake is done
@@ -278,16 +264,15 @@ public class RobotContainer {
 
     /**** INTAKE/INDEX ****///////////////////////////////////////////////////////////////////////
 
-    /**
-     * @param rapidFire - whether or not we are rapid firing (in auto); if we are, we want to run the indexer faster.
-     */
-    private Command runIntake(boolean useBothMotors) {
-        if (useBothMotors) {
+    private Command runIntake(boolean isIndexing) {
+        if (!isIndexing) {
             return indexer.setOrangeWheelsSurfaceSpeedCommand(2.5)
                           .alongWith(intake.setVoltsCommand(12));
         }
         return indexer.setOrangeWheelsSurfaceSpeedCommand(2.5)
-                      .alongWith(intake.setPrimaryVoltsCommand(12));
+                      .alongWith(intake.setVoltsCommand(12, -0.5));
+        // when indexing, slightly spin the first intake wheel that isn't a sushi roller backwards
+        // to prevent double intaking when notes are really close to one another.
     }
 
     private Command reverseIntake() {
@@ -307,32 +292,31 @@ public class RobotContainer {
      * @return
      */
     private Command intakeNote() {
-        return new ScheduleCommand(leds.playIntakeAnimationCommand(() -> {return drivetrain.getBestNoteLocationRobotFrame().isPresent();}))
-            .alongWith(this.runIntake(true).until(intake::ringJustEnteredIntake));
+        return new ScheduleCommand(leds.playIntakeAnimationCommand(() -> {return drivetrain.getBestNoteLocationFieldFrame().isPresent();}))
+            .alongWith(this.runIntake(false).until(intake::ringJustEnteredIntake));
     }
 
-    private Command intakeTowardsNote() {
-        return drivetrain.run(() -> {drivetrain.driveTowardsNote(charlie::getRequestedFieldOrientedVelocity);})
-               .raceWith(intakeNote());
+    /**
+     * @param howToDriveWhenNoNoteDetected let's charlie have control if the noteCam doesn't see a note
+     * @return
+     */
+    private Command intakeTowardsNote(Supplier<ChassisSpeeds> howToDriveWhenNoNoteDetected) {
+        return intakeNote().raceWith(drivetrain.run(() -> {
+
+            // have charlie stay in control when the noteCam doesn't see a note
+            if (drivetrain.getBestNoteLocationFieldFrame().isEmpty()) {
+                drivetrain.fieldOrientedDrive(howToDriveWhenNoNoteDetected.get(), true);
+                return;
+            }
+
+            // drive towards the note when the noteCam does see a note.
+            drivetrain.driveTowardsNote(drivetrain.getBestNoteLocationFieldFrame().get());
+        }));
     }
 
-    private Command intakeTowardsNote(FieldElement note) {
-        return drivetrain.run(() -> {
-            if (drivetrain.getBestNoteLocationRobotFrame().isPresent()) {
-                drivetrain.driveTowardsNote(charlie::getRequestedFieldOrientedVelocity);
-            }
-            else {
-                Translation2d noteLocation = note.getLocation().toTranslation2d();
-                Translation2d robotLocation = drivetrain.getPoseMeters().getTranslation();
-                Translation2d noteToRobot = robotLocation.minus(noteLocation);
-                drivetrain.beeLineToPose(new Pose2d(noteLocation, noteToRobot.getAngle()));
-            }
-        })
-        .raceWith(intakeNote());
-    }
 
     private Command indexNote() {
-        return this.runIntake(false).until(indexer::isNoteIndexed)
+        return this.runIntake(true).until(indexer::isNoteIndexed)
                .andThen(new InstantCommand(() -> {indexer.setVolts(0); intake.setVolts(0);})
                         .alongWith(new ScheduleCommand(leds.solidOrangeCommand()))
                );
@@ -363,7 +347,7 @@ public class RobotContainer {
     }
 
     /** Moves the arm back and spins up the flywheels to prepare for an amp shot. */
-    Command prepAmpShot() {
+    private Command prepAmpShot() {
         Command autoAlignAmpShot = new PrepShot(drivetrain, arm, shooter, charlie::getRequestedFieldOrientedVelocity, leds, FieldElement.AMP);
         Command noAlignAmpShot = new PrepShot(drivetrain, arm, shooter, null, leds, FieldElement.AMP);
 
@@ -376,11 +360,11 @@ public class RobotContainer {
         // even when we chose the noAlignAmpShot. We should use schedule commands inside the conditional instead.
     }
 
-    Command prepLobShot() {
+    private Command prepLobShot() {
         return new PrepShot(drivetrain, arm, shooter, charlie::getRequestedFieldOrientedVelocity, leds, FieldElement.LOB_TARGET);
     }
 
-    Command shart() {
+    private Command shart() {
         PrepShot aim = new PrepShot(drivetrain, arm, shooter, null, leds, FieldElement.CARPET);
         Command waitForAlignment = new WaitUntilCommand(aim::readyToShoot);
         Command fire = fireNote();
@@ -417,18 +401,32 @@ public class RobotContainer {
 
     private Command autoIntakeTowardsNote(FieldElement note) {
         return new SequentialCommandGroup(
+            // Assume the pickup didn't work until proven otherwise
             new InstantCommand(() -> {this.goodPickup = false;}),
-            intakeTowardsNote(note) //if the robot loses sight of a note briefly, the command is not interrupted. the robot will just drive to where the note is staged at the start of a match
+
+            // Drive towards the note if we see it, or drive to where it should be if we don't see it.
+            intakeNote().raceWith(drivetrain.run(() -> {
+
+                Translation2d noteLocation = note.getLocation().toTranslation2d();
+                if (drivetrain.getBestNoteLocationFieldFrame().isPresent()) {
+                    noteLocation = drivetrain.getBestNoteLocationFieldFrame().get();
+                }
+
+                drivetrain.driveTowardsNote(noteLocation);
+            }))
+            // Set goodPickup to true if the intake sequence finishies normally (i.e. with the intake sensor confirming the pickup)
             .finallyDo(
                 (boolean interrupted) -> {this.goodPickup = !interrupted;}
             )
-            .until(() -> {return noteIsLostCauseInAuto(note);}) //interrupts if invalid note is detected
-            //.withTimeout(1.5) //interrupts if runs out of time
+            // Interrupt the intake sequence if it's determined that the current target note is a lost cause
+            // (already taken by the opposing alliance, or too risky to pickup because its so far over the midline that
+            // we might get fouls by going for it)
+            .until(() -> {return noteIsLostCauseInAuto(note);})
          );
     }
 
     private boolean noteIsLostCauseInAuto(FieldElement note) {
-        boolean dontSeeNote = shouldSeeNote(note) && !drivetrain.getBestNoteLocationRobotFrame().isPresent();
+        boolean dontSeeNote = shouldSeeNote(note) && !drivetrain.getBestNoteLocationFieldFrame().isPresent();
         boolean pickupTooRisky = noteIsTooFarForPickupInAuto();
         if (dontSeeNote) {
             System.out.println("don't see the note");
@@ -450,7 +448,7 @@ public class RobotContainer {
     }
 
     private boolean noteIsTooFarForPickupInAuto() {
-        if (drivetrain.getBestNoteLocationRobotFrame().isEmpty()) {
+        if (drivetrain.getBestNoteLocationFieldFrame().isEmpty()) {
             return false; // keep driving if you don't see anything
         }
 
@@ -459,8 +457,7 @@ public class RobotContainer {
             return true; // stop driving if we don't know what alliance we're on
         }
 
-        Translation2d noteLocation_robotFrame = drivetrain.getBestNoteLocationRobotFrame().get();
-        Translation2d noteLocation_fieldFrame = drivetrain.fieldCoordsFromRobotCoords(noteLocation_robotFrame);
+        Translation2d noteLocation_fieldFrame = drivetrain.getBestNoteLocationFieldFrame().get();
         double noteX = noteLocation_fieldFrame.getX();
         double midlineX = FieldConstants.midField.getX();
         double overshootAllowance = 2.0; // TODO: tune!
@@ -476,61 +473,67 @@ public class RobotContainer {
      * @param targetRing - the note you want to pickup.
      * @param ampSide - true if navigating from the amp side scoring location, false if navigating from the source side
      */
-    private Command navigatePickupAfterShot(int targetRing, boolean fromAmpSide) {
-        String pathName = "";
-        if (targetRing == 8) {
-            pathName = "Starting Line to Ring 8";
+    private Command navigatePickupAfterShot(FieldElement note) {
+        Command pathFollowingCommand = null;
+        if (note == FieldElement.NOTE_8) {
+            pathFollowingCommand = FlyingCircuitUtils.followPath("Starting Line to Ring 8");
         }
-        if (targetRing == 7) {
-            pathName = "Mid Shot to Ring 7 (Around Stage)";
+        if (note == FieldElement.NOTE_7) {
+            pathFollowingCommand = FlyingCircuitUtils.followPath("Mid Shot to Ring 7 (Around Stage)");
         }
-        if (targetRing == 4) {
-            pathName = "Starting Line to Ring 4 Pickup";
+        if (note == FieldElement.NOTE_4) {
+            pathFollowingCommand = FlyingCircuitUtils.followPath("Starting Line to Ring 4 Pickup");
         }
-        if (targetRing == 5) {
-            pathName = "Wing Shot to Ring 5";
+        if (note == FieldElement.NOTE_5) {
+            pathFollowingCommand = FlyingCircuitUtils.followPath("Wing Shot to Ring 5");
         }
-        if (targetRing == 6 && fromAmpSide) {
-            pathName = "Wing Shot to Ring 6 (Amp Side)";
-        }
-        if (targetRing == 6 && !fromAmpSide) {
-            pathName = "Wing Shot to Ring 6 (Source Side)";
+        if (note == FieldElement.NOTE_6) {
+            pathFollowingCommand = new ConditionalCommand(
+                FlyingCircuitUtils.followPath("Wing Shot to Ring 6 (Amp Side)"), 
+                FlyingCircuitUtils.followPath("Wing Shot to Ring 6 (Source Side)"), 
+                () -> {
+                    Translation2d robotLocation = drivetrain.getPoseMeters().getTranslation();
+                    boolean onAmpSide = robotLocation.getY() >= FieldConstants.midField.getY();
+                    return onAmpSide;
+                });
         }
         return new ParallelDeadlineGroup(
-                FlyingCircuitUtils.followPath(pathName),
+                pathFollowingCommand,
                 resetShooter());
     }
 
     /**
      * Navigates from a note to a scoring location after a pickup.
-     * @param ringNumber - the note you are navigating from.
-     * @param ampSide - true if navigating to the amp side scoring location, false if navigating to the source side
+     * @param note - the note you are navigating from.
      */
-
-    private Command scoreRingAfterPickup(int ringNumber, boolean fromAmpSide) {
-        String pathName = "";
-        if (ringNumber == 8) {
-            pathName = "Ring 8 to Mid Shot";
+    private Command scoreRingAfterPickup(FieldElement note) {
+        Command pathFollowingCommand = null;
+        if (note == FieldElement.NOTE_8) {
+            pathFollowingCommand = FlyingCircuitUtils.followPath("Ring 8 to Mid Shot");
         }
-        if (ringNumber == 7) {
-            pathName = "Ring 7 to Mid Shot (Around Stage)";
+        if (note == FieldElement.NOTE_7) {
+            pathFollowingCommand = FlyingCircuitUtils.followPath("Ring 7 to Mid Shot (Around Stage)");
         }
-        if (ringNumber == 4) {
-            pathName = "Ring 4 to Wing Shot";
+        if (note == FieldElement.NOTE_4) {
+            pathFollowingCommand = FlyingCircuitUtils.followPath("Ring 4 to Wing Shot");
         }
-        if (ringNumber == 5) {
-            pathName = "Ring 5 to Wing Shot";
+        if (note == FieldElement.NOTE_5) {
+            pathFollowingCommand = FlyingCircuitUtils.followPath("Ring 5 to Wing Shot");
         }
-        if (ringNumber == 6 && fromAmpSide) {
-            pathName = "Ring 6 to Wing Shot (Amp Side)";
-        }
-        if (ringNumber == 6 && !fromAmpSide) {
-            pathName = "Ring 6 to Mid Shot (Source Side)";
+        if (note == FieldElement.NOTE_6) {
+            pathFollowingCommand = new ConditionalCommand(
+                FlyingCircuitUtils.followPath("Ring 6 to Wing Shot (Amp Side)"),
+                FlyingCircuitUtils.followPath("Ring 6 to Mid Shot (Source Side)"),
+                () -> {
+                    boolean kindaFacingAmp = drivetrain.getPoseMeters().getRotation().getSin() > 0;
+                    return kindaFacingAmp;
+                }
+            );
         }
         
         return new SequentialCommandGroup(
             new ParallelDeadlineGroup(
-                FlyingCircuitUtils.followPath(pathName),
+                pathFollowingCommand,
                 autoIndexAndThenPrep()
             ),
             speakerShot()
@@ -539,18 +542,18 @@ public class RobotContainer {
 
 
     public Command ampSideAuto() {
-        Command ampAuto = new SequentialCommandGroup(
+        return new SequentialCommandGroup(
             speakerShot(),
-            navigatePickupAfterShot(4, true),
+            navigatePickupAfterShot(FieldElement.NOTE_4),
             autoIntakeTowardsNote(FieldElement.NOTE_4),
             //if you pickup a note, score it and go to ring 5
             //otherwise just go to ring 5
             new ConditionalCommand(
                 new SequentialCommandGroup(
-                    scoreRingAfterPickup(4, true),
-                    navigatePickupAfterShot(5, true)
+                    scoreRingAfterPickup(FieldElement.NOTE_4),
+                    navigatePickupAfterShot(FieldElement.NOTE_5)
                 ), 
-                FlyingCircuitUtils.followPath("Ring 4 to Ring 5"),
+                new PrintCommand("skipping 4, trying 5"),
                 () -> {return this.goodPickup;}
             ),
             autoIntakeTowardsNote(FieldElement.NOTE_5),
@@ -558,57 +561,90 @@ public class RobotContainer {
             //otherwise just go to ring 6
             new ConditionalCommand(
                 new SequentialCommandGroup(
-                    scoreRingAfterPickup(5, true),
-                    navigatePickupAfterShot(6, true)
+                    scoreRingAfterPickup(FieldElement.NOTE_5),
+                    navigatePickupAfterShot(FieldElement.NOTE_6)
                 ), 
-                FlyingCircuitUtils.followPath("Ring 5 to Ring 6"),
+                new PrintCommand("skipping 5, trying 6"),
                 () -> {return this.goodPickup;}),
             autoIntakeTowardsNote(FieldElement.NOTE_6),
             //if you pickup ring 6, score it, otherwise sit and do nothing
             new ConditionalCommand(
-                scoreRingAfterPickup(6, true),
+                scoreRingAfterPickup(FieldElement.NOTE_6),
                 new InstantCommand(),
                 () -> {return this.goodPickup;})
 
-        );
-        ampAuto.setName("HyperChad Amp Side");
-        return ampAuto;
+        ).withName("Amp Side HyperChad Auto");
     }
 
     public Command sourceSideAuto() {
         return new SequentialCommandGroup(
             speakerShot(),
-            navigatePickupAfterShot(8, false),
+            navigatePickupAfterShot(FieldElement.NOTE_8),
             autoIntakeTowardsNote(FieldElement.NOTE_8),
             //if you pickup ring 8, score it and go to ring 7
             //otherwise just go to ring 7
             new ConditionalCommand(
                 new SequentialCommandGroup(
-                    scoreRingAfterPickup(8, false),
-                    navigatePickupAfterShot(7, false)), 
-                new InstantCommand(() -> {System.out.println("skipping 8, trying 7");}),
+                    scoreRingAfterPickup(FieldElement.NOTE_8),
+                    navigatePickupAfterShot(FieldElement.NOTE_7)), 
+                new PrintCommand("skipping 8, trying 7"),
                 () -> {return this.goodPickup;}),
             autoIntakeTowardsNote(FieldElement.NOTE_7),
             //if you pickup ring 7, score it and go to ring 6
             //otherwise just go to ring 6
             new ConditionalCommand(
                 new SequentialCommandGroup(
-                    scoreRingAfterPickup(7, false),
-                    navigatePickupAfterShot(6, false)
+                    scoreRingAfterPickup(FieldElement.NOTE_7),
+                    navigatePickupAfterShot(FieldElement.NOTE_6)
                 ), 
-                new InstantCommand(() -> {System.out.println("skipping 7, trying 6");}),
+                new PrintCommand("skipping 7, trying 6"),
                 () -> {return this.goodPickup;}),
             autoIntakeTowardsNote(FieldElement.NOTE_6),
             //if you pickup ring 6, score it, otherwise sit and do nothing
             new ConditionalCommand(
-                scoreRingAfterPickup(6, false),
+                scoreRingAfterPickup(FieldElement.NOTE_6),
                 new InstantCommand(),
                 () -> {return this.goodPickup;})
 
-        );
+        ).withName("Source Side HyperChad Auto");
     }
 
+    public Command centerSideAuto() {
+        return new SequentialCommandGroup(
+            // Fire preload
+            speakerShot(),
 
+            // Pickup ring 6
+            new ParallelDeadlineGroup(
+                FlyingCircuitUtils.followPath("Starting Line to Ring 6 (Center Side)"),
+                resetShooter()
+            ),
+            autoIntakeTowardsNote(FieldElement.NOTE_6),
+
+            // Return trip
+            new ParallelDeadlineGroup(
+                FlyingCircuitUtils.followPath("Ring 6 to Starting Line (Center Side)"),
+                indexNote()
+            ),
+
+            // Fire ring 6
+            speakerShot(),
+
+            // Start rapid fire sequence
+            new ParallelRaceGroup(
+                // Run intake while aiming
+                prepAutoSpeakerShot().alongWith(runIntake(false)),
+
+                // Follow the rapid fire path
+                new SequentialCommandGroup(
+                    FlyingCircuitUtils.followPath("Starting Line to Ring 3"),
+                    FlyingCircuitUtils.followPath("Ring 3 to Ring 2"),
+                    FlyingCircuitUtils.followPath("Ring 2 to Ring 1")
+                )
+            )
+
+        ).withName("(6, 3, 2, 1) 5 Piece Center Side");
+    }
 
     // private Command pathfindToNote(FieldElement note) {
 

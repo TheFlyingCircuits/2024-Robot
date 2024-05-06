@@ -3,7 +3,6 @@ package frc.robot.subsystems.drivetrain;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
@@ -37,6 +36,7 @@ import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
@@ -258,7 +258,8 @@ public class Drivetrain extends SubsystemBase {
         // 1) Find the vector from the robot's current position on the field to a point on the line
         Translation2d vectorFromRobotToAnchor = pointOnLine.minus(getPoseMeters().getTranslation());
 
-        // 2) Split this vector into 2 components, one along the line, and one perpendicular to the line
+        // 2) Split this vector into 2 components, one along the line, and one perpendicular to the line.
+        //    Our distance to the line will be the magnitude of the perpendicular component.
         double projectionOntoLine = vectorFromRobotToAnchor.getX() * directionVectorAlongLine.getX() + vectorFromRobotToAnchor.getY() * directionVectorAlongLine.getY();
         Translation2d componentAlongLine = directionVectorAlongLine.times(projectionOntoLine);
         Translation2d componentTowardsLine = vectorFromRobotToAnchor.minus(componentAlongLine);
@@ -288,7 +289,10 @@ public class Drivetrain extends SubsystemBase {
         this.fieldOrientedDriveWhileAiming(desiredVelocity, lineToDriveOn.getRotation());
     }
 
-
+    /**
+     * TODO: documentation
+     * @param targetPose
+     */
     public void beeLineToPose(Pose2d targetPose) {
 
         double maxAccel = 2.35; // 2.35 [meters per second per second] (emperically determined)
@@ -300,11 +304,10 @@ public class Drivetrain extends SubsystemBase {
 
 
         // Physics 101: under constant accel -> v_final^2 = v_initial^2 + 2 * accel * displacement
-        // displacement = finalDistanceToNote - currentDistanceToNote = 0 - currentDistanceToNote
+        // displacement = finalDistanceToTarget - currentDistanceToTarget = 0 - currentDistanceToTarget
         // accel = maxAccel
-        // v_final = 0 (because we want to come to a controlled stop to pickup the note)
+        // v_final = 0 (because we want to come to a controlled stop when arriving at the target)
         // after some algebra -> v_initial = sqrt(-2 * accel * displacement)
-
         double desiredSpeed = Math.sqrt(-2 * maxAccel * (0 - distanceToTarget));
 
 
@@ -316,8 +319,8 @@ public class Drivetrain extends SubsystemBase {
         desiredVelocity.vxMetersPerSecond = desiredSpeed * directionToDrive.getCos();
         desiredVelocity.vyMetersPerSecond = desiredSpeed * directionToDrive.getSin();
 
-        // Don't use fieldOrientedDriveOnALine becaus the target orientation may not be the same
-        // as the direction to drive in!
+        // Don't use fieldOrientedDriveOnALine because the direction we want to point the robot
+        // may not be the same as the direction to drive in!
         this.fieldOrientedDriveWhileAiming(desiredVelocity, directionToPoint);
     }
 
@@ -496,23 +499,12 @@ public class Drivetrain extends SubsystemBase {
     }
 
     public boolean inSpeakerShotRange() {
-        Optional<Alliance> alliance = DriverStation.getAlliance();
-        if (alliance.isEmpty()) {
-            return true; //dummy value, should never happen
-        }
+        Translation2d speakerLocation = FieldElement.SPEAKER.getLocation().toTranslation2d();
+        Translation2d robotLocation = getPoseMeters().getTranslation();
 
-        //this position marks a little past the midline (closer to the far alliance)
-
-
-        if (alliance.get() == Alliance.Blue) {
-            return getPoseMeters().getX() <= 7.05; // half way between blue wing and center line
-        }
-
-        if (alliance.get() == Alliance.Red) {
-            return getPoseMeters().getX() >= 9.49; // half way between red wing and center line
-        }
-
-        return true;
+        // about half way between the center line and our wing.
+        boolean closeEnough = Math.abs(speakerLocation.getX() - robotLocation.getX()) <= 7.091;
+        return closeEnough;
     }
 
     public boolean inAmpShotRange() {
@@ -561,7 +553,7 @@ public class Drivetrain extends SubsystemBase {
      * Returns the best (largest) note that is valid (within the field boundary and within a certain distance).
      * Returns an empty optional if no such note is detected.
      */
-    public Optional<Translation2d> getBestNoteLocationRobotFrame() {
+    public Optional<Translation2d> getBestNoteLocationFieldFrame() {
         for (Translation3d noteRobotFrame3d : visionInputs.detectedNotesRobotFrame) {
             Translation2d noteRobotFrame = noteRobotFrame3d.toTranslation2d();
             Translation2d noteFieldFrame = fieldCoordsFromRobotCoords(noteRobotFrame);
@@ -569,7 +561,7 @@ public class Drivetrain extends SubsystemBase {
             boolean closeToRobot = noteRobotFrame.getNorm() < 2.5;
             boolean inField = !FlyingCircuitUtils.isOutsideOfField(noteFieldFrame, 0.5);
             if (closeToRobot && inField) {
-                return Optional.of(noteRobotFrame);
+                return Optional.of(noteFieldFrame);
             }
         }
 
@@ -591,18 +583,16 @@ public class Drivetrain extends SubsystemBase {
         }
     }
 
-    public void driveTowardsNote(Supplier<ChassisSpeeds> howToDriveWhenNoNoteDetected) {
+    /**
+     * Drives towards the given location while pointing the intake at that location
+     * @param noteLocation
+     */
+    public void driveTowardsNote(Translation2d noteLocation) {
 
-        if (getBestNoteLocationRobotFrame().isEmpty()) {
-            this.fieldOrientedDrive(howToDriveWhenNoNoteDetected.get(), true);
-            return;
-        }
+        Translation2d noteToRobot = getPoseMeters().getTranslation().minus(noteLocation);
 
-        Translation2d noteLocation_robotFrame = getBestNoteLocationRobotFrame().get();
-        Translation2d noteLocation_fieldFrame = fieldCoordsFromRobotCoords(noteLocation_robotFrame);
-        Translation2d noteToRobot_fieldFrame = getPoseMeters().getTranslation().minus(noteLocation_fieldFrame);
-
-        this.beeLineToPose(new Pose2d(noteLocation_fieldFrame, noteToRobot_fieldFrame.getAngle()));
+        // orient the robot to point away from the note, because the intake is in the back of the robot.
+        this.beeLineToPose(new Pose2d(noteLocation, noteToRobot.getAngle()));
     }
 
 
@@ -699,8 +689,8 @@ public class Drivetrain extends SubsystemBase {
 
 
         // Note tracking visualization
-        if (getBestNoteLocationRobotFrame().isPresent()) {
-            Translation2d noteFieldFrame = fieldCoordsFromRobotCoords(getBestNoteLocationRobotFrame().get());
+        if (getBestNoteLocationFieldFrame().isPresent()) {
+            Translation2d noteFieldFrame = getBestNoteLocationFieldFrame().get();
             Logger.recordOutput("drivetrain/trackedNotePose", new Pose2d(noteFieldFrame, new Rotation2d()));
             Logger.recordOutput("drivetrain/trackedNoteDistance", noteFieldFrame.getNorm());
         }

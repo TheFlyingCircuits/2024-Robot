@@ -3,29 +3,29 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 8.53,
-        "y": 2.34
+        "x": 12.0,
+        "y": 1.91
       },
       "prevControl": null,
       "nextControl": {
-        "x": 9.239224122038067,
-        "y": 2.0960714352124095
+        "x": 11.617933057612657,
+        "y": 1.5874711617005597
       },
       "isLocked": true,
-      "linkedName": "Ring 7 Pickup (From Wing Shot)"
+      "linkedName": "Source Shot"
     },
     {
       "anchor": {
-        "x": 10.815927785701726,
-        "y": 1.5787108497293916
+        "x": 10.67844682007654,
+        "y": 1.5209622818295532
       },
       "prevControl": {
-        "x": 10.10670366366366,
-        "y": 1.8226394145169815
+        "x": 11.396284931573184,
+        "y": 1.3036872356716223
       },
       "nextControl": null,
       "isLocked": true,
-      "linkedName": "Wing Shot (Source Side)"
+      "linkedName": "Around Stage Left"
     }
   ],
   "rotationTargets": [],
@@ -38,15 +38,15 @@
     "maxAngularAcceleration": 360.0
   },
   "goalEndState": {
-    "velocity": 0,
-    "rotation": 35.04,
+    "velocity": 4.5,
+    "rotation": -16.840000000000032,
     "rotateFast": false
   },
   "reversed": false,
-  "folder": "4 Piece Source Side",
+  "folder": "HyperChad Source Side",
   "previewStartingState": {
-    "rotation": -18.980000000000018,
-    "velocity": 0
+    "rotation": 40.17,
+    "velocity": 0.0
   },
   "useDefaultConstraints": true
 }

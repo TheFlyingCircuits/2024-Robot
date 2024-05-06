@@ -3,29 +3,29 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 9.218834300721383,
-        "y": 3.0682391749947553
+        "x": 14.65,
+        "y": 7.72
       },
       "prevControl": null,
       "nextControl": {
-        "x": 9.914747097313697,
-        "y": 2.3501128772315667
+        "x": 13.650915444354148,
+        "y": 7.6772209084957375
       },
-      "isLocked": true,
-      "linkedName": "Ring 6 Pickup (From Source Side Wing Shot)"
+      "isLocked": false,
+      "linkedName": null
     },
     {
       "anchor": {
-        "x": 10.815927785701726,
-        "y": 1.5787108497293916
+        "x": 10.174576502999162,
+        "y": 7.5284773646470375
       },
       "prevControl": {
-        "x": 10.120014989109412,
-        "y": 2.29683714749258
+        "x": 11.173700088079524,
+        "y": 7.570335001180458
       },
       "nextControl": null,
-      "isLocked": true,
-      "linkedName": "Wing Shot (Source Side)"
+      "isLocked": false,
+      "linkedName": null
     }
   ],
   "rotationTargets": [],
@@ -38,14 +38,14 @@
     "maxAngularAcceleration": 360.0
   },
   "goalEndState": {
-    "velocity": 0,
-    "rotation": 35.04,
-    "rotateFast": false
+    "velocity": 4.5,
+    "rotation": 0,
+    "rotateFast": true
   },
   "reversed": false,
-  "folder": "4 Piece Source Side",
+  "folder": "HyperChad Amp Side",
   "previewStartingState": {
-    "rotation": -45.89999999999998,
+    "rotation": 0,
     "velocity": 0
   },
   "useDefaultConstraints": true

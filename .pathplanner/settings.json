@@ -3,18 +3,11 @@
   "robotLength": 0.91,
   "holonomicMode": true,
   "pathFolders": [
-    "3 Piece Source Side",
-    "4 Piece Amp Side",
-    "4 Piece Source Side",
     "5 Piece Center Side",
-    "Hyperchad Auto",
-    "Unused (But Maybe Later)"
+    "HyperChad Amp Side",
+    "HyperChad Source Side"
   ],
-  "autoFolders": [
-    "Less is More",
-    "Fancy",
-    "Ambitious"
-  ],
+  "autoFolders": [],
   "defaultMaxVel": 4.5,
   "defaultMaxAccel": 2.5,
   "defaultMaxAngVel": 360.0,

@@ -3,16 +3,16 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 8.53,
-        "y": 7.37
+        "x": 8.773822511981685,
+        "y": 5.949104965257007
       },
       "prevControl": null,
       "nextControl": {
-        "x": 9.507488448615884,
-        "y": 7.159011059952165
+        "x": 9.01023055266104,
+        "y": 6.03041448685287
       },
       "isLocked": false,
-      "linkedName": "Ring 4 Pickup (From Wing Shot)"
+      "linkedName": null
     },
     {
       "anchor": {
@@ -20,12 +20,12 @@
         "y": 6.534646792546081
       },
       "prevControl": {
-        "x": 11.112548252370145,
-        "y": 6.754907663980724
+        "x": 11.851581213758495,
+        "y": 6.453337270950217
       },
       "nextControl": null,
-      "isLocked": false,
-      "linkedName": "Wing Shot (Amp Side)"
+      "isLocked": true,
+      "linkedName": null
     }
   ],
   "rotationTargets": [],
@@ -43,9 +43,9 @@
     "rotateFast": false
   },
   "reversed": false,
-  "folder": "4 Piece Amp Side",
+  "folder": "HyperChad Amp Side",
   "previewStartingState": {
-    "rotation": -18.980000000000018,
+    "rotation": 18.98,
     "velocity": 0
   },
   "useDefaultConstraints": true
