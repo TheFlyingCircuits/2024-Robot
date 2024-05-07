@@ -82,7 +82,7 @@ public class UnderStageTrapRoutine extends SequentialCommandGroup {
             ),
             // Wait for the swinging to stop
             new ParallelDeadlineGroup(
-                new WaitCommand(0.5),
+                new WaitCommand(0.5).andThen(new WaitUntilCommand(drivetrain::robotIsLevel)),
                 climb.lowerHooksCommand().until(climb::climbArmsDown).repeatedly()
             ),
             // Score in the trap

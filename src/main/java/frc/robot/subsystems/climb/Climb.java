@@ -5,6 +5,8 @@ import org.littletonrobotics.junction.Logger;
 import com.revrobotics.CANSparkBase.IdleMode;
 
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.ClimbConstants;
 import frc.robot.VendorWrappers.Neo;
@@ -13,6 +15,8 @@ public class Climb extends SubsystemBase{
     
     private Neo leftMotor;
     private Neo rightMotor;
+
+    private boolean hooksAreHomed = false;
 
     public Climb() {
 
@@ -32,6 +36,52 @@ public class Climb extends SubsystemBase{
 
     public Command lowerHooksCommand() {
         return this.run(() -> {this.setVoltsClosedLoop(-11);});
+    }
+
+    public Command homeHooksCommand() {
+        return new SequentialCommandGroup(
+            new InstantCommand(() -> {this.hooksAreHomed = false;}),
+            this.run(() -> {
+                double homingVolts = -0.75;
+                double homingAmps = 25;
+                double homePositionMeters = -0.04;
+                rightMotor.setVoltage(homingVolts);
+                leftMotor.setVoltage(homingVolts);
+
+                if (leftMotor.getOutputCurrent() > homingAmps && rightMotor.getOutputCurrent() > homingAmps) {
+                    leftMotor.setPosition(homePositionMeters);
+                    rightMotor.setPosition(homePositionMeters);
+                    this.hooksAreHomed = true;
+                }
+            }).until(() -> {return this.hooksAreHomed;}),
+            zeroHooksCommand()
+        );
+    }
+
+    public Command zeroHooksCommand() {
+        return this.run(() -> {
+            double toleranceMeters = 0.001;
+            double movingVolts = 2.0;
+
+            double leftVolts = 0;
+            if (leftMotor.getPosition() < -toleranceMeters) {
+                leftVolts = movingVolts;
+            }
+            if (leftMotor.getPosition() > toleranceMeters) {
+                leftVolts = -movingVolts;
+            }
+
+            double rightVolts = 0;
+            if (rightMotor.getPosition() < -toleranceMeters) {
+                rightVolts = movingVolts;
+            }
+            if (rightMotor.getPosition() > toleranceMeters) {
+                rightVolts = -movingVolts;
+            }
+
+            leftMotor.setVoltage(leftVolts);
+            rightMotor.setVoltage(rightVolts);
+        }).until(this::climbArmsZero);
     }
 
     /**
@@ -127,7 +177,10 @@ public class Climb extends SubsystemBase{
     }
 
     public boolean climbArmsZero() {
-        return Math.abs(rightMotor.getPosition()) < 0.02 && Math.abs(leftMotor.getPosition()) < 0.02;
+        double toleranceMeters = 0.001;
+        boolean leftZero = Math.abs(leftMotor.getPosition()) < toleranceMeters;
+        boolean rightZero = Math.abs(rightMotor.getPosition()) < toleranceMeters;
+        return leftZero && rightZero;
     }
 
     public boolean climbArmsDown() {

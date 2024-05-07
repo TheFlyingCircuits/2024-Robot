@@ -169,8 +169,13 @@ public class RobotContainer {
             .onTrue(
                 //intake after note if on other side of the field
                 //new ConditionalCommand(
+
+
                     intakeTowardsNote(charlie::getRequestedFieldOrientedVelocity).andThen(new ScheduleCommand(
                     indexNote().andThen(reverseIntake().withTimeout(1.0))))
+
+
+                    // drivetrain.run(() -> {drivetrain.driveTowardsNote(new Translation2d());})
                     // indexNote()
                 // Schedule index, so the drive command goes back to default as soon as intake is done
                 //)),
@@ -216,7 +221,7 @@ public class RobotContainer {
         /** CLIMB **/
         
         // controller.povUp().onTrue(climb.raiseHooksCommand());
-        // controller.povRight().onTrue(climb.lowerHooksCommand().until((climb::climbArmsZero)));
+        // controller.povRight().onTrue(climb.homeHooksCommand());
         // controller.povDown().onTrue(climb.lowerHooksCommand().until(climb::atQuickClimbSetpoint));
 
         // controller.a().whileTrue(new UnderStageTrapRoutine(charlie::getRequestedFieldOrientedVelocity, climb, arm, shooter, drivetrain, this::fireNoteThroughHood))
@@ -414,7 +419,8 @@ public class RobotContainer {
 
                 drivetrain.driveTowardsNote(noteLocation);
             }))
-            // Set goodPickup to true if the intake sequence finishies normally (i.e. with the intake sensor confirming the pickup)
+            // Set goodPickup to true if the intake sequence finishies normally
+            // (i.e. intakeNote() wins the ParallelRaceGroup because the intake sensor triggered)
             .finallyDo(
                 (boolean interrupted) -> {this.goodPickup = !interrupted;}
             )
@@ -426,16 +432,21 @@ public class RobotContainer {
     }
 
     private boolean noteIsLostCauseInAuto(FieldElement note) {
-        boolean dontSeeNote = shouldSeeNote(note) && !drivetrain.getBestNoteLocationFieldFrame().isPresent();
-        boolean pickupTooRisky = noteIsTooFarForPickupInAuto();
-        if (dontSeeNote) {
-            System.out.println("don't see the note");
-        }
-        if (pickupTooRisky) {
-            System.out.println("too risky");
+
+        boolean canSeeNote = drivetrain.getBestNoteLocationFieldFrame().isPresent();
+        Translation2d noteLocation = note.getLocation().toTranslation2d();
+        if (canSeeNote) {
+            noteLocation = drivetrain.getBestNoteLocationFieldFrame().get();
         }
 
-        return dontSeeNote || pickupTooRisky;
+        boolean noteIsGone = shouldSeeNote(note) && !canSeeNote;
+        boolean pickupTooRisky = noteIsTooRiskyForPickupInAuto(noteLocation);
+
+        Logger.recordOutput("auto/targetNote", note.name());
+        Logger.recordOutput("auto/noteIsGone", noteIsGone);
+        Logger.recordOutput("auto/pickupTooRisky", pickupTooRisky);
+
+        return noteIsGone || pickupTooRisky;
     }
 
 
@@ -448,24 +459,17 @@ public class RobotContainer {
         return closeEnough && noteInFov;
     }
 
-    private boolean noteIsTooFarForPickupInAuto() {
-        if (drivetrain.getBestNoteLocationFieldFrame().isEmpty()) {
-            return false; // keep driving if you don't see anything
-        }
-
-        Optional<Alliance> alliance  = DriverStation.getAlliance();
-        if (!alliance.isPresent()) {
-            return true; // stop driving if we don't know what alliance we're on
-        }
-
-        Translation2d noteLocation_fieldFrame = drivetrain.getBestNoteLocationFieldFrame().get();
-        double noteX = noteLocation_fieldFrame.getX();
+    private boolean noteIsTooRiskyForPickupInAuto(Translation2d noteLocation) {
+        // We'll risk getting fowls if the note is too far into enemy territory.
         double midlineX = FieldConstants.midField.getX();
-        double overshootAllowance = 2.0; // TODO: tune!
+        double overshootAllowanceMeters = 2.0; // TODO: tune me!
 
-        boolean over = (alliance.get() == Alliance.Blue) && (noteX >= (midlineX + overshootAllowance));
-        over = over || (alliance.get() == Alliance.Red) && (noteX <= (midlineX - overshootAllowance));
-        return over;
+        boolean tooRiskyForBlue = noteLocation.getX() > (midlineX + overshootAllowanceMeters);
+        boolean tooRiskyForRed  = noteLocation.getX() < (midlineX - overshootAllowanceMeters);
+
+        boolean onBlueAlliance = FieldElement.SPEAKER.getLocation().getX() < midlineX;
+
+        return (onBlueAlliance && tooRiskyForBlue) || (!onBlueAlliance && tooRiskyForRed);
     }
 
 

@@ -1,10 +1,12 @@
 
 package frc.robot.subsystems.drivetrain;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.Queue;
 import java.util.function.Supplier;
 
 import org.littletonrobotics.junction.Logger;
@@ -35,9 +37,11 @@ import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.FlyingCircuitUtils;
@@ -132,7 +136,7 @@ public class Drivetrain extends SubsystemBase {
         //angleController = new PIDController(11, 0, 0.5); // kP has units of degreesPerSecond per degree of error.
         angleController = new PIDController(8, 0, 0);
         angleController.enableContinuousInput(-180, 180);
-        angleController.setTolerance(2.0, 10000.0); // degrees, degreesPerSecond.
+        angleController.setTolerance(2.0, 3.0); // degrees, degreesPerSecond.
 
         translationController = new PIDController(4.0, 0, 0); // kP has units of metersPerSecond per meter of error.
         translationController.setTolerance(0.05); // 5 centimeters
@@ -498,6 +502,7 @@ public class Drivetrain extends SubsystemBase {
         Logger.recordOutput("drivetrain/trackedTags", trackedTags.toArray(new Pose2d[0]));
     }
 
+
     public boolean inSpeakerShotRange() {
         Translation2d speakerLocation = FieldElement.SPEAKER.getLocation().toTranslation2d();
         Translation2d robotLocation = getPoseMeters().getTranslation();
@@ -546,6 +551,10 @@ public class Drivetrain extends SubsystemBase {
         return ChassisSpeeds.fromRobotRelativeSpeeds(robotOrientedSpeeds, getPoseMeters().getRotation());
     }
 
+    public boolean robotIsLevel() {
+        return Math.abs(gyroInputs.robotPitchRotation2d.getDegrees()) < 10
+            && Math.abs(gyroInputs.robotRollRotation2d.getDegrees()) < 5;
+    }
 
     //**************** TARGET TRACKING (Speaker, Note, etc.) ****************/
 
@@ -588,7 +597,7 @@ public class Drivetrain extends SubsystemBase {
      * @param noteLocation
      */
     public void driveTowardsNote(Translation2d noteLocation) {
-
+        
         Translation2d noteToRobot = getPoseMeters().getTranslation().minus(noteLocation);
 
         // orient the robot to point away from the note, because the intake is in the back of the robot.
