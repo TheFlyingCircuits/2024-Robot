@@ -4,6 +4,8 @@
 
 package frc.robot;
 
+import java.lang.reflect.Field;
+
 import org.littletonrobotics.junction.LoggedRobot;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.NT4Publisher;
@@ -19,6 +21,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import frc.robot.Constants.FieldElement;
 
 /**
  * The VM is configured to automatically run this class, and to call the functions corresponding to
@@ -65,6 +68,9 @@ public class Robot extends LoggedRobot {
         autoChooser.addOption(m_robotContainer.sourceSideAuto().getName(), m_robotContainer.sourceSideAuto());
         autoChooser.addOption(m_robotContainer.centerSideAuto().getName(), m_robotContainer.centerSideAuto());
         autoChooser.addOption(m_robotContainer.ampSideAuto().getName(), m_robotContainer.ampSideAuto());
+        FieldElement[] notePriority = {FieldElement.NOTE_8, FieldElement.NOTE_6, FieldElement.NOTE_7};
+        Command customSourceSideAuto = m_robotContainer.sourceSideAuto(notePriority);
+        autoChooser.addOption(customSourceSideAuto.getName(), customSourceSideAuto);
         SmartDashboard.putData("Auto Chooser", autoChooser);
 
         DriverStation.silenceJoystickConnectionWarning(true);

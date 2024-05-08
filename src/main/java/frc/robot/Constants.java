@@ -6,6 +6,7 @@ package frc.robot;
 
 import java.util.List;
 import java.util.Optional;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -375,9 +376,9 @@ public final class Constants {
         LOB_TARGET(new Pose3d(AMP.redPose.interpolate(SPEAKER.redPose, 0.2).toPose2d()),
                    new Pose3d(AMP.bluePose.interpolate(SPEAKER.bluePose, 0.2).toPose2d())
         ), 
-        CARPET(),
-        NOTE_3(new Translation3d(FieldConstants.maxFieldCoords.getX() - Units.inchesToMeters(114), FieldConstants.midField.getY(), 0),
-               new Translation3d(Units.inchesToMeters(114), FieldConstants.midField.getY(), 0)
+        CARPET(), 
+        NOTE_3(new Translation3d(FieldConstants.maxX - FieldConstants.metersFromAllianceWallToFrontlineNotes, FieldConstants.maxY / 2.0, 0),
+               new Translation3d(FieldConstants.metersFromAllianceWallToFrontlineNotes, FieldConstants.maxY / 2.0, 0)
         ),
         NOTE_2(NOTE_3.redPose.getTranslation().plus(new Translation3d(0, FieldConstants.metersBetweenFrontlineNotes, 0)),
                NOTE_3.bluePose.getTranslation().plus(new Translation3d(0, FieldConstants.metersBetweenFrontlineNotes, 0))
@@ -385,11 +386,23 @@ public final class Constants {
         NOTE_1(NOTE_2.redPose.getTranslation().plus(new Translation3d(0, FieldConstants.metersBetweenFrontlineNotes, 0)),
                NOTE_2.bluePose.getTranslation().plus(new Translation3d(0, FieldConstants.metersBetweenFrontlineNotes, 0))
         ),
-        NOTE_6(new Translation3d(FieldConstants.midField.getX(), FieldConstants.midField.getY(), 0)),
+        NOTE_6(new Translation3d(FieldConstants.maxX / 2.0, FieldConstants.maxY / 2.0, 0)),
         NOTE_5(NOTE_6.redPose.getTranslation().plus(new Translation3d(0, FieldConstants.metersBetweenMidlineNotes, 0))),
         NOTE_4(NOTE_5.redPose.getTranslation().plus(new Translation3d(0, FieldConstants.metersBetweenMidlineNotes, 0))),
         NOTE_7(NOTE_6.redPose.getTranslation().plus(new Translation3d(0, -FieldConstants.metersBetweenMidlineNotes, 0))),
-        NOTE_8(NOTE_7.redPose.getTranslation().plus(new Translation3d(0, -FieldConstants.metersBetweenMidlineNotes, 0)));
+        NOTE_8(NOTE_7.redPose.getTranslation().plus(new Translation3d(0, -FieldConstants.metersBetweenMidlineNotes, 0))),
+        MID_FIELD(new Translation3d(FieldConstants.maxX / 2.0, FieldConstants.maxY / 2.0, 0)),
+        WING(new Translation3d(FieldConstants.maxX - FieldConstants.metersFromAllianceWallToWing, FieldConstants.maxY / 2.0, 0),
+             new Translation3d(FieldConstants.metersFromAllianceWallToWing, FieldConstants.maxY / 2.0, 0));
+
+        private static class FieldConstants {
+            public static final double maxX = VisionConstants.aprilTagFieldLayout.getFieldLength();
+            public static final double maxY = VisionConstants.aprilTagFieldLayout.getFieldWidth();
+            public static final double metersBetweenFrontlineNotes = Units.inchesToMeters(57);
+            public static final double metersBetweenMidlineNotes = Units.inchesToMeters(66);
+            public static final double metersFromAllianceWallToFrontlineNotes = Units.inchesToMeters(114);
+            public static final double metersFromAllianceWallToWing = Units.inchesToMeters(231.20);
+        }
 
         /* End of Enum Instances */
 
@@ -465,6 +478,18 @@ public final class Constants {
             return getPose().getRotation();
         }
 
+        public double getX() {
+            return getPose().getX();
+        }
+
+        public double getY() {
+            return getPose().getY();
+        }
+
+        public double getZ() {
+            return getPose().getZ();
+        }
+
         public static Pose2d getClosestTrap(Pose2d yourPoseOnTheField) {
             Pose2d[] trapLocations = {STAGE_LEFT.getPose().toPose2d(),
                                       STAGE_RIGHT.getPose().toPose2d(),
@@ -472,13 +497,6 @@ public final class Constants {
 
             return yourPoseOnTheField.nearest(Arrays.asList(trapLocations));
         }
-    }
-
-    public final static class FieldConstants {
-        public final static double metersBetweenMidlineNotes = Units.inchesToMeters(66);
-        public final static double metersBetweenFrontlineNotes = Units.inchesToMeters(57);
-        public final static Translation2d midField = new Translation2d(Units.inchesToMeters((441.74+209.48)/2.), Units.inchesToMeters(161.62));
-        public final static Translation2d maxFieldCoords = midField.times(2);
     }
 
     public final static class IntakeConstants {

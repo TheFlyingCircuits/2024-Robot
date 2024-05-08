@@ -4,8 +4,10 @@ package frc.robot.subsystems.drivetrain;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
+import java.util.PriorityQueue;
 import java.util.Queue;
 import java.util.function.Supplier;
 
@@ -40,6 +42,7 @@ import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotController;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -69,6 +72,15 @@ public class Drivetrain extends SubsystemBase {
     /** True after a bump but before odometry has been corrected, false once a vision target is used to reset odometry. */
     private boolean hasBeenBumped = false;
     public boolean useShooterCamera = true;
+    private PriorityQueue<VisionMeasurement> mostRecentSpeakerTagMeasurements = new PriorityQueue<VisionMeasurement>(new Comparator<VisionMeasurement>() {
+        // Front of the queue will be the smallest timestamp
+        // i.e. the timestamp that's closest to 0 (when the robot was turned on)
+        // i.e. the oldest timestamp.
+        public int compare(VisionMeasurement a, VisionMeasurement b) {
+            return Double.compare(a.timestampSeconds, b.timestampSeconds);
+        }
+    });
+    private VisionMeasurement mostRecentSpeakerTagMeasurement = null;
 
     private static Orchestra orchestra;
     private String[] songs = {
@@ -300,6 +312,7 @@ public class Drivetrain extends SubsystemBase {
     public void beeLineToPose(Pose2d targetPose) {
 
         double maxAccel = 2.35; // 2.35 [meters per second per second] (emperically determined)
+        maxAccel = 3.0;
 
         Translation2d targetLocation = targetPose.getTranslation();
         Translation2d robotLocation = getPoseMeters().getTranslation();
@@ -475,31 +488,61 @@ public class Drivetrain extends SubsystemBase {
 
         List<Pose2d> trackedTags = new ArrayList<Pose2d>();
         for (VisionMeasurement visionMeasurement : visionInputs.visionMeasurements) {
-            if (visionMeasurement.cameraName.equals("shooterCamera") && !useShooterCamera) {
+
+            // disregard shooter camera when lining up for a trap. We only want to trust the trap camera then.
+            if (!visionMeasurement.cameraName.equals("trapCamera") && !useShooterCamera) {
                 continue;
             }
 
             Translation2d visionTranslation = visionMeasurement.robotFieldPose.getTranslation();
             Translation2d estimatedTranslation = fusedPoseEstimator.getEstimatedPosition().getTranslation();
 
-            // don't add vision measurements that are too far away
-            // for reference: it is 6 meters from speaker tags to wing.
+            // Dont' allow the robot to teleport (Can cause problems when we get bumped)
             double teleportToleranceMeters = 2.0;
-            if ((visionTranslation.getDistance(estimatedTranslation) <= teleportToleranceMeters)) { 
-                fusedPoseEstimator.addVisionMeasurement(
-                    visionMeasurement.robotFieldPose, 
-                    visionMeasurement.timestampSeconds, 
-                    visionMeasurement.stdDevs
-                );
+            if (visionTranslation.getDistance(estimatedTranslation) > teleportToleranceMeters) { 
+                continue;
+            }
 
-                for (int id : visionMeasurement.tagsUsed) {
-                    Pose2d tagPose = VisionConstants.aprilTagFieldLayout.getTagPose(id).get().toPose2d();
-                    trackedTags.add(tagPose);
+            // This measurment passes all our checks, so we add it to the fusedPoseEstimator
+            fusedPoseEstimator.addVisionMeasurement(
+                visionMeasurement.robotFieldPose, 
+                visionMeasurement.timestampSeconds, 
+                visionMeasurement.stdDevs
+            );
+
+            // Log which tags have been used.
+            for (int id : visionMeasurement.tagsUsed) {
+                Pose2d tagPose = VisionConstants.aprilTagFieldLayout.getTagPose(id).get().toPose2d();
+                trackedTags.add(tagPose);
+
+                if (id == 4 || id == 7) {
+                    mostRecentSpeakerTagMeasurements.add(visionMeasurement);
+
+                    if (mostRecentSpeakerTagMeasurement == null) {
+                        mostRecentSpeakerTagMeasurement = visionMeasurement;
+                    }
+
+                    if (visionMeasurement.timestampSeconds > mostRecentSpeakerTagMeasurement.timestampSeconds) {
+                        mostRecentSpeakerTagMeasurement = visionMeasurement;
+                    }
                 }
             }
         }
 
+        while (mostRecentSpeakerTagMeasurements.size() > 1) {
+            mostRecentSpeakerTagMeasurements.remove();
+        }
+
         Logger.recordOutput("drivetrain/trackedTags", trackedTags.toArray(new Pose2d[0]));
+    }
+
+    public boolean hasRecentSpeakerTagMeasurement(double maxTimeSinceLastTag) {
+        if (mostRecentSpeakerTagMeasurement == null) {
+            return false;
+        }
+
+        double timeSinceLastTag = Timer.getFPGATimestamp() - mostRecentSpeakerTagMeasurement.timestampSeconds;
+        return timeSinceLastTag <= maxTimeSinceLastTag;
     }
 
 
@@ -551,7 +594,8 @@ public class Drivetrain extends SubsystemBase {
         return ChassisSpeeds.fromRobotRelativeSpeeds(robotOrientedSpeeds, getPoseMeters().getRotation());
     }
 
-    public boolean robotIsLevel() {
+    public boolean 
+    robotIsLevel() {
         return Math.abs(gyroInputs.robotPitchRotation2d.getDegrees()) < 10
             && Math.abs(gyroInputs.robotRollRotation2d.getDegrees()) < 5;
     }
@@ -597,7 +641,7 @@ public class Drivetrain extends SubsystemBase {
      * @param noteLocation
      */
     public void driveTowardsNote(Translation2d noteLocation) {
-        
+
         Translation2d noteToRobot = getPoseMeters().getTranslation().minus(noteLocation);
 
         // orient the robot to point away from the note, because the intake is in the back of the robot.

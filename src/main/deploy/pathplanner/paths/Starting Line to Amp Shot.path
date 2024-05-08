@@ -3,29 +3,29 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 10.756726128836874,
-        "y": 6.679920282917489
+        "x": 14.65,
+        "y": 7.72
       },
       "prevControl": null,
       "nextControl": {
-        "x": 10.319652936024845,
-        "y": 6.698598504187022
+        "x": 12.65,
+        "y": 7.720000000000001
       },
       "isLocked": false,
-      "linkedName": "Amp Shot"
+      "linkedName": null
     },
     {
       "anchor": {
-        "x": 9.523358277485787,
-        "y": 5.38735077470155
+        "x": 10.756726128836874,
+        "y": 6.679920282917489
       },
       "prevControl": {
-        "x": 10.085436205109215,
-        "y": 6.476092609817173
+        "x": 12.638398572089583,
+        "y": 7.717441283670014
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "Amp Shot"
     }
   ],
   "rotationTargets": [],
@@ -38,14 +38,14 @@
     "maxAngularAcceleration": 360.0
   },
   "goalEndState": {
-    "velocity": 4.5,
-    "rotation": 59.42077312751116,
-    "rotateFast": true
+    "velocity": 0,
+    "rotation": 0,
+    "rotateFast": false
   },
   "reversed": false,
   "folder": "HyperChad Amp Side",
   "previewStartingState": {
-    "rotation": -10.759999999999991,
+    "rotation": 0.0,
     "velocity": 0
   },
   "useDefaultConstraints": true

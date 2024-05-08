@@ -6,7 +6,6 @@ package frc.robot;
 
 import frc.robot.Constants.ArmConstants;
 import frc.robot.Constants.DrivetrainConstants;
-import frc.robot.Constants.FieldConstants;
 import frc.robot.Constants.FieldElement;
 import frc.robot.Constants.LEDConstants;
 import frc.robot.commands.MeasureWheelDiameter;
@@ -220,12 +219,12 @@ public class RobotContainer {
 
         /** CLIMB **/
         
-        // controller.povUp().onTrue(climb.raiseHooksCommand());
-        // controller.povRight().onTrue(climb.homeHooksCommand());
-        // controller.povDown().onTrue(climb.lowerHooksCommand().until(climb::atQuickClimbSetpoint));
+        controller.povUp().onTrue(climb.raiseHooksCommand());
+        controller.povRight().onTrue(climb.homeHooksCommand());
+        controller.povDown().onTrue(climb.lowerHooksCommand().until(climb::atQuickClimbSetpoint));
 
-        // controller.a().whileTrue(new UnderStageTrapRoutine(charlie::getRequestedFieldOrientedVelocity, climb, arm, shooter, drivetrain, this::fireNoteThroughHood))
-        //         .onFalse(new InstantCommand(() -> {drivetrain.useShooterCamera = true;}));
+        controller.a().whileTrue(new UnderStageTrapRoutine(charlie::getRequestedFieldOrientedVelocity, climb, arm, shooter, drivetrain, this::fireNoteThroughHood))
+                .onFalse(new InstantCommand(() -> {drivetrain.useShooterCamera = true;}));
 
 
         // controller.a().whileTrue(arm.run(() -> {
@@ -238,11 +237,11 @@ public class RobotContainer {
         //     arm.setVolts(0);
         // }));
 
-        controller.povRight().onTrue(arm.setDesiredDegreesCommand(0));
-        controller.povDown().onTrue(arm.setDesiredDegreesCommand(ArmConstants.armMinAngleDegrees));
-        controller.povUp().onTrue(arm.setDesiredDegreesCommand(90));
-        controller.povUpRight().onTrue(arm.setDesiredDegreesCommand(45));
-        controller.povLeft().onTrue(arm.setDesiredDegreesCommand(ArmConstants.armMaxAngleDegrees));
+        // controller.povRight().onTrue(arm.setDesiredDegreesCommand(0));
+        // controller.povDown().onTrue(arm.setDesiredDegreesCommand(ArmConstants.armMinAngleDegrees));
+        // controller.povUp().onTrue(arm.setDesiredDegreesCommand(90));
+        // controller.povUpRight().onTrue(arm.setDesiredDegreesCommand(45));
+        // controller.povLeft().onTrue(arm.setDesiredDegreesCommand(ArmConstants.armMaxAngleDegrees));
 
         /** MISC **/
         controller.y().onTrue(new InstantCommand(() -> drivetrain.setPoseToVisionMeasurement()).repeatedly().until(drivetrain::seesTag));
@@ -378,7 +377,8 @@ public class RobotContainer {
 
     private Command speakerShot() {
         PrepShot aim = new PrepShot(drivetrain, arm, shooter, charlie::getRequestedFieldOrientedVelocity, leds, FieldElement.SPEAKER);
-        Command waitForAlignment = new WaitCommand(0.25).andThen(new WaitUntilCommand(aim::readyToShoot));  // wait for vision to stabilize
+        Command waitForAlignment = new WaitUntilCommand(() -> {return drivetrain.hasRecentSpeakerTagMeasurement(0.25);})
+                                   .andThen(new WaitUntilCommand(aim::readyToShoot));  // wait for vision to stabilize
         Command fire = fireNote();
         return aim.raceWith(waitForAlignment.andThen(fire));
     }
@@ -431,6 +431,11 @@ public class RobotContainer {
          );
     }
 
+    /**
+     * TODO: documentation
+     * @param note
+     * @return
+     */
     private boolean noteIsLostCauseInAuto(FieldElement note) {
 
         boolean canSeeNote = drivetrain.getBestNoteLocationFieldFrame().isPresent();
@@ -441,6 +446,10 @@ public class RobotContainer {
 
         boolean noteIsGone = shouldSeeNote(note) && !canSeeNote;
         boolean pickupTooRisky = noteIsTooRiskyForPickupInAuto(noteLocation);
+
+        // if the first note is too farr away, then that's the note we'll likely see on the next frame
+        // even if we're starting to turn away. This is why we need the additional shouldSeeNote() check.
+        pickupTooRisky = pickupTooRisky && shouldSeeNote(note);
 
         Logger.recordOutput("auto/targetNote", note.name());
         Logger.recordOutput("auto/noteIsGone", noteIsGone);
@@ -461,7 +470,7 @@ public class RobotContainer {
 
     private boolean noteIsTooRiskyForPickupInAuto(Translation2d noteLocation) {
         // We'll risk getting fowls if the note is too far into enemy territory.
-        double midlineX = FieldConstants.midField.getX();
+        double midlineX = FieldElement.MID_FIELD.getX();
         double overshootAllowanceMeters = 2.0; // TODO: tune me!
 
         boolean tooRiskyForBlue = noteLocation.getX() > (midlineX + overshootAllowanceMeters);
@@ -476,7 +485,6 @@ public class RobotContainer {
     /**
      * Navigates from a scoring location to the pickup spot for the next note.
      * @param targetRing - the note you want to pickup.
-     * @param ampSide - true if navigating from the amp side scoring location, false if navigating from the source side
      */
     private Command navigatePickupAfterShot(FieldElement note) {
         Command pathFollowingCommand = null;
@@ -488,14 +496,15 @@ public class RobotContainer {
             pathFollowingCommand = FlyingCircuitUtils.followPath("Amp Shot to Ring 5");
         }
         if (note == FieldElement.NOTE_6) {
+            // Choose which way to approach note6 based on which side of the field we're on when we make the shot.
             pathFollowingCommand = new ConditionalCommand(
                 FlyingCircuitUtils.followPath("Amp Shot to Ring 6"), 
                 FlyingCircuitUtils.followPath("Source Shot to Ring 6"), 
                 () -> {
                     Translation2d robotLocation = drivetrain.getPoseMeters().getTranslation();
-                    boolean onAmpSide = robotLocation.getY() >= FieldConstants.midField.getY();
+                    boolean onAmpSide = robotLocation.getY() >= FieldElement.MID_FIELD.getY();
                     return onAmpSide;
-                });
+                }).withName("Shot to Ring 6");
         }
         if (note == FieldElement.NOTE_7) {
             pathFollowingCommand = FlyingCircuitUtils.followPath("Source Shot to Ring 7");
@@ -507,7 +516,7 @@ public class RobotContainer {
         return new ParallelDeadlineGroup(
                 pathFollowingCommand,
                 resetShooter(),
-                new PrintCommand(pathFollowingCommand.getName())
+                new PrintCommand("Driving to " + note.name())
                 );
     }
 
@@ -532,7 +541,7 @@ public class RobotContainer {
                     boolean kindaFacingAmp = drivetrain.getPoseMeters().getRotation().getSin() > 0;
                     return kindaFacingAmp;
                 }
-            );
+            ).withName("Ring 6 to Shot");
         }
         if (note == FieldElement.NOTE_7) {
             pathFollowingCommand = FlyingCircuitUtils.followPath("Ring 7 to Source Shot");
@@ -545,7 +554,7 @@ public class RobotContainer {
             new ParallelDeadlineGroup(
                 pathFollowingCommand,
                 autoIndexAndThenPrep(),
-                new PrintCommand(pathFollowingCommand.getName())
+                new PrintCommand("Scoring " + note.name())
             ),
             speakerShot()
         );
@@ -655,6 +664,32 @@ public class RobotContainer {
             )
 
         ).withName("(6, 3, 2, 1) 5 Piece Center Side");
+    }
+
+    public Command sourceSideAuto(FieldElement[] notesToGoFor) {
+        FieldElement highPriorityNote = notesToGoFor[0];
+        FieldElement midPriorityNote = notesToGoFor[1];
+        FieldElement lowPriorityNote = notesToGoFor[2];
+
+        char highPriorityAsChar = highPriorityNote.name().charAt(highPriorityNote.name().length()-1);
+        char midPriorityAsChar = midPriorityNote.name().charAt(midPriorityNote.name().length()-1);
+        char lowPriorityAsChar = lowPriorityNote.name().charAt(lowPriorityNote.name().length()-1);
+        String autoNamePrefix = "("+highPriorityAsChar+", "+midPriorityAsChar+", "+lowPriorityAsChar+")";
+
+        return new SequentialCommandGroup(
+            new ParallelDeadlineGroup(
+                FlyingCircuitUtils.followPath("Starting Line to Source Shot"),
+                prepAutoSpeakerShot()
+            ),
+            speakerShot(),
+            navigatePickupAfterShot(highPriorityNote),
+            autoIntakeTowardsNote(highPriorityNote),
+            scoreRingAfterPickup(highPriorityNote).andThen(navigatePickupAfterShot(midPriorityNote)).onlyIf(() -> {return this.goodPickup;}),
+            autoIntakeTowardsNote(midPriorityNote),
+            scoreRingAfterPickup(midPriorityNote).andThen(navigatePickupAfterShot(lowPriorityNote)).onlyIf(() -> {return this.goodPickup;}),
+            autoIntakeTowardsNote(lowPriorityNote),
+            scoreRingAfterPickup(lowPriorityNote).onlyIf(() -> {return this.goodPickup;})
+        ).withName(autoNamePrefix + " Source Side HyperChad Auto");
     }
 
     // private Command pathfindToNote(FieldElement note) {

@@ -162,7 +162,9 @@ public class VisionIOPhotonLib implements VisionIO {
             double distance = tag.getBestCameraToTarget().getTranslation().getDistance(new Translation3d());
             output.averageTagDistanceMeters += distance/seenTags.size();
         }
-        
+
+        // don't add vision measurements that are too far away
+        // for reference: it is 6 meters from speaker tags to wing.
         if (output.averageTagDistanceMeters > 7) {
             return Optional.empty();
         }
