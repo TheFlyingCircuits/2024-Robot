@@ -3,15 +3,15 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 11.96,
-        "y": 1.77
+        "x": 12.6,
+        "y": 2.4
       },
       "prevControl": null,
       "nextControl": {
-        "x": 11.71,
-        "y": 1.77
+        "x": 12.362916563848447,
+        "y": 2.3206813748065875
       },
-      "isLocked": true,
+      "isLocked": false,
       "linkedName": "Source Shot"
     },
     {
@@ -20,11 +20,11 @@
         "y": 1.77
       },
       "prevControl": {
-        "x": 10.92,
-        "y": 1.77
+        "x": 10.90704291341253,
+        "y": 1.8494396450199775
       },
       "nextControl": null,
-      "isLocked": true,
+      "isLocked": false,
       "linkedName": "Around Stage Left"
     }
   ],
@@ -33,19 +33,19 @@
   "eventMarkers": [],
   "globalConstraints": {
     "maxVelocity": 4.5,
-    "maxAcceleration": 3.5,
+    "maxAcceleration": 2.5,
     "maxAngularVelocity": 360.0,
     "maxAngularAcceleration": 360.0
   },
   "goalEndState": {
     "velocity": 4.5,
-    "rotation": -16.25,
+    "rotation": -16.319999999999993,
     "rotateFast": true
   },
   "reversed": false,
   "folder": "HyperChad Source Side",
   "previewStartingState": {
-    "rotation": 41.581815512445196,
+    "rotation": 28.950995207466942,
     "velocity": 0.0
   },
   "useDefaultConstraints": true

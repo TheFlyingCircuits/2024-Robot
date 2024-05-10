@@ -41,9 +41,9 @@ public class VisionIOPhotonLib implements VisionIO {
 
         tagCameras = Arrays.asList(
             new PhotonCamera(VisionConstants.cameraNames[0]),
-            new PhotonCamera(VisionConstants.cameraNames[1]),
-            new PhotonCamera(VisionConstants.cameraNames[2]),
-            new PhotonCamera(VisionConstants.cameraNames[3])
+            new PhotonCamera(VisionConstants.cameraNames[1])
+            // new PhotonCamera(VisionConstants.cameraNames[2]),
+            // new PhotonCamera(VisionConstants.cameraNames[3])
         );
 
         poseEstimators = new ArrayList<PhotonPoseEstimator>();
@@ -111,18 +111,17 @@ public class VisionIOPhotonLib implements VisionIO {
         //     }
         // }
 
-        //previous linear model
-        // return VecBuilder.fill(
-        //     slopeStdDevMetersPerMeterX*distToTargetMeters,
-        //     slopeStdDevMetersPerMeterY*distToTargetMeters,
-        //     99999
-        // );
+        // previous linear model
+        return VecBuilder.fill(
+            slopeStdDevMetersPerMeterX*distToTargetMeters,
+            slopeStdDevMetersPerMeterY*distToTargetMeters,
+            99999
+        );
 
 
         
-        double squareFactor = 0.5;
-
-        return VecBuilder.fill(0.04, 0.04, 99999);
+        // double squareFactor = 0.5;
+        // return VecBuilder.fill(0.04, 0.04, 99999);
 
         // // square model
         // return VecBuilder.fill(

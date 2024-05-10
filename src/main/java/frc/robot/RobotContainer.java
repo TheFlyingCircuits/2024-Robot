@@ -221,10 +221,10 @@ public class RobotContainer {
         
         controller.povUp().onTrue(climb.raiseHooksCommand());
         controller.povRight().onTrue(climb.homeHooksCommand());
-        controller.povDown().onTrue(climb.lowerHooksCommand().until(climb::atQuickClimbSetpoint));
+        controller.povDown().onTrue(climb.lowerHooksCommand().until(climb::atQuickClimbSetpoint).withTimeout(3));
 
         controller.a().whileTrue(new UnderStageTrapRoutine(charlie::getRequestedFieldOrientedVelocity, climb, arm, shooter, drivetrain, this::fireNoteThroughHood))
-                .onFalse(new InstantCommand(() -> {drivetrain.useShooterCamera = true;}));
+                .onFalse(new InstantCommand(() -> {drivetrain.onlyUseTrapCamera = false;}));
 
 
         // controller.a().whileTrue(arm.run(() -> {
@@ -396,14 +396,6 @@ public class RobotContainer {
                 .finallyDo(() -> {drivetrain.isTrackingSpeakerInAuto = false;});
     }
 
-    /**
-     * Indexes with a timeout of 2 seconds, and then calls prepAutoSpeakerShot().
-     */
-    private Command autoIndexAndThenPrep() {
-        return indexNote().withTimeout(2).andThen(prepAutoSpeakerShot());
-    }
-
-
     private Command autoIntakeTowardsNote(FieldElement note) {
         return new SequentialCommandGroup(
             // Assume the pickup didn't work until proven otherwise
@@ -484,76 +476,38 @@ public class RobotContainer {
 
     /**
      * Navigates from a scoring location to the pickup spot for the next note.
-     * @param targetRing - the note you want to pickup.
+     * @param note - the note you want to pickup.
+     * @param startLocation 
      */
-    private Command navigatePickupAfterShot(FieldElement note) {
-        Command pathFollowingCommand = null;
-
-        if (note == FieldElement.NOTE_4) {
-            pathFollowingCommand = FlyingCircuitUtils.followPath("Starting Line to Ring 4");
-        }
-        if (note == FieldElement.NOTE_5) {
-            pathFollowingCommand = FlyingCircuitUtils.followPath("Amp Shot to Ring 5");
-        }
-        if (note == FieldElement.NOTE_6) {
-            // Choose which way to approach note6 based on which side of the field we're on when we make the shot.
-            pathFollowingCommand = new ConditionalCommand(
-                FlyingCircuitUtils.followPath("Amp Shot to Ring 6"), 
-                FlyingCircuitUtils.followPath("Source Shot to Ring 6"), 
-                () -> {
-                    Translation2d robotLocation = drivetrain.getPoseMeters().getTranslation();
-                    boolean onAmpSide = robotLocation.getY() >= FieldElement.MID_FIELD.getY();
-                    return onAmpSide;
-                }).withName("Shot to Ring 6");
-        }
-        if (note == FieldElement.NOTE_7) {
-            pathFollowingCommand = FlyingCircuitUtils.followPath("Source Shot to Ring 7");
-        }
-        if (note == FieldElement.NOTE_8) {
-            pathFollowingCommand = FlyingCircuitUtils.followPath("Starting Line to Ring 8");
-        }
+    private Command navigatePickup(FieldElement note, String startLocation) {
+        char noteNuber = note.name().charAt(note.name().length()-1);
+        String pathName = startLocation+" to Ring "+noteNuber;
 
         return new ParallelDeadlineGroup(
-                pathFollowingCommand,
+                FlyingCircuitUtils.followPath(pathName),
                 resetShooter(),
-                new PrintCommand("Driving to " + note.name())
-                );
+                new PrintCommand("Driving from "+startLocation+" to "+ note.name())
+        );
     }
 
     /**
      * Navigates from a note to a scoring location after a pickup.
      * @param note - the note you are navigating from.
      */
-    private Command scoreRingAfterPickup(FieldElement note) {
-        Command pathFollowingCommand = null;
+    private Command scoreRingAfterPickup(FieldElement note, String endLocation) {
+        char noteNuber = note.name().charAt(note.name().length()-1);
+        String pathName = "Ring "+noteNuber+" to "+endLocation;
 
-        if (note == FieldElement.NOTE_4) {
-            pathFollowingCommand = FlyingCircuitUtils.followPath("Ring 4 to Amp Shot");
-        }
-        if (note == FieldElement.NOTE_5) {
-            pathFollowingCommand = FlyingCircuitUtils.followPath("Ring 5 to Amp Shot");
-        }
-        if (note == FieldElement.NOTE_6) {
-            pathFollowingCommand = new ConditionalCommand(
-                FlyingCircuitUtils.followPath("Ring 6 to Amp Shot"),
-                FlyingCircuitUtils.followPath("Ring 6 to Source Shot"),
-                () -> {
-                    boolean kindaFacingAmp = drivetrain.getPoseMeters().getRotation().getSin() > 0;
-                    return kindaFacingAmp;
-                }
-            ).withName("Ring 6 to Shot");
-        }
-        if (note == FieldElement.NOTE_7) {
-            pathFollowingCommand = FlyingCircuitUtils.followPath("Ring 7 to Source Shot");
-        }
-        if (note == FieldElement.NOTE_8) {
-            pathFollowingCommand = FlyingCircuitUtils.followPath("Ring 8 to Source Shot");
-        }
-        
+        // Don't aim on the way if we're going under the stage
+        boolean aimOnTheWay = !endLocation.contains("Center Side");
+
         return new SequentialCommandGroup(
             new ParallelDeadlineGroup(
-                pathFollowingCommand,
-                autoIndexAndThenPrep(),
+                FlyingCircuitUtils.followPath(pathName),
+                new ConditionalCommand(
+                    indexNote().andThen(prepAutoSpeakerShot()), 
+                    indexNote(),
+                    () -> {return aimOnTheWay;}),
                 new PrintCommand("Scoring " + note.name())
             ),
             speakerShot()
@@ -561,73 +515,73 @@ public class RobotContainer {
     }
 
 
-    public Command ampSideAuto() {
-        return new SequentialCommandGroup(
-            speakerShot(),
-            navigatePickupAfterShot(FieldElement.NOTE_4),
-            autoIntakeTowardsNote(FieldElement.NOTE_4),
-            //if you pickup a note, score it and go to ring 5
-            //otherwise just go to ring 5
-            new ConditionalCommand(
-                new SequentialCommandGroup(
-                    scoreRingAfterPickup(FieldElement.NOTE_4),
-                    navigatePickupAfterShot(FieldElement.NOTE_5)
-                ), 
-                new PrintCommand("skipping 4, trying 5"),
-                () -> {return this.goodPickup;}
-            ),
-            autoIntakeTowardsNote(FieldElement.NOTE_5),
-            //if you pickup a note, score it and go to ring 6
-            //otherwise just go to ring 6
-            new ConditionalCommand(
-                new SequentialCommandGroup(
-                    scoreRingAfterPickup(FieldElement.NOTE_5),
-                    navigatePickupAfterShot(FieldElement.NOTE_6)
-                ), 
-                new PrintCommand("skipping 5, trying 6"),
-                () -> {return this.goodPickup;}),
-            autoIntakeTowardsNote(FieldElement.NOTE_6),
-            //if you pickup ring 6, score it, otherwise sit and do nothing
-            new ConditionalCommand(
-                scoreRingAfterPickup(FieldElement.NOTE_6),
-                new InstantCommand(),
-                () -> {return this.goodPickup;})
+    // public Command ampSideAuto() {
+    //     return new SequentialCommandGroup(
+    //         speakerShot(),
+    //         navigatePickupAfterShot(FieldElement.NOTE_4),
+    //         autoIntakeTowardsNote(FieldElement.NOTE_4),
+    //         //if you pickup a note, score it and go to ring 5
+    //         //otherwise just go to ring 5
+    //         new ConditionalCommand(
+    //             new SequentialCommandGroup(
+    //                 scoreRingAfterPickup(FieldElement.NOTE_4),
+    //                 navigatePickupAfterShot(FieldElement.NOTE_5)
+    //             ), 
+    //             new PrintCommand("skipping 4, trying 5"),
+    //             () -> {return this.goodPickup;}
+    //         ),
+    //         autoIntakeTowardsNote(FieldElement.NOTE_5),
+    //         //if you pickup a note, score it and go to ring 6
+    //         //otherwise just go to ring 6
+    //         new ConditionalCommand(
+    //             new SequentialCommandGroup(
+    //                 scoreRingAfterPickup(FieldElement.NOTE_5),
+    //                 navigatePickupAfterShot(FieldElement.NOTE_6)
+    //             ), 
+    //             new PrintCommand("skipping 5, trying 6"),
+    //             () -> {return this.goodPickup;}),
+    //         autoIntakeTowardsNote(FieldElement.NOTE_6),
+    //         //if you pickup ring 6, score it, otherwise sit and do nothing
+    //         new ConditionalCommand(
+    //             scoreRingAfterPickup(FieldElement.NOTE_6),
+    //             new InstantCommand(),
+    //             () -> {return this.goodPickup;})
 
-        ).withName("Amp Side HyperChad Auto");
-    }
+    //     ).withName("Amp Side HyperChad Auto");
+    // }
 
-    public Command sourceSideAuto() {
-        return new SequentialCommandGroup(
-            speakerShot(),
-            navigatePickupAfterShot(FieldElement.NOTE_8),
-            autoIntakeTowardsNote(FieldElement.NOTE_8),
-            //if you pickup ring 8, score it and go to ring 7
-            //otherwise just go to ring 7
-            new ConditionalCommand(
-                new SequentialCommandGroup(
-                    scoreRingAfterPickup(FieldElement.NOTE_8),
-                    navigatePickupAfterShot(FieldElement.NOTE_7)), 
-                new PrintCommand("skipping 8, trying 7"),
-                () -> {return this.goodPickup;}),
-            autoIntakeTowardsNote(FieldElement.NOTE_7),
-            //if you pickup ring 7, score it and go to ring 6
-            //otherwise just go to ring 6
-            new ConditionalCommand(
-                new SequentialCommandGroup(
-                    scoreRingAfterPickup(FieldElement.NOTE_7),
-                    navigatePickupAfterShot(FieldElement.NOTE_6)
-                ), 
-                new PrintCommand("skipping 7, trying 6"),
-                () -> {return this.goodPickup;}),
-            autoIntakeTowardsNote(FieldElement.NOTE_6),
-            //if you pickup ring 6, score it, otherwise sit and do nothing
-            new ConditionalCommand(
-                scoreRingAfterPickup(FieldElement.NOTE_6),
-                new InstantCommand(),
-                () -> {return this.goodPickup;})
+    // public Command sourceSideAuto() {
+    //     return new SequentialCommandGroup(
+    //         speakerShot(),
+    //         navigatePickupAfterShot(FieldElement.NOTE_8),
+    //         autoIntakeTowardsNote(FieldElement.NOTE_8),
+    //         //if you pickup ring 8, score it and go to ring 7
+    //         //otherwise just go to ring 7
+    //         new ConditionalCommand(
+    //             new SequentialCommandGroup(
+    //                 scoreRingAfterPickup(FieldElement.NOTE_8),
+    //                 navigatePickupAfterShot(FieldElement.NOTE_7)), 
+    //             new PrintCommand("skipping 8, trying 7"),
+    //             () -> {return this.goodPickup;}),
+    //         autoIntakeTowardsNote(FieldElement.NOTE_7),
+    //         //if you pickup ring 7, score it and go to ring 6
+    //         //otherwise just go to ring 6
+    //         new ConditionalCommand(
+    //             new SequentialCommandGroup(
+    //                 scoreRingAfterPickup(FieldElement.NOTE_7),
+    //                 navigatePickupAfterShot(FieldElement.NOTE_6)
+    //             ), 
+    //             new PrintCommand("skipping 7, trying 6"),
+    //             () -> {return this.goodPickup;}),
+    //         autoIntakeTowardsNote(FieldElement.NOTE_6),
+    //         //if you pickup ring 6, score it, otherwise sit and do nothing
+    //         new ConditionalCommand(
+    //             scoreRingAfterPickup(FieldElement.NOTE_6),
+    //             new InstantCommand(),
+    //             () -> {return this.goodPickup;})
 
-        ).withName("Source Side HyperChad Auto");
-    }
+    //     ).withName("Source Side HyperChad Auto");
+    // }
 
     public Command centerSideAuto() {
         return new SequentialCommandGroup(
@@ -635,20 +589,11 @@ public class RobotContainer {
             speakerShot(),
 
             // Pickup ring 6
-            new ParallelDeadlineGroup(
-                FlyingCircuitUtils.followPath("Starting Line to Ring 6 (Center Side)"),
-                resetShooter()
-            ),
+            navigatePickup(FieldElement.NOTE_6, "Starting Line (Center Side)"),
             autoIntakeTowardsNote(FieldElement.NOTE_6),
 
-            // Return trip
-            new ParallelDeadlineGroup(
-                FlyingCircuitUtils.followPath("Ring 6 to Starting Line (Center Side)"),
-                indexNote()
-            ),
-
-            // Fire ring 6
-            speakerShot(),
+            // Return trip and shot
+            scoreRingAfterPickup(FieldElement.NOTE_6, "Starting Line (Center Side)"),
 
             // Start rapid fire sequence
             new ParallelRaceGroup(
@@ -657,39 +602,45 @@ public class RobotContainer {
 
                 // Follow the rapid fire path
                 new SequentialCommandGroup(
-                    FlyingCircuitUtils.followPath("Starting Line to Ring 3"),
-                    FlyingCircuitUtils.followPath("Ring 3 to Ring 2"),
-                    FlyingCircuitUtils.followPath("Ring 2 to Ring 1")
+                    FlyingCircuitUtils.followPath("Ring 3 Rapid Pickup"),
+                    FlyingCircuitUtils.followPath("Ring 2 Rapid Pickup"),
+                    FlyingCircuitUtils.followPath("Ring 1 Rapid Pickup")
                 )
             )
 
         ).withName("(6, 3, 2, 1) 5 Piece Center Side");
     }
 
-    public Command sourceSideAuto(FieldElement[] notesToGoFor) {
+    public Command sideAuto(FieldElement[] notesToGoFor, FieldElement startLocation) {
         FieldElement highPriorityNote = notesToGoFor[0];
         FieldElement midPriorityNote = notesToGoFor[1];
         FieldElement lowPriorityNote = notesToGoFor[2];
 
+        String side = "";
+        if (startLocation == FieldElement.AMP) {
+            side = "Amp";
+        }
+        if (startLocation == FieldElement.SOURCE) {
+            side = "Source";
+        }
+        String shotName = side+" Shot";
+
+        Command auto = new SequentialCommandGroup(
+            navigatePickup(highPriorityNote, "Starting Line ("+side+" Side)"),
+            autoIntakeTowardsNote(highPriorityNote),
+            scoreRingAfterPickup(highPriorityNote, shotName).andThen(navigatePickup(midPriorityNote, shotName)).onlyIf(() -> {return this.goodPickup;}),
+            autoIntakeTowardsNote(midPriorityNote),
+            scoreRingAfterPickup(midPriorityNote, shotName).andThen(navigatePickup(lowPriorityNote, shotName)).onlyIf(() -> {return this.goodPickup;}),
+            autoIntakeTowardsNote(lowPriorityNote),
+            scoreRingAfterPickup(lowPriorityNote, shotName).onlyIf(() -> {return this.goodPickup;})
+        );
+
+        // Name the auto so it looks nice on the dashboard.
         char highPriorityAsChar = highPriorityNote.name().charAt(highPriorityNote.name().length()-1);
         char midPriorityAsChar = midPriorityNote.name().charAt(midPriorityNote.name().length()-1);
         char lowPriorityAsChar = lowPriorityNote.name().charAt(lowPriorityNote.name().length()-1);
-        String autoNamePrefix = "("+highPriorityAsChar+", "+midPriorityAsChar+", "+lowPriorityAsChar+")";
-
-        return new SequentialCommandGroup(
-            new ParallelDeadlineGroup(
-                FlyingCircuitUtils.followPath("Starting Line to Source Shot"),
-                prepAutoSpeakerShot()
-            ),
-            speakerShot(),
-            navigatePickupAfterShot(highPriorityNote),
-            autoIntakeTowardsNote(highPriorityNote),
-            scoreRingAfterPickup(highPriorityNote).andThen(navigatePickupAfterShot(midPriorityNote)).onlyIf(() -> {return this.goodPickup;}),
-            autoIntakeTowardsNote(midPriorityNote),
-            scoreRingAfterPickup(midPriorityNote).andThen(navigatePickupAfterShot(lowPriorityNote)).onlyIf(() -> {return this.goodPickup;}),
-            autoIntakeTowardsNote(lowPriorityNote),
-            scoreRingAfterPickup(lowPriorityNote).onlyIf(() -> {return this.goodPickup;})
-        ).withName(autoNamePrefix + " Source Side HyperChad Auto");
+        String autoName = "("+highPriorityAsChar+", "+midPriorityAsChar+", "+lowPriorityAsChar+") HyperChad "+side+" Side";
+        return auto.withName(autoName);
     }
 
     // private Command pathfindToNote(FieldElement note) {

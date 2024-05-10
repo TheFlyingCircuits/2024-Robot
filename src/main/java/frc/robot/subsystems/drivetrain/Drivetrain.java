@@ -71,7 +71,7 @@ public class Drivetrain extends SubsystemBase {
     public boolean isTrackingSpeakerInAuto = false;
     /** True after a bump but before odometry has been corrected, false once a vision target is used to reset odometry. */
     private boolean hasBeenBumped = false;
-    public boolean useShooterCamera = true;
+    public boolean onlyUseTrapCamera = false;
     private PriorityQueue<VisionMeasurement> mostRecentSpeakerTagMeasurements = new PriorityQueue<VisionMeasurement>(new Comparator<VisionMeasurement>() {
         // Front of the queue will be the smallest timestamp
         // i.e. the timestamp that's closest to 0 (when the robot was turned on)
@@ -312,7 +312,7 @@ public class Drivetrain extends SubsystemBase {
     public void beeLineToPose(Pose2d targetPose) {
 
         double maxAccel = 2.35; // 2.35 [meters per second per second] (emperically determined)
-        maxAccel = 3.0;
+        // maxAccel = 3.0;
 
         Translation2d targetLocation = targetPose.getTranslation();
         Translation2d robotLocation = getPoseMeters().getTranslation();
@@ -490,7 +490,7 @@ public class Drivetrain extends SubsystemBase {
         for (VisionMeasurement visionMeasurement : visionInputs.visionMeasurements) {
 
             // disregard shooter camera when lining up for a trap. We only want to trust the trap camera then.
-            if (!visionMeasurement.cameraName.equals("trapCamera") && !useShooterCamera) {
+            if (onlyUseTrapCamera && !visionMeasurement.cameraName.equals("trapCamera")) {
                 continue;
             }
 

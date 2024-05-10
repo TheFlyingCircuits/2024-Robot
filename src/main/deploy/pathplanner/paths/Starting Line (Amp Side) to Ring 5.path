@@ -3,25 +3,25 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 14.65,
-        "y": 4.825
+        "x": 14.631876557200409,
+        "y": 6.256372626705367
       },
       "prevControl": null,
       "nextControl": {
-        "x": 12.549808005114368,
-        "y": 4.825
+        "x": 13.631876557200409,
+        "y": 6.256372626705367
       },
       "isLocked": false,
-      "linkedName": "Starting Line (Between Ring 2 and 3)"
+      "linkedName": null
     },
     {
       "anchor": {
         "x": 10.67,
-        "y": 4.32
+        "y": 6.256372626705367
       },
       "prevControl": {
-        "x": 12.306656442291507,
-        "y": 4.82613031734377
+        "x": 11.67,
+        "y": 6.256372626705367
       },
       "nextControl": null,
       "isLocked": false,
@@ -33,17 +33,17 @@
   "eventMarkers": [],
   "globalConstraints": {
     "maxVelocity": 4.5,
-    "maxAcceleration": 3.5,
+    "maxAcceleration": 2.5,
     "maxAngularVelocity": 360.0,
     "maxAngularAcceleration": 360.0
   },
   "goalEndState": {
     "velocity": 4.5,
-    "rotation": 4.680000000000007,
+    "rotation": 10.759999999999991,
     "rotateFast": false
   },
   "reversed": false,
-  "folder": "HyperChad Center Side",
+  "folder": "HyperChad Amp Side",
   "previewStartingState": {
     "rotation": 0,
     "velocity": 0

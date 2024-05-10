@@ -393,7 +393,8 @@ public final class Constants {
         NOTE_8(NOTE_7.redPose.getTranslation().plus(new Translation3d(0, -FieldConstants.metersBetweenMidlineNotes, 0))),
         MID_FIELD(new Translation3d(FieldConstants.maxX / 2.0, FieldConstants.maxY / 2.0, 0)),
         WING(new Translation3d(FieldConstants.maxX - FieldConstants.metersFromAllianceWallToWing, FieldConstants.maxY / 2.0, 0),
-             new Translation3d(FieldConstants.metersFromAllianceWallToWing, FieldConstants.maxY / 2.0, 0));
+             new Translation3d(FieldConstants.metersFromAllianceWallToWing, FieldConstants.maxY / 2.0, 0)),
+        SOURCE(9, 2);
 
         private static class FieldConstants {
             public static final double maxX = VisionConstants.aprilTagFieldLayout.getFieldLength();
@@ -431,6 +432,18 @@ public final class Constants {
 
                 redPose = new Pose3d(redLocation, redOrientation);
                 bluePose = new Pose3d(blueLocation, blueOrientation);
+            }
+
+            // use the middle of the source as the pose
+            if (redTagID == 9 || redTagID == 10 || blueTagID == 1 || blueTagID == 2) {
+                Pose3d firstRedPose = VisionConstants.aprilTagFieldLayout.getTagPose(9).get();
+                Pose3d secondRedPose = VisionConstants.aprilTagFieldLayout.getTagPose(10).get();
+
+                Pose3d firstBluePose = VisionConstants.aprilTagFieldLayout.getTagPose(1).get();
+                Pose3d secondBluePose = VisionConstants.aprilTagFieldLayout.getTagPose(2).get();
+
+                this.redPose = firstRedPose.interpolate(secondRedPose, 0.5);
+                this.bluePose = firstBluePose.interpolate(secondBluePose, 0.5);
             }
         }
 

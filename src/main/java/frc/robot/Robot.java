@@ -34,7 +34,26 @@ public class Robot extends LoggedRobot {
 
     private RobotContainer m_robotContainer;
 
-    private SendableChooser<Command> autoChooser;
+    private SendableChooser<FieldElement> firstPriorityChooser = initNoteChooser("First Priority: ");
+    private SendableChooser<FieldElement> secondPriorityChooser = initNoteChooser("Second Priority: ");
+    private SendableChooser<FieldElement> thirdPriorityChooser = initNoteChooser("Third Priority: ");
+    private SendableChooser<FieldElement> startingLocationChooser;
+
+    private FieldElement chosenStartingLocation;
+    private FieldElement[] notesToGoFor = {FieldElement.NOTE_8, FieldElement.NOTE_7, FieldElement.NOTE_6};
+
+    private SendableChooser<FieldElement> initNoteChooser(String name) {
+        SendableChooser<FieldElement> output = new SendableChooser<FieldElement>();
+
+        output.addOption(name+FieldElement.NOTE_4.name(), FieldElement.NOTE_4);
+        output.addOption(name+FieldElement.NOTE_5.name(), FieldElement.NOTE_5);
+        output.addOption(name+FieldElement.NOTE_6.name(), FieldElement.NOTE_6);
+        output.addOption(name+FieldElement.NOTE_7.name(), FieldElement.NOTE_7);
+        output.addOption(name+FieldElement.NOTE_8.name(), FieldElement.NOTE_8);
+        output.setDefaultOption(name+FieldElement.NOTE_6.name(), FieldElement.NOTE_6);
+
+        return output;
+    }
 
 
     private void initAdvantageKit() {
@@ -63,19 +82,52 @@ public class Robot extends LoggedRobot {
         m_robotContainer = new RobotContainer();
 
         // Must buildAutoChooser() only after NamedCommmands have been registered in the RobotContainer constructor!
-        autoChooser = new SendableChooser<Command>(); //AutoBuilder.buildAutoChooser();
-        autoChooser.setDefaultOption("Do Nothing", new InstantCommand().withName("Do Nothing"));
-        autoChooser.addOption(m_robotContainer.sourceSideAuto().getName(), m_robotContainer.sourceSideAuto());
-        autoChooser.addOption(m_robotContainer.centerSideAuto().getName(), m_robotContainer.centerSideAuto());
-        autoChooser.addOption(m_robotContainer.ampSideAuto().getName(), m_robotContainer.ampSideAuto());
-        FieldElement[] notePriority = {FieldElement.NOTE_8, FieldElement.NOTE_6, FieldElement.NOTE_7};
-        Command customSourceSideAuto = m_robotContainer.sourceSideAuto(notePriority);
-        autoChooser.addOption(customSourceSideAuto.getName(), customSourceSideAuto);
-        SmartDashboard.putData("Auto Chooser", autoChooser);
+        startingLocationChooser = new SendableChooser<FieldElement>(); //AutoBuilder.buildAutoChooser();
+        startingLocationChooser.addOption("Source Side", FieldElement.SOURCE);
+        startingLocationChooser.addOption("Center Side", FieldElement.SPEAKER);
+        startingLocationChooser.addOption("Amp Side", FieldElement.AMP);
+        startingLocationChooser.setDefaultOption("Source Side", FieldElement.SOURCE);
+        SmartDashboard.putData("Starting Location", startingLocationChooser);
+        SmartDashboard.putData("First Priority", firstPriorityChooser);
+        SmartDashboard.putData("Second Priority", secondPriorityChooser);
+        SmartDashboard.putData("Third Priority", thirdPriorityChooser);
 
         DriverStation.silenceJoystickConnectionWarning(true);
         FollowPathCommand.warmupCommand().schedule();
         System.gc();
+    }
+
+    public void updateSelectedAuto() {
+        FieldElement desiredStartingLocation = startingLocationChooser.getSelected();
+        FieldElement[] desiredNotes = {firstPriorityChooser.getSelected(), secondPriorityChooser.getSelected(), thirdPriorityChooser.getSelected()};
+
+        // Generate new auto if we need to
+        boolean generateNewAuto = desiredStartingLocation != chosenStartingLocation;
+        for (int i = 0; i < desiredNotes.length; i += 1) {
+            generateNewAuto = generateNewAuto || (desiredNotes[i] != notesToGoFor[i]);
+
+            // just don't generate a new auto if an impossible combo is requested!
+            if (invalidAuto(desiredStartingLocation, desiredNotes[i])) {
+                return;
+            }
+        }
+
+        if (generateNewAuto) {
+
+            chosenStartingLocation = desiredStartingLocation;
+            for (int i = 0; i < desiredNotes.length; i += 1) {
+                notesToGoFor[i] = desiredNotes[i];
+            }
+
+            m_autonomousCommand = m_robotContainer.sideAuto(notesToGoFor, chosenStartingLocation);
+        }
+    }
+
+    private boolean invalidAuto(FieldElement startingLocation, FieldElement note) {
+        return (startingLocation == FieldElement.SOURCE && !(note == FieldElement.NOTE_8 || note == FieldElement.NOTE_7 || note == FieldElement.NOTE_6)) ||
+               (startingLocation == FieldElement.SPEAKER && !(note == FieldElement.NOTE_7 || note == FieldElement.NOTE_6 || note == FieldElement.NOTE_5)) ||
+               (startingLocation == FieldElement.AMP && !(note == FieldElement.NOTE_6 || note == FieldElement.NOTE_5 || note == FieldElement.NOTE_4)) ||
+               !(startingLocation == FieldElement.SOURCE || startingLocation == FieldElement.SPEAKER || startingLocation == FieldElement.AMP);
     }
 
     /**
@@ -107,9 +159,12 @@ public class Robot extends LoggedRobot {
             //m_robotContainer.drivetrain.playOrchestra();
         }
 
-        m_autonomousCommand = autoChooser.getSelected();
+        updateSelectedAuto();
         if (m_autonomousCommand != null) {
             SmartDashboard.putString("Chosen Auto", m_autonomousCommand.getName());
+        }
+        else {
+            SmartDashboard.putString("Chosen Auto", "Null");
         }
     }
 

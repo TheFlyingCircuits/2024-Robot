@@ -39,7 +39,7 @@ public class UnderStageTrapRoutine extends SequentialCommandGroup {
         this.translationController = translationController;
         
         addCommands(
-            new InstantCommand(() -> {drivetrain.useShooterCamera = false;}),
+            new InstantCommand(() -> {drivetrain.onlyUseTrapCamera = true;}),
             // drive to the trap and wait until we're in position for Ronnie to take over
             snapToTrap().until(() -> {return getTrapToRobot().getNorm() < Units.inchesToMeters(2);}),
             // Raise the arm as we drive forward
@@ -92,7 +92,7 @@ public class UnderStageTrapRoutine extends SequentialCommandGroup {
             new WaitCommand(0.5),
             // Lower down a tad so we're not hanging on the trap opening
             climb.raiseHooksCommand(4).withTimeout(0.5)
-        );    
+        );
     }
 
     private Command snapToTrap() {

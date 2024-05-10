@@ -192,7 +192,8 @@ public class Climb extends SubsystemBase{
     }
 
     public boolean atQuickClimbSetpoint() {
-        return (leftMotor.getPosition() <= 0.26) && (rightMotor.getPosition() <= 0.26);
+        double quickClimbPosition = 0.212;
+        return (leftMotor.getPosition() <= quickClimbPosition) && (rightMotor.getPosition() <= quickClimbPosition);
     }
     
     @Override
