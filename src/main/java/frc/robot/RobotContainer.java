@@ -223,8 +223,19 @@ public class RobotContainer {
         controller.povRight().onTrue(climb.homeHooksCommand());
         controller.povDown().onTrue(climb.lowerHooksCommand().until(climb::atQuickClimbSetpoint).withTimeout(3));
 
-        controller.a().whileTrue(new UnderStageTrapRoutine(charlie::getRequestedFieldOrientedVelocity, climb, arm, shooter, drivetrain, this::fireNoteThroughHood))
+        controller.a()
+                .onTrue(new InstantCommand(() -> {drivetrain.onlyUseTrapCamera = true;}))
+                .whileTrue(
+                    new UnderStageTrapRoutine(
+                        charlie::getRequestedFieldOrientedVelocity, climb, arm, shooter, drivetrain))
                 .onFalse(new InstantCommand(() -> {drivetrain.onlyUseTrapCamera = false;}));
+
+        //manual fire and then lower, so we aren't hanging off of trap edge
+        controller.back().onTrue(
+            fireNoteThroughHood().repeatedly().withTimeout(1.0)
+            .andThen(
+                new ScheduleCommand(climb.raiseHooksCommand(4).withTimeout(0.5))
+            ));
 
 
         // controller.a().whileTrue(arm.run(() -> {
@@ -250,8 +261,6 @@ public class RobotContainer {
         controller.x().onTrue(new InstantCommand(() -> arm.setDisableSetpointChecking(false)).andThen(resetShooter()));
 
         // controller.start().whileTrue(new MeasureWheelDiameter(drivetrain));
-        // controller.start().whileTrue(sourceSideAuto());
-        // controller.back().whileTrue(ampSideAuto());
 
         /** Driver Feedback **/
         Trigger ringJustEnteredIntake = new Trigger(intake::ringJustEnteredIntake);
@@ -643,50 +652,6 @@ public class RobotContainer {
         return auto.withName(autoName);
     }
 
-    // private Command pathfindToNote(FieldElement note) {
-
-    //     Pose2d targetPose = FlyingCircuitUtils.pickupAtNote(
-    //             drivetrain.getPoseMeters().getTranslation(),
-    //             note.getLocation().toTranslation2d(), 
-    //             0.);
-
-
-    //     return AutoBuilder.pathfindToPose(
-    //             targetPose,
-    //             DrivetrainConstants.pathfindingConstraints,
-    //             0.
-    //         );
-    // }
-
-
-    // private Command intakeAndThenShoot(Pose2d scoringPose) {
-    //     //TODO: figure out how to navigate to nearest scoring location instead of a preset one
-    //     //use lambdas or something for scoringPose
-        
-    //     return new SequentialCommandGroup(
-    //         intakeTowardsNote(),
-    //         new ParallelDeadlineGroup(
-    //             AutoBuilder.pathfindToPose(scoringPose, DrivetrainConstants.pathfindingConstraints),
-    //             prepAutoSpeakerShot()
-    //         ),
-    //         speakerShot()
-    //     );
-    // }
-
-    // public Command pathfindingAuto(List<FieldElement> targetNotes, Pose2d scoringPose) {
-
-        
-
-    //     Command autoCommand = new InstantCommand();
-
-    //     for (int noteInd = 0; noteInd < targetNotes.size(); noteInd++) {
-    //         autoCommand = autoCommand
-    //             .andThen(pathfindToNote(targetNotes.get(noteInd)).deadlineWith(resetShooter()))
-    //             .andThen(intakeAndThenShoot(scoringPose).onlyIf(drivetrain::intakeSeesNote));
-    //     }
-
-    //     return autoCommand;
-    // }
 
 
 

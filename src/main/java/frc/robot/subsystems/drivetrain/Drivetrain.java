@@ -594,12 +594,6 @@ public class Drivetrain extends SubsystemBase {
         return ChassisSpeeds.fromRobotRelativeSpeeds(robotOrientedSpeeds, getPoseMeters().getRotation());
     }
 
-    public boolean 
-    robotIsLevel() {
-        return Math.abs(gyroInputs.robotPitchRotation2d.getDegrees()) < 10
-            && Math.abs(gyroInputs.robotRollRotation2d.getDegrees()) < 5;
-    }
-
     //**************** TARGET TRACKING (Speaker, Note, etc.) ****************/
 
     /**

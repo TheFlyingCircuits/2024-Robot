@@ -34,12 +34,11 @@ public class UnderStageTrapRoutine extends SequentialCommandGroup {
     private Supplier<ChassisSpeeds> translationController;
     private double autoDriveSpeed = 0.6;
 
-    public UnderStageTrapRoutine(Supplier<ChassisSpeeds> translationController, Climb climb, Arm arm, Shooter shooter, Drivetrain drivetrain, Supplier<Command> fireNoteCommand) {
+    public UnderStageTrapRoutine(Supplier<ChassisSpeeds> translationController, Climb climb, Arm arm, Shooter shooter, Drivetrain drivetrain) {
         this.drivetrain = drivetrain;
         this.translationController = translationController;
         
         addCommands(
-            new InstantCommand(() -> {drivetrain.onlyUseTrapCamera = true;}),
             // drive to the trap and wait until we're in position for Ronnie to take over
             snapToTrap().until(() -> {return getTrapToRobot().getNorm() < Units.inchesToMeters(2);}),
             // Raise the arm as we drive forward
@@ -80,18 +79,9 @@ public class UnderStageTrapRoutine extends SequentialCommandGroup {
                 arm.setDesiredDegreesCommand(105),
                 shooter.setFlywheelSurfaceSpeedCommand(10)
             ),
-            // Wait for the swinging to stop
-            new ParallelDeadlineGroup(
-                new WaitCommand(0.5).andThen(new WaitUntilCommand(drivetrain::robotIsLevel)),
-                climb.lowerHooksCommand().until(climb::climbArmsDown).repeatedly()
-            ),
-            // Score in the trap
-            fireNoteCommand.get(),
-            fireNoteCommand.get(),
 
-            new WaitCommand(0.5),
-            // Lower down a tad so we're not hanging on the trap opening
-            climb.raiseHooksCommand(4).withTimeout(0.5)
+            // Once we are at the top, keep pulling up so we stay there. This command then never ends until we release the trap routine button.
+            climb.lowerHooksCommand().until(climb::climbArmsDown).repeatedly()
         );
     }
 
