@@ -3,51 +3,51 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 14.01,
-        "y": 4.28
+        "x": 14.65,
+        "y": 4.825
       },
       "prevControl": null,
       "nextControl": {
-        "x": 14.087129745002716,
-        "y": 4.517804546709722
+        "x": 14.768982808841123,
+        "y": 4.605129376222569
       },
       "isLocked": true,
-      "linkedName": "Ring 3 Rapid Pickup"
+      "linkedName": "Starting Line (Between Ring 2 and 3)"
     },
     {
       "anchor": {
-        "x": 14.42,
-        "y": 5.55
+        "x": 14.41,
+        "y": 4.5
       },
       "prevControl": {
-        "x": 14.67,
-        "y": 5.55
+        "x": 14.629870623777432,
+        "y": 4.618982808841124
       },
       "nextControl": {
-        "x": 14.17,
-        "y": 5.55
+        "x": 14.190129376222568,
+        "y": 4.381017191158876
       },
       "isLocked": true,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 13.96,
-        "y": 5.55
+        "x": 14.01,
+        "y": 4.28
       },
       "prevControl": {
-        "x": 14.21,
-        "y": 5.55
+        "x": 14.22987062377743,
+        "y": 4.398982808841124
       },
       "nextControl": null,
       "isLocked": true,
-      "linkedName": "Ring 2 Rapid Pickup"
+      "linkedName": "Ring 3 Rapid Pickup"
     }
   ],
   "rotationTargets": [
     {
       "waypointRelativePos": 1.0,
-      "rotationDegrees": 0.0,
+      "rotationDegrees": 28.42,
       "rotateFast": false
     }
   ],
@@ -61,13 +61,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 0,
+    "rotation": 28.42,
     "rotateFast": false
   },
   "reversed": false,
-  "folder": "5 Piece Center Side",
+  "folder": "HyperChad Center Side",
   "previewStartingState": {
-    "rotation": 26.0,
+    "rotation": 22.88,
     "velocity": 0
   },
   "useDefaultConstraints": true

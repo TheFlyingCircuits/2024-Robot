@@ -8,8 +8,8 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 10.319652936024845,
-        "y": 6.698598504187022
+        "x": 10.583234451147332,
+        "y": 6.499918511336017
       },
       "isLocked": false,
       "linkedName": "Amp Shot"
@@ -20,8 +20,8 @@
         "y": 5.38735077470155
       },
       "prevControl": {
-        "x": 10.085436205109215,
-        "y": 6.476092609817173
+        "x": 9.696561837682559,
+        "y": 5.567629799369323
       },
       "nextControl": null,
       "isLocked": false,
@@ -39,7 +39,7 @@
   },
   "goalEndState": {
     "velocity": 4.5,
-    "rotation": 59.42077312751116,
+    "rotation": 47.36021166711711,
     "rotateFast": true
   },
   "reversed": false,

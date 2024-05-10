@@ -8,20 +8,20 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 9.947636818350562,
-        "y": 1.4405736503780713
+        "x": 10.580949237907978,
+        "y": 1.1992202606733011
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 12.680779976944573,
-        "y": 2.2299290752427665
+        "x": 11.96,
+        "y": 1.77
       },
       "prevControl": {
-        "x": 10.973798870674665,
-        "y": 1.1939000801078534
+        "x": 10.853942467979948,
+        "y": 1.4137149414441355
       },
       "nextControl": null,
       "isLocked": false,
@@ -44,9 +44,6 @@
   },
   "reversed": false,
   "folder": "HyperChad Source Side",
-  "previewStartingState": {
-    "rotation": 40.17,
-    "velocity": 4.5
-  },
+  "previewStartingState": null,
   "useDefaultConstraints": true
 }

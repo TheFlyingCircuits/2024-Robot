@@ -3,29 +3,29 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 12.680779976944573,
-        "y": 2.2299290752427665
+        "x": 11.96,
+        "y": 1.77
       },
       "prevControl": null,
       "nextControl": {
-        "x": 12.441986206358674,
-        "y": 2.1559187034738785
+        "x": 11.718568518249926,
+        "y": 1.7051090174218073
       },
       "isLocked": true,
       "linkedName": "Source Shot"
     },
     {
       "anchor": {
-        "x": 10.67,
-        "y": 1.5
+        "x": 10.668697061859683,
+        "y": 1.4234646996609919
       },
       "prevControl": {
-        "x": 10.908793770585898,
-        "y": 1.574010371768888
+        "x": 10.907490832445582,
+        "y": 1.4974750714298797
       },
       "nextControl": null,
       "isLocked": true,
-      "linkedName": "Ring 8 Pickup Helper"
+      "linkedName": null
     }
   ],
   "rotationTargets": [],
@@ -39,13 +39,13 @@
   },
   "goalEndState": {
     "velocity": 4.5,
-    "rotation": 17.22,
+    "rotation": 14.860000000000014,
     "rotateFast": true
   },
   "reversed": false,
   "folder": "HyperChad Source Side",
   "previewStartingState": {
-    "rotation": 40.17,
+    "rotation": 42.2834248612209,
     "velocity": 0
   },
   "useDefaultConstraints": true
