@@ -119,7 +119,15 @@ public class Robot extends LoggedRobot {
                 notesToGoFor[i] = desiredNotes[i];
             }
 
-            m_autonomousCommand = m_robotContainer.sideAuto(notesToGoFor, chosenStartingLocation);
+            if (desiredStartingLocation == FieldElement.SPEAKER) {
+                m_autonomousCommand = m_robotContainer.centerSideAuto(notesToGoFor[0]);
+                return;
+            }
+            else {
+                m_autonomousCommand = m_robotContainer.sideAuto(notesToGoFor, chosenStartingLocation);
+            }
+
+            System.gc();
         }
     }
 

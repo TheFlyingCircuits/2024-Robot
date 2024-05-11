@@ -170,7 +170,7 @@ public class RobotContainer {
                 //new ConditionalCommand(
 
 
-                    intakeTowardsNote(charlie::getRequestedFieldOrientedVelocity).andThen(new ScheduleCommand(
+                    intakeTowardsNote(charlie::getRequestedFieldOrientedVelocity).until(indexer::isNoteIndexed).andThen(new ScheduleCommand(
                     indexNote().andThen(reverseIntake().withTimeout(1.0))))
 
 
@@ -329,7 +329,7 @@ public class RobotContainer {
 
 
     private Command indexNote() {
-        return this.runIntake(true).until(indexer::isNoteIndexed)
+        return this.runIntake(true).until(indexer::isNoteIndexed).unless(indexer::isNoteIndexed)
                .andThen(new InstantCommand(() -> {indexer.setVolts(0); intake.setVolts(0);})
                         .alongWith(new ScheduleCommand(leds.solidOrangeCommand()))
                );
@@ -524,85 +524,32 @@ public class RobotContainer {
     }
 
 
-    // public Command ampSideAuto() {
-    //     return new SequentialCommandGroup(
-    //         speakerShot(),
-    //         navigatePickupAfterShot(FieldElement.NOTE_4),
-    //         autoIntakeTowardsNote(FieldElement.NOTE_4),
-    //         //if you pickup a note, score it and go to ring 5
-    //         //otherwise just go to ring 5
-    //         new ConditionalCommand(
-    //             new SequentialCommandGroup(
-    //                 scoreRingAfterPickup(FieldElement.NOTE_4),
-    //                 navigatePickupAfterShot(FieldElement.NOTE_5)
-    //             ), 
-    //             new PrintCommand("skipping 4, trying 5"),
-    //             () -> {return this.goodPickup;}
-    //         ),
-    //         autoIntakeTowardsNote(FieldElement.NOTE_5),
-    //         //if you pickup a note, score it and go to ring 6
-    //         //otherwise just go to ring 6
-    //         new ConditionalCommand(
-    //             new SequentialCommandGroup(
-    //                 scoreRingAfterPickup(FieldElement.NOTE_5),
-    //                 navigatePickupAfterShot(FieldElement.NOTE_6)
-    //             ), 
-    //             new PrintCommand("skipping 5, trying 6"),
-    //             () -> {return this.goodPickup;}),
-    //         autoIntakeTowardsNote(FieldElement.NOTE_6),
-    //         //if you pickup ring 6, score it, otherwise sit and do nothing
-    //         new ConditionalCommand(
-    //             scoreRingAfterPickup(FieldElement.NOTE_6),
-    //             new InstantCommand(),
-    //             () -> {return this.goodPickup;})
-
-    //     ).withName("Amp Side HyperChad Auto");
-    // }
-
-    // public Command sourceSideAuto() {
-    //     return new SequentialCommandGroup(
-    //         speakerShot(),
-    //         navigatePickupAfterShot(FieldElement.NOTE_8),
-    //         autoIntakeTowardsNote(FieldElement.NOTE_8),
-    //         //if you pickup ring 8, score it and go to ring 7
-    //         //otherwise just go to ring 7
-    //         new ConditionalCommand(
-    //             new SequentialCommandGroup(
-    //                 scoreRingAfterPickup(FieldElement.NOTE_8),
-    //                 navigatePickupAfterShot(FieldElement.NOTE_7)), 
-    //             new PrintCommand("skipping 8, trying 7"),
-    //             () -> {return this.goodPickup;}),
-    //         autoIntakeTowardsNote(FieldElement.NOTE_7),
-    //         //if you pickup ring 7, score it and go to ring 6
-    //         //otherwise just go to ring 6
-    //         new ConditionalCommand(
-    //             new SequentialCommandGroup(
-    //                 scoreRingAfterPickup(FieldElement.NOTE_7),
-    //                 navigatePickupAfterShot(FieldElement.NOTE_6)
-    //             ), 
-    //             new PrintCommand("skipping 7, trying 6"),
-    //             () -> {return this.goodPickup;}),
-    //         autoIntakeTowardsNote(FieldElement.NOTE_6),
-    //         //if you pickup ring 6, score it, otherwise sit and do nothing
-    //         new ConditionalCommand(
-    //             scoreRingAfterPickup(FieldElement.NOTE_6),
-    //             new InstantCommand(),
-    //             () -> {return this.goodPickup;})
-
-    //     ).withName("Source Side HyperChad Auto");
-    // }
-
-    public Command centerSideAuto() {
+    public Command centerSideAuto(FieldElement noteToGoFor) {
+        char noteNumber = noteToGoFor.name().charAt(noteToGoFor.name().length()-1);
+        String outgoingPathName = "Starting Line (Center Side) to Ring "+noteNumber;
         return new SequentialCommandGroup(
             // Fire preload
-            speakerShot(),
+            // speakerShot(),
 
             // Pickup ring 6
-            navigatePickup(FieldElement.NOTE_6, "Starting Line (Center Side)"),
-            autoIntakeTowardsNote(FieldElement.NOTE_6),
+            new ParallelDeadlineGroup(
+                // navigatePickup(FieldElement.NOTE_6, "Starting Line (Center Side)"),
+                FlyingCircuitUtils.followPath(outgoingPathName),
+                new SequentialCommandGroup(
+                    new ParallelDeadlineGroup(
+                        new WaitUntilCommand(() -> {
+                            boolean armGoodEnough = arm.getDegrees() >= 35;
+                            return armGoodEnough && (drivetrain.getAngleError() <= 2);
+                        }).andThen(fireNote()),
+                        prepAutoSpeakerShot()
+                    ),
+                    resetShooter()
+                )
+            ),
+            autoIntakeTowardsNote(noteToGoFor),
 
             // Return trip and shot
-            scoreRingAfterPickup(FieldElement.NOTE_6, "Starting Line (Center Side)"),
+            scoreRingAfterPickup(noteToGoFor, "Starting Line (Center Side)"),
 
             // Start rapid fire sequence
             new ParallelRaceGroup(
@@ -613,11 +560,12 @@ public class RobotContainer {
                 new SequentialCommandGroup(
                     FlyingCircuitUtils.followPath("Ring 3 Rapid Pickup"),
                     FlyingCircuitUtils.followPath("Ring 2 Rapid Pickup"),
-                    FlyingCircuitUtils.followPath("Ring 1 Rapid Pickup")
+                    FlyingCircuitUtils.followPath("Ring 1 Rapid Pickup"),
+                    new WaitCommand(1.0) // Let the flywheels keep running for a sec even if the path ends.
                 )
             )
 
-        ).withName("(6, 3, 2, 1) 5 Piece Center Side");
+        ).withName("("+noteNumber+", 3, 2, 1) 5 Piece Center Side");
     }
 
     public Command sideAuto(FieldElement[] notesToGoFor, FieldElement startLocation) {
@@ -635,6 +583,7 @@ public class RobotContainer {
         String shotName = side+" Shot";
 
         Command auto = new SequentialCommandGroup(
+            speakerShot(),
             navigatePickup(highPriorityNote, "Starting Line ("+side+" Side)"),
             autoIntakeTowardsNote(highPriorityNote),
             scoreRingAfterPickup(highPriorityNote, shotName).andThen(navigatePickup(midPriorityNote, shotName)).onlyIf(() -> {return this.goodPickup;}),

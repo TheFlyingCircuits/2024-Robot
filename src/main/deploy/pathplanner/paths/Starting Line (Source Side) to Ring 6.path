@@ -3,28 +3,28 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 15.07,
-        "y": 1.59
+        "x": 13.854946171430804,
+        "y": 2.7824778726480535
       },
       "prevControl": null,
       "nextControl": {
-        "x": 14.070859177685694,
-        "y": 1.6314441453656914
+        "x": 12.923886724119873,
+        "y": 2.4176103548103254
       },
-      "isLocked": true,
+      "isLocked": false,
       "linkedName": "Source Side Start"
     },
     {
       "anchor": {
-        "x": 10.67,
-        "y": 1.77
+        "x": 10.96,
+        "y": 1.59
       },
       "prevControl": {
-        "x": 11.669266230068509,
-        "y": 1.7316985451363545
+        "x": 11.891286292715952,
+        "y": 1.9542881290947849
       },
       "nextControl": null,
-      "isLocked": true,
+      "isLocked": false,
       "linkedName": "Around Stage Left"
     }
   ],
@@ -39,7 +39,7 @@
   },
   "goalEndState": {
     "velocity": 4.5,
-    "rotation": -44.80000000000001,
+    "rotation": -43.289999999999964,
     "rotateFast": true
   },
   "reversed": false,
