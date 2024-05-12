@@ -3,25 +3,25 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 14.631876557200409,
-        "y": 6.256372626705367
+        "x": 14.65,
+        "y": 7.72
       },
       "prevControl": null,
       "nextControl": {
-        "x": 13.631876557200409,
-        "y": 6.256372626705367
+        "x": 12.62839846344776,
+        "y": 7.692559233099463
       },
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "Amp Side Start"
     },
     {
       "anchor": {
-        "x": 10.67,
-        "y": 6.256372626705367
+        "x": 10.697946336510254,
+        "y": 6.990576641485824
       },
       "prevControl": {
-        "x": 11.67,
-        "y": 6.256372626705367
+        "x": 11.984914421135258,
+        "y": 7.585311892714047
       },
       "nextControl": null,
       "isLocked": false,
@@ -39,7 +39,7 @@
   },
   "goalEndState": {
     "velocity": 4.5,
-    "rotation": 10.759999999999991,
+    "rotation": 26.00999999999999,
     "rotateFast": false
   },
   "reversed": false,

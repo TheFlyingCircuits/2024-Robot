@@ -3,16 +3,16 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 14.631876557200409,
-        "y": 6.256372626705367
+        "x": 14.65,
+        "y": 7.72
       },
       "prevControl": null,
       "nextControl": {
-        "x": 11.018382834486466,
-        "y": 6.899551121039565
+        "x": 11.65,
+        "y": 7.72
       },
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "Amp Side Start"
     },
     {
       "anchor": {
@@ -20,8 +20,8 @@
         "y": 5.426087661292132
       },
       "prevControl": {
-        "x": 10.490318672945039,
-        "y": 6.798323596647194
+        "x": 10.85394246797995,
+        "y": 6.629835587462149
       },
       "nextControl": null,
       "isLocked": false,
