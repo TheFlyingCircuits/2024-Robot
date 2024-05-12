@@ -298,7 +298,7 @@ public class LEDs extends SubsystemBase {
                                this.turnOffCommand().withTimeout(offTime));
         }
 
-        return output;
+        return output.withName("strobe");
     }
 
     public Command playAimingAnimationCommand(Supplier<Double> armErrorDegrees, Supplier<Double> flywheelErrorMetersPerSecond, Supplier<Double> drivetrainErrorDegrees) {
@@ -366,6 +366,7 @@ public class LEDs extends SubsystemBase {
             // Find whatever pattern the LEDs are currently displaying,
             // so that we can return to that pattern after we're done with the new patter.
             Command interruptedPattern = this.getCurrentCommand();
+            // System.out.println("interrupted name: " + interruptedPattern.getName());
             if (interruptedPattern.equals(patternToSwitchTo)) {
                 // don't let a pattern interrupt itself.
                 // TODO: use a more robust equality check than .equals(),
@@ -378,6 +379,7 @@ public class LEDs extends SubsystemBase {
             // System.out.println("switchToMe: " + patternToSwitchTo.runsWhenDisabled());
             // System.out.println("interruptMe: " + interruptedPattern.runsWhenDisabled());
             Command fullCommand = patternToSwitchTo.asProxy().andThen(new ScheduleCommand(interruptedPattern));
+            fullCommand = fullCommand.finallyDo((boolean what) -> {System.out.println("switcher interrupted: " + what);});
             fullCommand.addRequirements(this);
             fullCommand.schedule();
             // System.out.println("fullCommand: " + fullCommand.runsWhenDisabled());

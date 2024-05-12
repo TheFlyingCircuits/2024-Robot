@@ -48,6 +48,7 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotBase;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -139,7 +140,7 @@ public class RobotContainer {
         
         
         drivetrain.setDefaultCommand(drivetrain.run(() -> {drivetrain.fieldOrientedDrive(charlie.getRequestedFieldOrientedVelocity(), true);}));
-        leds.setDefaultCommand(leds.heartbeatCommand().ignoringDisable(true));
+        leds.setDefaultCommand(leds.heartbeatCommand().ignoringDisable(true).withName("heartbeat"));
         // leds.setDefaultCommand(leds.heartbeatCommand(1.5).andThen(leds.heartbeatCommand(1.0)).ignoringDisable(true));
         // leds.setDefaultCommand(leds.fasterHeartbeatSequence().ignoringDisable(true));
         intake.setDefaultCommand(Commands.run(() -> {intake.setVolts(0);}, intake));
@@ -167,20 +168,11 @@ public class RobotContainer {
         controller.rightTrigger()
             .onTrue(
                 //intake after note if on other side of the field
-                //new ConditionalCommand(
 
-
-                    intakeTowardsNote(charlie::getRequestedFieldOrientedVelocity).until(indexer::isNoteIndexed).andThen(new ScheduleCommand(
-                    indexNote().andThen(reverseIntake().withTimeout(1.0))))
-
-
-                    // drivetrain.run(() -> {drivetrain.driveTowardsNote(new Translation2d());})
-                    // indexNote()
-                // Schedule index, so the drive command goes back to default as soon as intake is done
-                //)),
-                //regular intake if on this side of the field
-                //intakeNote().andThen(indexNote()),
-                //() -> {return !drivetrain.inSpeakerShotRange();})
+                intakeTowardsNote(charlie::getRequestedFieldOrientedVelocity).until(indexer::isNoteIndexed)
+                    .andThen(new ScheduleCommand(
+                        indexNote().andThen(reverseIntake().withTimeout(1.0))
+                    ))
             );
 
 
@@ -231,11 +223,11 @@ public class RobotContainer {
                 .onFalse(new InstantCommand(() -> {drivetrain.onlyUseTrapCamera = false;}));
 
         //manual fire and then lower, so we aren't hanging off of trap edge
-        controller.back().onTrue(
-            fireNoteThroughHood().repeatedly().withTimeout(1.0)
-            .andThen(
-                new ScheduleCommand(climb.raiseHooksCommand(4).withTimeout(0.5))
-            ));
+        controller.back()
+            .whileTrue(fireNoteThroughHood().repeatedly())
+            .onFalse(new ScheduleCommand(climb.raiseHooksCommand(4).withTimeout(0.5))); //this cancels the trap routine
+
+        
 
 
         // controller.a().whileTrue(arm.run(() -> {
@@ -305,7 +297,7 @@ public class RobotContainer {
      * @return
      */
     private Command intakeNote() {
-        return new ScheduleCommand(leds.playIntakeAnimationCommand(() -> {return drivetrain.getBestNoteLocationFieldFrame().isPresent();}))
+        return new ScheduleCommand(leds.playIntakeAnimationCommand(() -> {return drivetrain.getBestNoteLocationFieldFrame().isPresent();}).withName("intake animation"))
             .alongWith(this.runIntake(false).until(intake::ringJustEnteredIntake));
     }
 
@@ -344,7 +336,7 @@ public class RobotContainer {
     private Command fireNoteThroughHood() {
         // The flywheels need to run longer than normal to make sure the note
         // makes it all the way through the slam dunk hood.
-        return indexer.setOrangeWheelsSurfaceSpeedCommand(7).withTimeout(0.5)
+        return indexer.setOrangeWheelsSurfaceSpeedCommand(7).withTimeout(1.0)
                .alongWith(new ScheduleCommand(leds.playFireNoteAnimationCommand()));
     }
 
@@ -428,7 +420,7 @@ public class RobotContainer {
             // Interrupt the intake sequence if it's determined that the current target note is a lost cause
             // (already taken by the opposing alliance, or too risky to pickup because its so far over the midline that
             // we might get fouls by going for it)
-            .until(() -> {return noteIsLostCauseInAuto(note);})
+            .until(() -> {return noteIsLostCauseInAuto(note);}).withTimeout(4.0)
          );
     }
 
@@ -448,7 +440,7 @@ public class RobotContainer {
         boolean noteIsGone = shouldSeeNote(note) && !canSeeNote;
         boolean pickupTooRisky = noteIsTooRiskyForPickupInAuto(noteLocation);
 
-        // if the first note is too farr away, then that's the note we'll likely see on the next frame
+        // if the first note is too far away, then that's the note we'll likely see on the next frame
         // even if we're starting to turn away. This is why we need the additional shouldSeeNote() check.
         pickupTooRisky = pickupTooRisky && shouldSeeNote(note);
 

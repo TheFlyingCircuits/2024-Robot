@@ -73,6 +73,10 @@ public class Indexer extends SubsystemBase {
     }
 
     public void setVolts(double volts) {
+        if (volts == 0 && indexerPID.getSetpoint() != 0) {
+            indexerPID.setSetpoint(0);
+            // TODO: cleanup
+        }
         indexerMotor.setVoltage(volts);
     }
 
