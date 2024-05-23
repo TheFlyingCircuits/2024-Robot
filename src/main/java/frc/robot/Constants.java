@@ -42,6 +42,7 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 public final class Constants {
 
     public final static boolean atCompetition = true;
+    public final static boolean isDemoMode = true;
 
     public final static class ShooterConstants {
         /**Rotations of the motor per rotations of the wheel; a number greater than 1 represents a reduction. */
@@ -409,6 +410,8 @@ public final class Constants {
 
         private Pose3d redPose;
         private Pose3d bluePose;
+        public static int demoTargetID = 13;
+        public static Translation3d demoTargetLocation = new Translation3d();
 
         private FieldElement(int redTagID, int blueTagID) {
             this.redPose = VisionConstants.aprilTagFieldLayout.getTagPose(redTagID).get();

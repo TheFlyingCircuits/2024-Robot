@@ -9,6 +9,7 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj2.command.Command;
+import frc.robot.Constants;
 import frc.robot.Constants.ArmConstants;
 import frc.robot.Constants.FieldElement;
 import frc.robot.subsystems.arm.Arm;
@@ -112,6 +113,9 @@ public class PrepShot extends Command {
         Rotation2d driveDesiredAngle = drivetrain.getPoseMeters().getRotation();
         if (target == FieldElement.SPEAKER) {
             Translation3d shootOnTheMoveTarget = target.getLocation();//getShootOnTheMoveTarget(target.getLocation(), estimatedExitVelocity, false);
+            if (Constants.isDemoMode) {
+                shootOnTheMoveTarget = FieldElement.demoTargetLocation;
+            }
             double armDesiredRadians = getGravCompensatedArmDesiredRadians(shootOnTheMoveTarget, estimatedExitVelocity, false);
             armDesiredDegrees = Math.toDegrees(armDesiredRadians);
             driveDesiredAngle = shootOnTheMoveTarget.toTranslation2d().minus(drivetrain.getPoseMeters().getTranslation()).getAngle();

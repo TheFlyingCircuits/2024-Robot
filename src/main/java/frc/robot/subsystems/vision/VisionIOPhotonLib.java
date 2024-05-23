@@ -16,16 +16,20 @@ import org.photonvision.PhotonPoseEstimator.PoseStrategy;
 import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.targeting.PhotonTrackedTarget;
 
+import edu.wpi.first.apriltag.AprilTag;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
-import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
-import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.math.util.Units;
+import frc.robot.Constants;
 import frc.robot.FlyingCircuitUtils;
+import frc.robot.Constants.FieldElement;
 import frc.robot.Constants.VisionConstants;
 
 public class VisionIOPhotonLib implements VisionIO {
@@ -156,10 +160,14 @@ public class VisionIOPhotonLib implements VisionIO {
             return Optional.empty();
         }
         
-        
+        Transform3d cameraToDemoTarget = null;
         for (PhotonTrackedTarget tag : seenTags) {
             double distance = tag.getBestCameraToTarget().getTranslation().getDistance(new Translation3d());
             output.averageTagDistanceMeters += distance/seenTags.size();
+
+            if (Constants.isDemoMode && tag.getFiducialId() == FieldElement.demoTargetID) {
+                cameraToDemoTarget = tag.getBestCameraToTarget();
+            }
         }
 
         // don't add vision measurements that are too far away
@@ -178,7 +186,58 @@ public class VisionIOPhotonLib implements VisionIO {
             output.tagsUsed[i] = seenTags.get(i).getFiducialId();
         }
 
+        updateDemoModeTagLayout(estimator, seenTags);
+
         return Optional.of(output);
+    }
+
+    private void updateDemoModeTagLayout(PhotonPoseEstimator estimator, List<PhotonTrackedTarget> seenTags) {
+        if (!Constants.isDemoMode) {
+            return;
+        }
+
+        Transform3d tagAxesInCameraFrame = null;
+        for (PhotonTrackedTarget tag : seenTags) {
+            if (tag.getFiducialId() == FieldElement.demoTargetID) {
+                tagAxesInCameraFrame = tag.getBestCameraToTarget();
+                break;
+            }
+        }
+
+        if (tagAxesInCameraFrame == null) {
+            return;
+        }
+
+        Transform3d camAxesInRobotFrame = estimator.getRobotToCameraTransform();
+        Transform3d tagAxesInRobotFrame = camAxesInRobotFrame.plus(tagAxesInCameraFrame);
+        Logger.recordOutput("demoMode/tagLocationRobotFrame", tagAxesInRobotFrame.getTranslation());
+
+        Translation3d tagX_robotFrame = new Translation3d(1, 0, 0).rotateBy(tagAxesInRobotFrame.getRotation());
+        Translation3d tagY_robotFrame = new Translation3d(0, 1, 0).rotateBy(tagAxesInRobotFrame.getRotation());
+        Translation3d tagZ_robotFrame = new Translation3d(0, 0, 1).rotateBy(tagAxesInRobotFrame.getRotation());
+        Logger.recordOutput("demoMode/tagX_robotFrame", tagX_robotFrame);
+        Logger.recordOutput("demoMode/tagY_robotFrame", tagY_robotFrame);
+        Logger.recordOutput("demoMode/tagZ_robotFrame", tagZ_robotFrame);
+
+        double demoTagFieldX = FieldElement.SPEAKER.getX();
+        double demoTagFieldY = FieldElement.SPEAKER.getY();
+        double demoTagFieldZ = tagAxesInRobotFrame.getTranslation().getZ();
+        Translation3d demoTagFieldLocation = new Translation3d(demoTagFieldX, demoTagFieldY, demoTagFieldZ);
+
+        // don't have the robot think it's sinking into the ground if the tag isn't straight up and down.
+        // we only care about the yaw being correct? I think this is thr right way, but i'm not 100% sure.
+        double demoTagFieldYaw = FieldElement.SPEAKER.getOrientation().getZ();
+        double demoTagFieldPitch = tagAxesInRobotFrame.getRotation().getY();
+        double demoTagFieldRoll = tagAxesInRobotFrame.getRotation().getX();
+        Rotation3d demoTagFieldOrientation = new Rotation3d(demoTagFieldRoll, demoTagFieldPitch, demoTagFieldYaw);
+        // demoTagFieldOrientation = FieldElement.SPEAKER.getOrientation(); // <- I've at least confirmed that this is wrong!
+
+        AprilTag demoTag = new AprilTag(FieldElement.demoTargetID, new Pose3d(demoTagFieldLocation, demoTagFieldOrientation));
+        AprilTagFieldLayout updatedLayout = new AprilTagFieldLayout(Arrays.asList(demoTag), VisionConstants.aprilTagFieldLayout.getFieldLength(), VisionConstants.aprilTagFieldLayout.getFieldWidth());
+        estimator.setFieldTags(updatedLayout);
+
+        double verticalOffsetMeters = Units.inchesToMeters(12-4);
+        FieldElement.demoTargetLocation = demoTagFieldLocation.plus(new Translation3d(0, 0, verticalOffsetMeters));
     }
 
     private List<Translation3d> updateIntakeCamera() {
@@ -218,6 +277,7 @@ public class VisionIOPhotonLib implements VisionIO {
             Translation3d note_robotFrame = FlyingCircuitUtils.robotCoordsFromNoteCameraCoords(note_camFrame);
 
             detectedNotes.add(note_robotFrame);
+            // TODO: add desmos link?
         }
 
 
