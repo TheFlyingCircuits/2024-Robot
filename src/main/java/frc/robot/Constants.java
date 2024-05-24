@@ -410,7 +410,7 @@ public final class Constants {
 
         private Pose3d redPose;
         private Pose3d bluePose;
-        public static int demoTargetID = 13;
+        public static int demoTargetID = 4;
         public static Translation3d demoTargetLocation = new Translation3d();
 
         private FieldElement(int redTagID, int blueTagID) {
