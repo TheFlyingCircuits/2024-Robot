@@ -41,7 +41,7 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
  */
 public final class Constants {
 
-    public final static boolean atCompetition = true;
+    public final static boolean atCompetition = false;
     public final static boolean isDemoMode = true;
 
     public final static class ShooterConstants {
@@ -410,8 +410,7 @@ public final class Constants {
 
         private Pose3d redPose;
         private Pose3d bluePose;
-        public static int demoTargetID = 4;
-        public static Translation3d demoTargetLocation = new Translation3d();
+        public static Translation3d demoTargetLocation;
 
         private FieldElement(int redTagID, int blueTagID) {
             this.redPose = VisionConstants.aprilTagFieldLayout.getTagPose(redTagID).get();
@@ -487,6 +486,9 @@ public final class Constants {
         }
 
         public Translation3d getLocation() {
+            if (Constants.isDemoMode && this == FieldElement.SPEAKER) {
+                return demoTargetLocation;
+            }
             return getPose().getTranslation();
         }
 
@@ -495,15 +497,15 @@ public final class Constants {
         }
 
         public double getX() {
-            return getPose().getX();
+            return getLocation().getX();
         }
 
         public double getY() {
-            return getPose().getY();
+            return getLocation().getY();
         }
 
         public double getZ() {
-            return getPose().getZ();
+            return getLocation().getZ();
         }
 
         public static Pose2d getClosestTrap(Pose2d yourPoseOnTheField) {
@@ -512,6 +514,24 @@ public final class Constants {
                                       CENTER_STAGE.getPose().toPose2d()};
 
             return yourPoseOnTheField.nearest(Arrays.asList(trapLocations));
+        }
+
+        public static int getSpeakerTagID() {
+            if (Constants.isDemoMode) {
+                return 4;
+            }
+
+            Optional<Alliance> alliance = DriverStation.getAlliance();
+            if (alliance.isPresent()) {
+                if (alliance.get() == Alliance.Red) {
+                    return 4;
+                }
+                if (alliance.get() == Alliance.Blue) {
+                    return 7;
+                }
+            }
+            // Should never get to this point as long as we're connected to the driver station.
+            return -1;
         }
     }
 

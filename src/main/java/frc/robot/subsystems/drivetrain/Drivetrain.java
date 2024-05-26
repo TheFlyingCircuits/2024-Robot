@@ -515,7 +515,7 @@ public class Drivetrain extends SubsystemBase {
                 Pose2d tagPose = VisionConstants.aprilTagFieldLayout.getTagPose(id).get().toPose2d();
                 trackedTags.add(tagPose);
 
-                if (id == 4 || id == 7 || (Constants.isDemoMode && (id == FieldElement.demoTargetID))) {
+                if (id == FieldElement.getSpeakerTagID()) {
                     mostRecentSpeakerTagMeasurements.add(visionMeasurement);
 
                     if (mostRecentSpeakerTagMeasurement == null) {

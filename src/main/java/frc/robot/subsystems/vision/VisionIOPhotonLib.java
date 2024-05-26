@@ -22,6 +22,7 @@ import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
@@ -52,13 +53,33 @@ public class VisionIOPhotonLib implements VisionIO {
             // new PhotonCamera(VisionConstants.cameraNames[3])
         );
 
-        poseEstimators = new ArrayList<PhotonPoseEstimator>();
+        /* When in demo mode, the apriltags will probably be pitched/rolled a bit
+         * relative to their normal vertical orientation because they will be held
+         * by a person running the demo rather than being mounted to a wall.
+         * The tags may also be at a different height than normal.
+         * 
+         * In order to still measure the robot's "field oreinted pose" accurately,
+         * we must inform the pose estimators of the new pitch/roll/height of the tags
+         * by updating the TagLayout. However, I've discovered through testing that
+         * updated tag layouts involving more than one tag are only taken into account
+         * when running pose estimation on the rio itself, and aren't taken into account
+         * when running pose estimation on a co-processor. To get around this, we use
+         * an alternative pose estimation strategy when in demo mode.
+         */
+        PoseStrategy estimationStrat = PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR;
+        if (Constants.isDemoMode) {
+            // TODO: learn about "averaging" 3D orientations?
+            //       it seems like it's not super straight forward,
+            //       but I don't have time for a rabbit hole right now.
+            estimationStrat = PoseStrategy.AVERAGE_BEST_TARGETS;
+        }
 
+        poseEstimators = new ArrayList<PhotonPoseEstimator>();
         for (int i = 0; i < tagCameras.size(); i++) {
             poseEstimators.add(
                 new PhotonPoseEstimator(
                     VisionConstants.aprilTagFieldLayout,
-                    PoseStrategy.AVERAGE_BEST_TARGETS,//PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
+                    estimationStrat,
                     tagCameras.get(i),
                     VisionConstants.tagCameraTransforms[i]
                 )
@@ -183,181 +204,109 @@ public class VisionIOPhotonLib implements VisionIO {
             output.tagsUsed[i] = seenTags.get(i).getFiducialId();
         }
 
-        updateDemoModeTagLayout(estimator, seenTags, poseEstimate.estimatedPose);
-        // updateDemoModeFieldOrigin(estimator, seenTags, poseEstimate.estimatedPose);
+        updateDemoModeTagLayout(estimator, seenTags);
         Logger.recordOutput("demoMode/robotFullPose", poseEstimate.estimatedPose);
 
         return Optional.of(output);
     }
 
 
-    private void updateDemoModeFieldOrigin(PhotonPoseEstimator estimator, List<PhotonTrackedTarget> seenTags, Pose3d robotPose_fieldFrame) {
+    private void updateDemoModeTagLayout(PhotonPoseEstimator estimator, List<PhotonTrackedTarget> seenTags) {
+        // Do nothing if it isn't demo mode
         if (!Constants.isDemoMode) {
             return;
         }
 
-        Transform3d tagAxes_cameraFrame = null;
+        // Find the pose of the demo target in the robot's frame
+        Transform3d tagPose_cameraFrame = null;
         for (PhotonTrackedTarget tag : seenTags) {
-            if (tag.getFiducialId() == FieldElement.demoTargetID) {
-                tagAxes_cameraFrame = tag.getBestCameraToTarget();
-                break;
+            if (tag.getFiducialId() == FieldElement.getSpeakerTagID()) {
+                tagPose_cameraFrame = tag.getBestCameraToTarget();
             }
         }
 
-        if (tagAxes_cameraFrame == null) {
+        if (tagPose_cameraFrame == null) {
             return;
         }
 
-        Transform3d camAxes_robotFrame = estimator.getRobotToCameraTransform();
-        Transform3d tagAxes_robotFrame = camAxes_robotFrame.plus(tagAxes_cameraFrame);
-        Logger.recordOutput("demoMode/tagLocationRobotFrame", tagAxes_robotFrame.getTranslation());
-        Transform3d robotAxes_fieldFrame = new Transform3d(robotPose_fieldFrame.getTranslation(), robotPose_fieldFrame.getRotation());
+        Transform3d camPose_robotFrame = estimator.getRobotToCameraTransform();
+        Transform3d tagPose_robotFrame = camPose_robotFrame.plus(tagPose_cameraFrame);
 
-        Transform3d tagAxes_fieldFrame = robotAxes_fieldFrame.plus(tagAxes_robotFrame);
+        // Step 1) Determine the location of the demo tag on the field.
+        //         We put it at the same XY locaiton as our speaker target,
+        //         but use the height measured by the robot rather than the regulation height. 
+        Translation3d tagLocation_fieldFrame = new Translation3d(FieldElement.SPEAKER.getX(), FieldElement.SPEAKER.getY(), tagPose_robotFrame.getZ());
 
-        Pose3d tagPose_fieldFrame = new Pose3d(tagAxes_fieldFrame.getTranslation(), tagAxes_fieldFrame.getRotation());
+        // We don't want the robot to think it's sinking into the ground if the person holding the
+        // demo tag isn't holding it straight up and down, so we have to update the FieldLayout to be
+        // aware of the tag's pitch and roll.
+        //
+        // Step 2) Determine the orientation of the demo tag relative to the field axes.
+        //         We do this by finding how the field frame must be oriented w.r.t.
+        //         the robot frame, and then transforming the orientation of the tag
+        //         (as seen by the robot) into the field frame.
+        //         Sorry that's kinda hard to understand, I can't think of better wording right now.
+        //         
+        //         robotYaw_wrtFieldFrame = tagYaw_wrtFieldFrame + "angle from tagX to robotX as measured in the plane of the floor" (this phrasing accounts for the demo tag's z axis not pointing straight up from the floor to the sky, because robotYaw_wrtTagFrame doesn't measure in the plane of the floor when the tag frame's z axis isn't coincident with the floor normal).
+        //         robotYaw_wrtFieldFrame = tagYaw_wrtFieldFrame - tagYaw_wrtRobotFrame
+        //         fieldYaw_wrtRobotFrame = tagYaw_wrtRobotFrame - tagYaw_wrtFieldFrame
+        Rotation2d tagYaw_robotFrame = tagPose_robotFrame.getRotation().toRotation2d();
+        Rotation2d tagYaw_fieldFrame = FieldElement.SPEAKER.getOrientation().toRotation2d();
+        Rotation2d fieldYaw_robotFrame = tagYaw_robotFrame.minus(tagYaw_fieldFrame);
 
-        Pose3d shouldBeTagPose_fieldFrame = VisionConstants.aprilTagFieldLayout.getTagPose(FieldElement.demoTargetID).get();
 
-        Transform3d poseDiff = new Transform3d(tagPose_fieldFrame, shouldBeTagPose_fieldFrame);
-        Pose3d modifiedOrigin = new Pose3d().transformBy(poseDiff);
+        // To take a direciton vector from the robot frame and transform it into the field frame,
+        // we find the rotation matrix whose columns are the robot's axes as measured in the field frame,
+        // and then pump the direction vectors as seen in the robot frame through that matrix.
+        // Sorry again that this is so wordy, this is really best described with pictures!
+        // In other words, we have tagOrientation in terms of <robot_xDirection, robot_yDirection, robot_zDirection>.
+        // In order to get tagOrientation in terms of <field_xDirection, field_yDirection, field_zDirection>
+        // we simply write the robot's direction vectors in terms of the field's direction vectors, then collect like terms / simplify!
+        Rotation3d fieldOrientation_robotFrame = new Rotation3d(0, 0, fieldYaw_robotFrame.getRadians());
+        Rotation3d tagOrientation_robotFrame = tagPose_robotFrame.getRotation();
+        Rotation3d tagOrientation_fieldFrame = tagOrientation_robotFrame.rotateBy(fieldOrientation_robotFrame.unaryMinus());
 
+        // update the field layout and demo target location
+        AprilTag demoTag = new AprilTag(FieldElement.getSpeakerTagID(), new Pose3d(tagLocation_fieldFrame, tagOrientation_fieldFrame));
+        AprilTagFieldLayout updatedLayout = new AprilTagFieldLayout(Arrays.asList(demoTag), VisionConstants.aprilTagFieldLayout.getFieldLength(), VisionConstants.aprilTagFieldLayout.getFieldWidth());
+        estimator.setFieldTags(updatedLayout);
 
-        AprilTagFieldLayout sortaUpdatedLayout = new AprilTagFieldLayout(VisionConstants.aprilTagFieldLayout.getTags(), VisionConstants.aprilTagFieldLayout.getFieldLength(), VisionConstants.aprilTagFieldLayout.getFieldWidth());
-        sortaUpdatedLayout.setOrigin(modifiedOrigin);
-        estimator.setFieldTags(sortaUpdatedLayout);
+        // aim 8 inches above the tag so we can hit an apple of of someone's head for the demo!
+        Translation3d demoTargetOffset = new Translation3d(0, 0, Units.inchesToMeters(8));
+        FieldElement.demoTargetLocation = tagLocation_fieldFrame.plus(demoTargetOffset);
 
-
-        Pose3d thisOneWorks = estimator.getFieldTags().getTagPose(FieldElement.demoTargetID).get();
-        // Pose3d thisOneWorksToo = estimator.getFieldTags().getTagPose(buddyTagID).get();
-
-
+        // record some debug info
         ArrayList<Pose3d> posesToLog = new ArrayList<>();
-        posesToLog.add(thisOneWorks);
+        posesToLog.add(demoTag.pose);
+
+
+        if (demoTag.ID == 4) {
+            // add the second speaker tag if we're using two for the demo (when using only using 1 demo tag, it has id 13)
+            // it's offset from the first speaker tag, but should have the same orientaiton.
+            double distanceBetweenSpeakerTags = Units.inchesToMeters(22.25);
+            Translation3d tagYAxis_fieldFrame = new Translation3d(0, 1, 0).rotateBy(tagOrientation_fieldFrame);
+            Translation3d secondTagLocation_fieldFrame = tagLocation_fieldFrame.plus(tagYAxis_fieldFrame.times(distanceBetweenSpeakerTags));
+            AprilTag secondDemoTag = new AprilTag(3, new Pose3d(secondTagLocation_fieldFrame, tagOrientation_fieldFrame));
+
+            updatedLayout = new AprilTagFieldLayout(Arrays.asList(demoTag, secondDemoTag), VisionConstants.aprilTagFieldLayout.getFieldLength(), VisionConstants.aprilTagFieldLayout.getFieldWidth());
+            estimator.setFieldTags(updatedLayout);
+
+            // Aim above the midpoint of both tags.
+            FieldElement.demoTargetLocation = tagLocation_fieldFrame.plus(secondTagLocation_fieldFrame).div(2).plus(demoTargetOffset);
+
+            posesToLog.add(secondDemoTag.pose);
+        }
+
+        // logging
         Logger.recordOutput("demoMode/demoTagsFieldPose", posesToLog.toArray(new Pose3d[0]));
-        Logger.recordOutput("demoMode/origin", modifiedOrigin);
-    }
+        Logger.recordOutput("demoMode/tagLocation_robotFrame", tagPose_robotFrame.getTranslation());
 
-
-    private void updateDemoModeTagLayout(PhotonPoseEstimator estimator, List<PhotonTrackedTarget> seenTags, Pose3d robotPose_fieldFrame) {
-        if (!Constants.isDemoMode) {
-            return;
-        }
-
-        boolean has4 = false;
-        boolean has3 = false;
-        Transform3d tagAxesInCameraFrame = null;
-        for (PhotonTrackedTarget tag : seenTags) {
-            if (tag.getFiducialId() == FieldElement.demoTargetID) {
-                tagAxesInCameraFrame = tag.getBestCameraToTarget();
-            }
-
-            if (tag.getFiducialId() == 4) {
-                has4 = true;
-            }
-
-            if (tag.getFiducialId() == 3) {
-                has3 = true;
-            }
-        }
-
-        if (tagAxesInCameraFrame == null) {
-            return;
-        }
-
-        Transform3d camAxesInRobotFrame = estimator.getRobotToCameraTransform();
-        Transform3d tagAxesInRobotFrame = camAxesInRobotFrame.plus(tagAxesInCameraFrame);
-        Logger.recordOutput("demoMode/tagLocationRobotFrame", tagAxesInRobotFrame.getTranslation());
-
-        Translation3d tagX_robotFrame = new Translation3d(1, 0, 0).rotateBy(tagAxesInRobotFrame.getRotation());
-        Translation3d tagY_robotFrame = new Translation3d(0, 1, 0).rotateBy(tagAxesInRobotFrame.getRotation());
-        Translation3d tagZ_robotFrame = new Translation3d(0, 0, 1).rotateBy(tagAxesInRobotFrame.getRotation());
+        Translation3d tagX_robotFrame = new Translation3d(1, 0, 0).rotateBy(tagPose_robotFrame.getRotation());
+        Translation3d tagY_robotFrame = new Translation3d(0, 1, 0).rotateBy(tagPose_robotFrame.getRotation());
+        Translation3d tagZ_robotFrame = new Translation3d(0, 0, 1).rotateBy(tagPose_robotFrame.getRotation());
         Logger.recordOutput("demoMode/tagX_robotFrame", tagX_robotFrame);
         Logger.recordOutput("demoMode/tagY_robotFrame", tagY_robotFrame);
         Logger.recordOutput("demoMode/tagZ_robotFrame", tagZ_robotFrame);
-
-        double demoTagFieldX = FieldElement.SPEAKER.getX();
-        double demoTagFieldY = FieldElement.SPEAKER.getY();
-        double demoTagFieldZ = tagAxesInRobotFrame.getTranslation().getZ();
-        Translation3d demoTagFieldLocation = new Translation3d(demoTagFieldX, demoTagFieldY, demoTagFieldZ);
-
-        // don't have the robot think it's sinking into the ground if the tag isn't straight up and down.
-        // we only care about the yaw being correct? I think this is thr right way, but i'm not 100% sure.
-        // TODO: this shouldn't work becuase extrinsic rotations about robot frame axes won't be the same
-        //       as extrinsic rotations about field frame axes? However, this still seems to work!
-        double demoTagFieldYaw = FieldElement.SPEAKER.getOrientation().getZ();
-        double demoTagFieldPitch = tagAxesInRobotFrame.getRotation().getY();
-        double demoTagFieldRoll = tagAxesInRobotFrame.getRotation().getX();
-        Rotation3d demoTagFieldOrientation = new Rotation3d(demoTagFieldRoll, demoTagFieldPitch, demoTagFieldYaw);
-        // demoTagFieldOrientation = FieldElement.SPEAKER.getOrientation(); // <- I've at least confirmed that this is wrong!
-        AprilTag demoTag = new AprilTag(FieldElement.demoTargetID, new Pose3d(demoTagFieldLocation, demoTagFieldOrientation));
-
-
-        int buddyTagID = 3;
-        double distanceBetweenDemoTags = Units.inchesToMeters(22.25);
-        Translation3d demoTagYAxis_fieldFrame = new Translation3d(0, 1, 0).rotateBy(demoTagFieldOrientation);
-        Translation3d demoTagToBuddyTag_fieldFrame = demoTagYAxis_fieldFrame.times(distanceBetweenDemoTags);
-        AprilTag demoTagBuddy = new AprilTag(buddyTagID, new Pose3d(demoTagFieldLocation.plus(demoTagToBuddyTag_fieldFrame), demoTagFieldOrientation));
-
-        ArrayList<Pose3d> posesToLog = new ArrayList<>();
-        if (has4) {
-            posesToLog.add(demoTag.pose);
-        }
-        if (has3) {
-            posesToLog.add(demoTagBuddy.pose);
-        }
-        Logger.recordOutput("demoMode/demoTagsFieldPose", posesToLog.toArray(new Pose3d[0]));
-
-
-        AprilTag dummyTag = new AprilTag(1, new Pose3d());
-        AprilTagFieldLayout updatedLayout = new AprilTagFieldLayout(Arrays.asList(dummyTag, demoTag, demoTagBuddy), VisionConstants.aprilTagFieldLayout.getFieldLength(), VisionConstants.aprilTagFieldLayout.getFieldWidth());
-        estimator.setFieldTags(updatedLayout);
-
-        boolean endNow = true;
-
-        if (endNow) {
-            return;
-        }
-
-        // when using the setOrigin() strategy, I have to use the full field of tags as is.
-        // they all rotate and translate together. This is becuase updates to the tag layout are still not honored.
-        double normalHeight = VisionConstants.aprilTagFieldLayout.getTagPose(4).get().getZ();
-        double measuredHeight = tagAxesInRobotFrame.getTranslation().getZ();
-        double heightShift = normalHeight - measuredHeight; // if tags are lower to the ground (measuredHeight < normalHeight), then the origin tied to the tags is also pushed into the floor, and the robot rises relative to that origin. If I make a new origin that also rises off the ground with the robot by the same amount, then the robot hasn't risen relative to that new origin at all? This still feels a bit backwards to me, I'll think about it later.
-        Translation3d originLocation = new Translation3d(0, 0, heightShift);
-
-
-        double robotYaw = robotPose_fieldFrame.getZ();
-        Rotation3d tagOrientaiton_oppositeFieldFrame = tagAxesInRobotFrame.getRotation().rotateBy(new Rotation3d(0, 0, -robotYaw));
-        Rotation3d originOrientation = new Rotation3d(tagOrientaiton_oppositeFieldFrame.getX(), tagOrientaiton_oppositeFieldFrame.getY(), 0);//tagAxesInRobotFrame.getRotation();
-        Pose3d originAxes = new Pose3d(originLocation, originOrientation);
-
-        AprilTagFieldLayout sortaUpdatedLayout = new AprilTagFieldLayout(VisionConstants.aprilTagFieldLayout.getTags(), VisionConstants.aprilTagFieldLayout.getFieldLength(), VisionConstants.aprilTagFieldLayout.getFieldWidth());
-        sortaUpdatedLayout.setOrigin(originAxes);
-        estimator.setFieldTags(sortaUpdatedLayout);
-
-        Pose3d thisOneWorks = estimator.getFieldTags().getTagPose(demoTag.ID).get();
-        Pose3d thisOneWorksToo = estimator.getFieldTags().getTagPose(buddyTagID).get();
-
-
-        // ArrayList<Pose3d> posesToLog = new ArrayList<>();
-        if (has4) {
-            posesToLog.add(thisOneWorks);
-        }
-        if (has3) {
-            posesToLog.add(thisOneWorksToo);
-        }
-        Logger.recordOutput("demoMode/demoTagsFieldPose", posesToLog.toArray(new Pose3d[0]));
-        Logger.recordOutput("demoMode/origin", originAxes);
-
-
-
-
-
-        // double demoOffsetInches = SmartDashboard.getNumber("demoTargetOffset", 12);
-        // SmartDashboard.putNumber("demoTargetOffset", demoOffsetInches);
-        double verticalOffsetMeters = Units.inchesToMeters(8);
-        FieldElement.demoTargetLocation = demoTagFieldLocation.plus(new Translation3d(0, 0, verticalOffsetMeters));
     }
 
     private List<Translation3d> updateIntakeCamera() {
