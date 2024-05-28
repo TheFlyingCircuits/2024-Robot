@@ -9,18 +9,23 @@ import edu.wpi.first.wpilibj.AddressableLEDBuffer;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.PrintCommand;
 import edu.wpi.first.wpilibj2.command.ScheduleCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.Command.InterruptionBehavior;
 import frc.robot.Constants.LEDConstants;
 
 public class LEDs extends SubsystemBase {
 
     private AddressableLED leds;
     private AddressableLEDBuffer buffer;
+
+    private static boolean putSwitcher = true;
 
     private Timer heartbeatTimer = new Timer();
 
@@ -281,7 +286,7 @@ public class LEDs extends SubsystemBase {
 
     public Command solidOrangeCommand() {
         Color orange = Color.fromHSV(LEDConstants.Hues.orangeSignalLight, 255, 255);
-        return this.solidColorCommand(orange);
+        return this.solidColorCommand(orange).withName("solid orange command");
     }
 
     public Command turnOffCommand() {
@@ -360,12 +365,13 @@ public class LEDs extends SubsystemBase {
                .andThen(this.playWipeToAllianceColorCommand(timeForEachSegment));
     }
 
-    public Command temporarilySwitchPattern(Command patternToSwitchTo) {
+    public Command temporarilySwitchPattern(Supplier<Command> switchSupplier) {
         return new InstantCommand(() -> {
             // System.out.println("starting instant command");
             // Find whatever pattern the LEDs are currently displaying,
             // so that we can return to that pattern after we're done with the new patter.
             Command interruptedPattern = this.getCurrentCommand();
+            Command patternToSwitchTo = switchSupplier.get();
             // System.out.println("interrupted name: " + interruptedPattern.getName());
             if (interruptedPattern.equals(patternToSwitchTo)) {
                 // don't let a pattern interrupt itself.
@@ -378,10 +384,11 @@ public class LEDs extends SubsystemBase {
             // Schedule the whole sequence.
             // System.out.println("switchToMe: " + patternToSwitchTo.runsWhenDisabled());
             // System.out.println("interruptMe: " + interruptedPattern.runsWhenDisabled());
-            Command fullCommand = patternToSwitchTo.asProxy().andThen(new ScheduleCommand(interruptedPattern));
-            fullCommand = fullCommand.finallyDo((boolean what) -> {System.out.println("switcher interrupted: " + what);});
+            Command fullCommand = patternToSwitchTo.andThen(new ScheduleCommand(interruptedPattern));
+            fullCommand.setName("switcher");
             fullCommand.addRequirements(this);
             fullCommand.schedule();
+
             // System.out.println("fullCommand: " + fullCommand.runsWhenDisabled());
             // fullCommand.schedule();
             // System.out.println("done with instant command");

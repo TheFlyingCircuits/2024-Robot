@@ -153,6 +153,8 @@ public class RobotContainer {
 
 
         realBindings();
+
+        SmartDashboard.putData(leds);
     }
 
     private void realBindings() {
@@ -257,7 +259,7 @@ public class RobotContainer {
         /** Driver Feedback **/
         Trigger ringJustEnteredIntake = new Trigger(intake::ringJustEnteredIntake);
         ringJustEnteredIntake.onTrue(charlie.rumbleController(0.5).withTimeout(0.25)); // lol this happens even during auto
-        ringJustEnteredIntake.onTrue(leds.temporarilySwitchPattern(leds.strobeCommand(Color.kWhite, 4, 0.5).ignoringDisable(true)).ignoringDisable(true));
+        ringJustEnteredIntake.onTrue(leds.temporarilySwitchPattern(() -> {return leds.strobeCommand(Color.kWhite, 4, 0.5).ignoringDisable(true);}).ignoringDisable(true));
         // TODO: prevent flash on reverse? Either condition with positive wheel speeds,
         //       or no seperate schedule command?
     }
