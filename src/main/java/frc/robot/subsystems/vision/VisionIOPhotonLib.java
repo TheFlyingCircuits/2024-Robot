@@ -272,7 +272,7 @@ public class VisionIOPhotonLib implements VisionIO {
         estimator.setFieldTags(updatedLayout);
 
         // aim 8 inches above the tag so we can hit an apple of of someone's head for the demo!
-        Translation3d demoTargetOffset = new Translation3d(0, 0, Units.inchesToMeters(8));
+        Translation3d demoTargetOffset = new Translation3d(0, 0, Units.inchesToMeters(24));
         FieldElement.demoTargetLocation = tagLocation_fieldFrame.plus(demoTargetOffset);
 
         // record some debug info
@@ -294,7 +294,21 @@ public class VisionIOPhotonLib implements VisionIO {
             // Aim above the midpoint of both tags.
             FieldElement.demoTargetLocation = tagLocation_fieldFrame.plus(secondTagLocation_fieldFrame).div(2).plus(demoTargetOffset);
 
-            posesToLog.add(secondDemoTag.pose);
+            for (PhotonTrackedTarget tag : seenTags) {
+                if (tag.getFiducialId() == 3) {
+                    posesToLog.add(secondDemoTag.pose);
+                    break;
+                }
+            }
+
+            // Note: you can get bad updates that make the robot think it's sinking into the floor
+            //       if you rotate the tag in a way that it can't see 4, but it can see 3.
+            //       In this scenario, the field layout doesn't get updated because 4 can't be seen,
+            //       but the robot's pose is still updated based on tag 3, which it can see.
+            //       It will be based off the last updated layout, which could cause it to sink
+            //       into the floor. Not sure if I want to solve this problem.
+            //       We're good as long as he can see both tags, or just number 4.
+            //       We only get a problem if he can't see tag 3.
         }
 
         // logging
@@ -307,6 +321,9 @@ public class VisionIOPhotonLib implements VisionIO {
         Logger.recordOutput("demoMode/tagX_robotFrame", tagX_robotFrame);
         Logger.recordOutput("demoMode/tagY_robotFrame", tagY_robotFrame);
         Logger.recordOutput("demoMode/tagZ_robotFrame", tagZ_robotFrame);
+        Logger.recordOutput("demoMode/tagX_robotFrameMag", tagX_robotFrame.getNorm());
+        Logger.recordOutput("demoMode/tagY_robotFrameMag", tagY_robotFrame.getNorm());
+        Logger.recordOutput("demoMode/tagZ_robotFrameMag", tagZ_robotFrame.getNorm());
     }
 
     private List<Translation3d> updateIntakeCamera() {

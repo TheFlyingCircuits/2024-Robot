@@ -486,9 +486,6 @@ public final class Constants {
         }
 
         public Translation3d getLocation() {
-            if (Constants.isDemoMode && this == FieldElement.SPEAKER) {
-                return demoTargetLocation;
-            }
             return getPose().getTranslation();
         }
 
