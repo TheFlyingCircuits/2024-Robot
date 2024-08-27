@@ -376,7 +376,8 @@ public final class Constants {
         STAGE_LEFT(11, 15), STAGE_RIGHT(12, 16), CENTER_STAGE(13, 14), 
         LOB_TARGET(new Pose3d(AMP.redPose.interpolate(SPEAKER.redPose, 0.2).toPose2d()),
                    new Pose3d(AMP.bluePose.interpolate(SPEAKER.bluePose, 0.2).toPose2d())
-        ), 
+        ),
+        POLE(), //for activity fair
         CARPET(), 
         NOTE_3(new Translation3d(FieldConstants.maxX - FieldConstants.metersFromAllianceWallToFrontlineNotes, FieldConstants.maxY / 2.0, 0),
                new Translation3d(FieldConstants.metersFromAllianceWallToFrontlineNotes, FieldConstants.maxY / 2.0, 0)

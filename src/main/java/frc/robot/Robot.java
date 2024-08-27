@@ -190,9 +190,9 @@ public class Robot extends LoggedRobot {
         //m_autonomousCommand = autoChooser.getSelected();
 
         // schedule the autonomous command (example)
-        if (m_autonomousCommand != null) {
-            m_autonomousCommand.schedule();
-        }
+        // if (m_autonomousCommand != null) {
+        //     m_autonomousCommand.schedule();
+        // }
 
     }
 

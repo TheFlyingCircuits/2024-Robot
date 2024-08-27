@@ -90,14 +90,21 @@ public class PrepShot extends Command {
         // Flywheels
         double leftFlywheelMetersPerSecond = 25;
         double rightFlywheelMetersPerSecond = 20;
+        
         if (target == FieldElement.LOB_TARGET) {
             leftFlywheelMetersPerSecond = 15; // 13 and 9 was too low
             rightFlywheelMetersPerSecond = 10;
         }
-        if (target == FieldElement.AMP) {
+        else if (target == FieldElement.AMP) {
             leftFlywheelMetersPerSecond = 12;
             rightFlywheelMetersPerSecond = 12;
         }
+        else if (target == FieldElement.POLE) {
+            leftFlywheelMetersPerSecond = 8;
+            rightFlywheelMetersPerSecond = 4;
+        }
+
+        
         flywheels.setLeftFlywheelsMetersPerSecond(leftFlywheelMetersPerSecond);
         flywheels.setRightFlywheelsMetersPerSecond(rightFlywheelMetersPerSecond);
 
@@ -120,14 +127,14 @@ public class PrepShot extends Command {
             armDesiredDegrees = Math.toDegrees(armDesiredRadians);
             driveDesiredAngle = shootOnTheMoveTarget.toTranslation2d().minus(drivetrain.getPoseMeters().getTranslation()).getAngle();
         }
-        if (target == FieldElement.AMP) {
+        else if (target == FieldElement.AMP) {
             armDesiredDegrees = 110;
             driveDesiredAngle = Rotation2d.fromDegrees(-90);
             // facing the back of the robot at the amp (not dependent on alliance color)
 
             //       or maybe just full on auto scoring for the amp?
         }
-        if (target == FieldElement.LOB_TARGET) {
+        else if (target == FieldElement.LOB_TARGET) {
             armDesiredDegrees = 35;
             driveDesiredAngle = target.getLocation().toTranslation2d().minus(drivetrain.getPoseMeters().getTranslation()).getAngle();
             // TODO: try a more sophisticated lob shot with variable arm angle/speed
@@ -136,12 +143,17 @@ public class PrepShot extends Command {
             //       that's good enough for now. We may want to come back to this if we
             //       want more precise lob shots.
         }
-        if (target == FieldElement.CARPET) {
+        else if (target == FieldElement.CARPET) {
             // shart
             Translation3d unitVectorOnCarpet = drivetrain.fieldCoordsFromRobotCoords(new Translation3d(1, 0, 0));
             Translation3d targetOnCarpet = unitVectorOnCarpet.times(1.2);
             armDesiredDegrees = getSimpleArmDesiredDegrees(targetOnCarpet);
         }
+        else if (target == FieldElement.POLE) {
+            armDesiredDegrees = 30;
+        }
+
+
 
         arm.setDesiredDegrees(armDesiredDegrees);
         if (translationController != null) {

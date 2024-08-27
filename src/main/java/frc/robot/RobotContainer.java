@@ -171,7 +171,7 @@ public class RobotContainer {
             .onTrue(
                 //intake after note if on other side of the field
 
-                intakeTowardsNote(charlie::getRequestedFieldOrientedVelocity).until(indexer::isNoteIndexed)
+                intakeNote().until(indexer::isNoteIndexed)
                     .andThen(new ScheduleCommand(
                         indexNote().andThen(reverseIntake().withTimeout(1.0))
                     ))
@@ -187,47 +187,56 @@ public class RobotContainer {
         
         /** SCORING **/
         //speaker shot
-        Trigger inSpeakerShotRange = new Trigger(drivetrain::inSpeakerShotRange);
-        controller.rightBumper().and(inSpeakerShotRange)
-            .onTrue(
-                this.speakerShot()
-                .andThen(new ScheduleCommand(this.resetShooter()))
-            );
+        // Trigger inSpeakerShotRange = new Trigger(drivetrain::inSpeakerShotRange);
+        // controller.rightBumper().and(inSpeakerShotRange)
+        //     .onTrue(
+        //         this.speakerShot()
+        //         .andThen(new ScheduleCommand(this.resetShooter()))
+        //     );
 
-        //lob shot (prep while holding, release to fire)
-        Command prepLobShot = prepLobShot(); // <- grab a single instance so we can check if it's cancelled.
-        controller.rightBumper().and(inSpeakerShotRange.negate())
-            .onTrue(prepLobShot)
-            .onFalse(this.fireNote()
-                         .andThen(new ScheduleCommand(this.resetShooter()))
-                     .unless(() -> {return !prepLobShot.isScheduled();})
-                     // only fire if the lob shot wasn't cancelled
+        // //lob shot (prep while holding, release to fire)
+        // Command prepLobShot = prepLobShot(); // <- grab a single instance so we can check if it's cancelled.
+        // controller.rightBumper().and(inSpeakerShotRange.negate())
+        //     .onTrue(prepLobShot)
+        //     .onFalse(this.fireNote()
+        //                  .andThen(new ScheduleCommand(this.resetShooter()))
+        //              .unless(() -> {return !prepLobShot.isScheduled();})
+        //              // only fire if the lob shot wasn't cancelled
+        //     );
+
+
+        //hold to prep, release to fire
+        controller.rightBumper()
+            .onTrue(prepRingShot())
+            .onFalse(
+                this.fireNote()
+                    .andThen(new ScheduleCommand(this.resetShooter()))
             );
             
-        controller.leftBumper()
-            .onTrue(prepAmpShot())
-            .onFalse(this.fireNoteThroughHood().andThen(new ScheduleCommand(this.resetShooter())));
+        // controller.leftBumper()
+        //     .onTrue(prepAmpShot())
+        //     .onFalse(this.fireNoteThroughHood().andThen(new ScheduleCommand(this.resetShooter())));
             // use a schedule command so the onFalse sequence doesn't cancel the aiming while the note is being shot.
             
-        controller.b().onTrue(shart().andThen(new ScheduleCommand(this.resetShooter())));
+        // controller.b().onTrue(shart().andThen(new ScheduleCommand(this.resetShooter())));
 
         /** CLIMB **/
         
-        controller.povUp().onTrue(climb.raiseHooksCommand());
-        controller.povRight().onTrue(climb.homeHooksCommand());
-        controller.povDown().onTrue(climb.lowerHooksCommand().until(climb::atQuickClimbSetpoint).withTimeout(3));
+        // controller.povUp().onTrue(climb.raiseHooksCommand());
+        // controller.povRight().onTrue(climb.homeHooksCommand());
+        // controller.povDown().onTrue(climb.lowerHooksCommand().until(climb::atQuickClimbSetpoint).withTimeout(3));
 
-        controller.a()
-                .onTrue(new InstantCommand(() -> {drivetrain.onlyUseTrapCamera = true;}))
-                .whileTrue(
-                    new UnderStageTrapRoutine(
-                        charlie::getRequestedFieldOrientedVelocity, climb, arm, shooter, drivetrain))
-                .onFalse(new InstantCommand(() -> {drivetrain.onlyUseTrapCamera = false;}));
+        // controller.a()
+        //         .onTrue(new InstantCommand(() -> {drivetrain.onlyUseTrapCamera = true;}))
+        //         .whileTrue(
+        //             new UnderStageTrapRoutine(
+        //                 charlie::getRequestedFieldOrientedVelocity, climb, arm, shooter, drivetrain))
+        //         .onFalse(new InstantCommand(() -> {drivetrain.onlyUseTrapCamera = false;}));
 
-        //manual fire and then lower, so we aren't hanging off of trap edge
-        controller.back()
-            .whileTrue(fireNoteThroughHood().repeatedly())
-            .onFalse(new ScheduleCommand(climb.raiseHooksCommand(4).withTimeout(0.5))); //this cancels the trap routine
+        // //manual fire and then lower, so we aren't hanging off of trap edge
+        // controller.back()
+        //     .whileTrue(fireNoteThroughHood().repeatedly())
+        //     .onFalse(new ScheduleCommand(climb.raiseHooksCommand(4).withTimeout(0.5))); //this cancels the trap routine
 
         
 
@@ -249,9 +258,9 @@ public class RobotContainer {
         // controller.povLeft().onTrue(arm.setDesiredDegreesCommand(ArmConstants.armMaxAngleDegrees));
 
         /** MISC **/
-        controller.y().onTrue(new InstantCommand(() -> drivetrain.setPoseToVisionMeasurement()).repeatedly().until(drivetrain::seesTag));
-        ben.y().onTrue(new InstantCommand(() -> drivetrain.setPoseToVisionMeasurement()).repeatedly().until(drivetrain::seesTag));
-        // controller.y().onTrue(new InstantCommand(() -> drivetrain.setRobotFacingForward()));
+        // controller.y().onTrue(new InstantCommand(() -> drivetrain.setPoseToVisionMeasurement()).repeatedly().until(drivetrain::seesTag));
+        // ben.y().onTrue(new InstantCommand(() -> drivetrain.setPoseToVisionMeasurement()).repeatedly().until(drivetrain::seesTag));
+        controller.y().onTrue(new InstantCommand(() -> drivetrain.setRobotFacingForward()));
         controller.x().onTrue(new InstantCommand(() -> arm.setDisableSetpointChecking(false)).andThen(resetShooter()));
 
         // controller.start().whileTrue(new MeasureWheelDiameter(drivetrain));
@@ -384,6 +393,12 @@ public class RobotContainer {
                                    .andThen(new WaitUntilCommand(aim::readyToShoot));  // wait for vision to stabilize
         Command fire = fireNote();
         return aim.raceWith(waitForAlignment.andThen(fire));
+    }
+
+    //for activity fair
+    private Command prepRingShot() {
+        return new PrepShot(drivetrain, arm, shooter, charlie::getRequestedFieldOrientedVelocity, leds, FieldElement.POLE);
+        
     }
     
 
