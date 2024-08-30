@@ -90,7 +90,7 @@ public class PrepShot extends Command {
         // Flywheels
         double leftFlywheelMetersPerSecond = 25;
         double rightFlywheelMetersPerSecond = 20;
-        
+
         if (target == FieldElement.LOB_TARGET) {
             leftFlywheelMetersPerSecond = 15; // 13 and 9 was too low
             rightFlywheelMetersPerSecond = 10;
@@ -101,7 +101,7 @@ public class PrepShot extends Command {
         }
         else if (target == FieldElement.POLE) {
             leftFlywheelMetersPerSecond = 8;
-            rightFlywheelMetersPerSecond = 4;
+            rightFlywheelMetersPerSecond = 6;
         }
 
         
@@ -150,7 +150,7 @@ public class PrepShot extends Command {
             armDesiredDegrees = getSimpleArmDesiredDegrees(targetOnCarpet);
         }
         else if (target == FieldElement.POLE) {
-            armDesiredDegrees = 30;
+            armDesiredDegrees = 45;
         }
 
 
