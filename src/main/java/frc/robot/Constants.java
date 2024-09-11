@@ -134,7 +134,7 @@ public final class Constants {
          * <br>
          * This value will be less than or equal to the maxAchievableVelocityMetersPerSecond, depending on driver preference.
          */
-        public static final double maxDesiredTeleopVelocityMetersPerSecond = 1; 
+        public static final double maxDesiredTeleopVelocityMetersPerSecond = 2.5; 
 
         /**
          * The maximum achievable angular velocity of the robot in radians per second.
@@ -154,7 +154,7 @@ public final class Constants {
          * <br>
          * This value will be tuned based off of driver preference.
          */
-        public static final double maxDesiredTeleopAngularVelocityRadiansPerSecond = Units.rotationsToRadians(0.3);
+        public static final double maxDesiredTeleopAngularVelocityRadiansPerSecond = Units.rotationsToRadians(0.6);
 
 
         public static final PathConstraints pathfindingConstraints = new PathConstraints(
