@@ -207,9 +207,8 @@ public class RobotContainer {
 
         //hold to prep, release to fire
         controller.rightBumper()
-            .onTrue(prepRingShot())
-            .onFalse(
-                this.fireNote()
+            .onTrue(
+                this.ringShot()
                     .andThen(new ScheduleCommand(this.resetShooter()))
             );
             
@@ -399,6 +398,13 @@ public class RobotContainer {
     private Command prepRingShot() {
         return new PrepShot(drivetrain, arm, shooter, charlie::getRequestedFieldOrientedVelocity, leds, FieldElement.POLE);
         
+    }
+
+    //for centennial
+    private Command ringShot() {
+        PrepShot aim = new PrepShot(drivetrain, arm, shooter, charlie::getRequestedFieldOrientedVelocity, leds, FieldElement.POLE);
+        Command waitForAlignment = new WaitUntilCommand(aim::readyToShoot);
+        return aim.raceWith(waitForAlignment.andThen(fireNote()));
     }
     
 
