@@ -177,8 +177,6 @@ public class RobotContainer {
                     ))
             );
 
-
-
             //.onTrue(intakeNote().andThen(indexNote()));
             //.onTrue(indexNote().raceWith(resetShooter())); // reset never ends, indexNote does.
     
@@ -323,10 +321,12 @@ public class RobotContainer {
 
 
     private Command indexNote() {
-        return this.runIntake(true).until(indexer::isNoteIndexed).unless(indexer::isNoteIndexed)
+        return this.runIntake(false).withTimeout(0.5).andThen( //pulse intake temporarily to clear jams
+                    this.runIntake(true)) //index note
+               .until(indexer::isNoteIndexed).unless(indexer::isNoteIndexed) //stop the command when note is indexed
                .andThen(new InstantCommand(() -> {indexer.setVolts(0); intake.setVolts(0);})
-                        .alongWith(new ScheduleCommand(leds.solidOrangeCommand()))
-               );
+                    .alongWith(new ScheduleCommand(leds.solidOrangeCommand())) //turn the leds orange after indexing is finshed
+                );
     }
     
         
