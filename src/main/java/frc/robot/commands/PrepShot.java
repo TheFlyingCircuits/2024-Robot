@@ -145,12 +145,13 @@ public class PrepShot extends Command {
 
         arm.setDesiredDegrees(armDesiredDegrees);
         if (translationController != null) {
-            if (target == FieldElement.AMP) {
-                drivetrain.fieldOrientedDriveOnALine(translationController.get(), FieldElement.AMP.getPose().toPose2d());
-            }
-            else {
+            // if (target == FieldElement.AMP) {
+                
+            //     drivetrain.fieldOrientedDriveOnALine(translationController.get(), FieldElement.AMP.getPose().toPose2d());
+            // }
+            // else {
                 drivetrain.fieldOrientedDriveWhileAiming(translationController.get(), driveDesiredAngle);
-            }
+            // }
         }
 
         setpointsAreFresh = true;

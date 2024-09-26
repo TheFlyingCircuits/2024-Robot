@@ -74,7 +74,7 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 public class RobotContainer {
 
     public final HumanDriver charlie = new HumanDriver(0);
-    public final CommandXboxController ben = new CommandXboxController(1);
+    public final HumanDriver ben = new HumanDriver(1);
 
     public final Shooter shooter;
     public final Drivetrain drivetrain;
@@ -149,8 +149,6 @@ public class RobotContainer {
         climb.setDefaultCommand(Commands.run(() -> {climb.setVolts(0);}, climb));
         arm.setDefaultCommand(arm.holdCurrentPositionCommand().ignoringDisable(true));
 
-        dontAmpAutoAlign = ben.leftBumper();
-
 
         realBindings();
 
@@ -166,6 +164,8 @@ public class RobotContainer {
 
 
         CommandXboxController controller = charlie.getXboxController();
+        CommandXboxController benController = ben.getXboxController();
+
         /** INTAKE **/
         controller.rightTrigger()
             .onTrue(
@@ -250,7 +250,7 @@ public class RobotContainer {
 
         /** MISC **/
         controller.y().onTrue(new InstantCommand(() -> drivetrain.setPoseToVisionMeasurement()).repeatedly().until(drivetrain::seesTag));
-        ben.y().onTrue(new InstantCommand(() -> drivetrain.setPoseToVisionMeasurement()).repeatedly().until(drivetrain::seesTag));
+        // benController.y().onTrue(new InstantCommand(() -> drivetrain.setPoseToVisionMeasurement()).repeatedly().until(drivetrain::seesTag));
         // controller.y().onTrue(new InstantCommand(() -> drivetrain.setRobotFacingForward()));
         controller.x().onTrue(new InstantCommand(() -> arm.setDisableSetpointChecking(false)).andThen(resetShooter()));
 
@@ -358,7 +358,7 @@ public class RobotContainer {
         Command autoAlignAmpShot = new PrepShot(drivetrain, arm, shooter, charlie::getRequestedFieldOrientedVelocity, leds, FieldElement.AMP);
         Command noAlignAmpShot = new PrepShot(drivetrain, arm, shooter, null, leds, FieldElement.AMP);
 
-        return noAlignAmpShot;
+        return autoAlignAmpShot;
         // return new ConditionalCommand(
         //     autoAlignAmpShot,
         //     noAlignAmpShot,
